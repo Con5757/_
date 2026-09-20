@@ -1,0 +1,56 @@
+?comment ..you need to init comments
+
+a single line comment uses '..'
+while a multi used !. and .!
+
+..my personal preference is to connect the two .. to the comment
+
+!.
+u basically need to initalize everything in this language
+this shit isnt going to be organized and its most likely not going to make sense
+the rough concept of this file type is to do basically everything except for web development because thats just slop at this point
+.!
+
+?io ..gives access to normal i/o functions
+
+..in order to keep the language organzed i prefer having subdirs for libs so your program only has what you ask if for
+..doing something like ?std enables the ability to add sublibs not the entire lib itself
+..to force something use *
+
+!. normal/clean
+?std ..main lib
+    with stdlib ..sublibs
+    with string
+    with container
+.!
+
+!. forced
+*?std adds everything inside std instead of the specific components
+.!
+
+..'*' does NOT mean pointer
+..pointers are defined by arrows
+
+->
+-->
+--->
+<-
+<--
+<---
+
+..datatypes
+# ..int
+@ ..str/char, follows typical c notation with the [data in bytes]
+$ ..null process
+% ..fp
+
+..booleans can be imported under ?std
+?std
+    with ?boolean
+
+..which allows
+
+true 
+false
+null
+
