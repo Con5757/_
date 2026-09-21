@@ -1,9 +1,9 @@
 {
     "comments": {
-        "lineComment": ";",
+        "lineComment": "..",
         "blockComment": [
-            ";-",
-            "-;"
+            "--",
+            "--"
         ]
     },
     "brackets": [
@@ -20,8 +20,8 @@
             ")"
         ],
         [
-            ";-",
-            "-;"
+            "--",
+            "--"
         ]
     ],
     "autoClosingPairs": [
@@ -38,8 +38,8 @@
             "close": ")"
         },
         {
-            "open": ";-",
-            "close": "-;",
+            "open": "--",
+            "close": "--",
             "notIn": [
                 "string",
                 "comment"
@@ -84,8 +84,8 @@
             "'"
         ],
         [
-            ";-",
-            "-;"
+            "--",
+            "--"
         ]
     ],
 }
