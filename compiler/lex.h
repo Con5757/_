@@ -35,3 +35,4 @@ typedef struct {
 } Token;
 
 char* readFile(char*);
+Token lex(char*);

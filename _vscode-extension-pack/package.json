@@ -1,0 +1,58 @@
+{
+  "name": "night-extensionpack",
+  "displayName": "Night Language Extension",
+  "description": "Syntax Highlighting and Autofill for Night scripts",
+  "version": "0.0.1",
+  "publisher": "con5757",
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:markdown",
+    "onLanguage:night"
+  ],
+  "icon": "./icon.svg",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "night",
+        "aliases": ["night", "nightlang", "progNight"],
+        "extensions": [".n", ".night", ".nt"],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icon.svg",
+          "dark": "./icon.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "night",
+        "scopeName": "source.n",
+        "path": "./syntaxes/n.tmLanguage.json"
+      },
+      {
+        "scopeName": "markdown.night.codeblock",
+        "path": "./syntaxes/markdown-n.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.night": "night"
+        }
+      }
+    ],
+    "markdown.markdownItPlugins": true,
+    "snippets": [
+      {
+        "language": "night",
+        "path": "./snippets/snippets.json"
+      }
+    ]
+  }
+}

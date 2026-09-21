@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
 
 char* readFile(char* fileName) {
 	FILE* file = fopen(fileName, "r");
@@ -30,5 +32,34 @@ char* readFile(char* fileName) {
 }
 
 Token lex(char* fileContents) {
-	printf("got contents");
+	Token token;
+
+	int i = 0;
+	while (fileContents[i] != '\0') { // 1. Start at the first character of fileContents
+		if (isspace(fileContents[i])) {
+			i++;
+			continue;
+		}
+
+		if (isdigit(fileContents[i])) {
+			
+		}
+
+		if (isalpha(fileContents[i])) { // any keywords
+			char word[256];
+			int wordIndex = 0;
+
+			while (isalpha(fileContents[i])) {
+				word[wordIndex] = fileContents[i];
+
+				wordIndex++;
+				i++;
+			}
+
+			word[wordIndex] = '\0';
+			printf("%s\n", word);
+
+
+		}
+	}
 }

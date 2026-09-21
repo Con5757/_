@@ -1,4 +1,4 @@
-A
+	A
 5
 
 (
@@ -31,19 +31,3 @@ in(name)
 
 int-> pNum = num
 out(pNum)
-
-..should make in c
-#include <stdio.h>
-
-int main() {
-	int num = 20;
-	char name[3] = "con";
-
-	printf("%d", &num);
-	printf("%s", name);
-
-	int* pNum = &num;
-	printf("%p", pNum);
-
-	return 0;
-}

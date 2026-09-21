@@ -15,8 +15,9 @@ int main() {
 	if (rfile != NULL) {
 		printf("%s", rfile);
 	}
+	
+	lex(rfile);
 
 	free(rfile);
-
 	return 0;
 }
