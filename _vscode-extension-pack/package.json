@@ -1,13 +1,13 @@
 {
-  "name": "night-extensionpack",
-  "displayName": "Night Language Extension",
-  "description": "Syntax Highlighting and Autofill for Night scripts",
-  "version": "0.0.1",
+  "name": "underscore-extensionpack",
+  "displayName": "Underscore Language Extension",
+  "description": "Syntax Highlighting and Autofill for Underscore scripts in VScode",
+  "version": "1.0.3",
   "publisher": "con5757",
   "main": "./extension.js",
   "activationEvents": [
     "onLanguage:markdown",
-    "onLanguage:night"
+    "onLanguage:underscore"
   ],
   "icon": "./icon.svg",
   "engines": {
@@ -20,9 +20,9 @@
   "contributes": {
     "languages": [
       {
-        "id": "night",
-        "aliases": ["night", "nightlang", "progNight"],
-        "extensions": [".n", ".night", ".nt"],
+        "id": "underscore",
+        "aliases": ["uscore", "u-lang", "progU"],
+        "extensions": ["._", ".score", ".u", ".usc"],
         "configuration": "./language-configuration.json",
         "icon": {
           "light": "./icon.svg",
@@ -32,25 +32,25 @@
     ],
     "grammars": [
       {
-        "language": "night",
-        "scopeName": "source.n",
-        "path": "./syntaxes/n.tmLanguage.json"
+        "language": "underscore",
+        "scopeName": "source._",
+        "path": "./syntaxes/_.tmLanguage.json"
       },
       {
-        "scopeName": "markdown.night.codeblock",
-        "path": "./syntaxes/markdown-n.tmLanguage.json",
+        "scopeName": "markdown.underscore.codeblock",
+        "path": "./syntaxes/markdown-underscore.tmLanguage.json",
         "injectTo": [
           "text.html.markdown"
         ],
         "embeddedLanguages": {
-          "meta.embedded.block.night": "night"
+          "meta.embedded.block.underscore": "underscore"
         }
       }
     ],
     "markdown.markdownItPlugins": true,
     "snippets": [
       {
-        "language": "night",
+        "language": "underscore",
         "path": "./snippets/snippets.json"
       }
     ]
