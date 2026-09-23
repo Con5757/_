@@ -1,0 +1,66 @@
+{
+  "name": "underscore-extensionpack",
+  "displayName": "Underscore Language Extension",
+  "description": "Syntax Highlighting and Autofill for Underscore scripts in VScode",
+  "version": "1.0.3",
+  "publisher": "con5757",
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:markdown",
+    "onLanguage:underscore"
+  ],
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "underscore",
+        "aliases": [
+          "uscore",
+          "u-lang",
+          "progU"
+        ],
+        "extensions": [
+          "._",
+          ".score",
+          ".u",
+          ".usc"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icon-dark.svg",
+          "dark": "./icon-light.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "underscore",
+        "scopeName": "source._",
+        "path": "./syntaxes/_.tmLanguage.json"
+      },
+      {
+        "scopeName": "markdown.underscore.codeblock",
+        "path": "./syntaxes/markdown-underscore.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.block.underscore": "underscore"
+        }
+      }
+    ],
+    "markdown.markdownItPlugins": true,
+    "snippets": [
+      {
+        "language": "underscore",
+        "path": "./snippets/snippets.json"
+      }
+    ]
+  }
+}

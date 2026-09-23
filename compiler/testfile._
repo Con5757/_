@@ -1,0 +1,33 @@
+	A
+5
+
+(
+)
+[
+]
+{
+}
+
+out
+in
+
+int
+fp
+str
+
+->
+-->
+--->
+<---
+<--
+<-
+
+..testfile
+int num = 20
+str name = "con"
+
+out(num)
+in(name)
+
+int-> pNum = num
+out(pNum)
