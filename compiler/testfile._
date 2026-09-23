@@ -1,4 +1,4 @@
-	A
+A
 5
 
 (
@@ -31,3 +31,4 @@ in(name)
 
 int-> pNum = num
 out(pNum)
+

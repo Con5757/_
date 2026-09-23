@@ -12,9 +12,7 @@ int main() {
 
 	// compilerchain
 	char* rfile = readFile(fileName);
-	if (rfile != NULL) {
-		printf("%s", rfile);
-	}
+	printf("\n");
 	
 	lex(rfile);
 

@@ -5,6 +5,12 @@
 #include <ctype.h>
 #include <string.h>
 
+void printTokens(Token tokens) {
+	for (int i = 0; tokens[i] ) {
+
+	}
+}
+
 char* readFile(char* fileName) {
 	FILE* file = fopen(fileName, "r");
 	if (file == NULL) {

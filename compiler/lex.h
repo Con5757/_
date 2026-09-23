@@ -5,6 +5,7 @@ typedef enum {
 
 	TOKEN_ALPHA,
 	TOKEN_DIGIT,
+	TOKEN_IDENTIFIER,
 
 	// parans
 	TOKEN_LN_PARAN,
