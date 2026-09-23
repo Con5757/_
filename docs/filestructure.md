@@ -30,7 +30,7 @@
 `if`
 `elif`
 `else`
-`switch`
+`count`
 
 ## Best practice
 
