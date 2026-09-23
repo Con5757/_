@@ -1,0 +1,185 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Night",
+  "scopeName": "source.n",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#library-members" },
+    { "include": "#typed-functions" },
+    { "include": "#type-declarations" },
+    { "include": "#operators" },
+    { "include": "#numbers" },
+    { "include": "#functions" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.night",
+          "begin": ";-",
+          "end": "-;",
+          "captures": {
+            "0": { "name": "punctuation.definition.comment.night" }
+          }
+        },
+        {
+          "name": "comment.line.semicolon.night",
+          "match": ";.*$",
+          "captures": {
+            "0": { "name": "punctuation.definition.comment.night" }
+          }
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.night",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            { "name": "constant.character.escape.night", "match": "\\\\." }
+          ]
+        },
+        {
+          "name": "string.quoted.single.night",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            { "name": "constant.character.escape.night", "match": "\\\\." }
+          ]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.night",
+          "match": "\\b(if|elif|else|during|repeat|switch|arg|incase|attempt|send|end|kill|break|continue|main|as)\\b"
+        },
+        {
+          "name": "invalid.illegal.flag.night",
+          "match": "\\?\\b(inline|unroll|hot|cold)\\b"
+        },
+        {
+          "comment": "Imports statement with optional alias (e.g., using terminal as term)",
+          "match": "\\b(using)\\s+([a-zA-Z_][a-zA-Z0-9_]*)(?:\\s+(as)\\s+([a-zA-Z_][a-zA-Z0-9_]*))?",
+          "captures": {
+            "1": { "name": "keyword.control.import.night" },
+            "2": { "name": "entity.name.type.module.night" },
+            "3": { "name": "keyword.control.night" },
+            "4": { "name": "entity.name.type.module.night" }
+          }
+        },
+        {
+          "name": "entity.name.type.module.night",
+          "match": "\\b(terminal|boolean|math|string|file)\\b"
+        },
+        {
+          "comment": "Boolean Library Constants",
+          "name": "support.constant.boolean.night",
+          "match": "\\b(true|false|nil)\\b"
+        }
+      ]
+    },
+    "library-members": {
+      "patterns": [
+        {
+          "comment": "Default terminal method call",
+          "match": "\\b(terminal)\\.(out|in|nl)\\b",
+          "captures": {
+            "1": { "name": "entity.name.type.module.night" },
+            "2": { "name": "support.function.terminal.night" }
+          }
+        },
+        {
+          "comment": "String functions when called as methods or standalone functions",
+          "name": "support.function.string.night",
+          "match": "\\b(length|copy|overwrite|compare|subSearch|slice|sliceArray|join|up|low|trim)\\b(?=\\s*\\()"
+        }
+      ]
+    },
+    "typed-functions": {
+      "patterns": [
+        {
+          "captures": {
+            "1": { "name": "storage.type.symbol.night" },
+            "2": { "name": "storage.type.keyword.night" },
+            "3": { "name": "entity.name.function.night" }
+          },
+          "match": "([#%@$?])\\s*(func)\\s+([a-zA-Z_][a-zA-Z0-9_]*)"
+        }
+      ]
+    },
+    "type-declarations": {
+      "patterns": [
+        {
+          "comment": "Matches fixed-width integers like #8&var, #16&var, #32&var, #64&var",
+          "match": "(#)(8|16|32|64)(&)([a-zA-Z_][a-zA-Z0-9_]*)",
+          "captures": {
+            "1": { "name": "storage.type.symbol.night" },
+            "2": { "name": "constant.numeric.bitwidth.night" },
+            "3": { "name": "keyword.operator.bitwise.night" },
+            "4": { "name": "variable.other.typed.night" }
+          }
+        },
+        {
+          "captures": {
+            "1": { "name": "storage.type.symbol.night" },
+            "2": { "name": "variable.other.typed.night" }
+          },
+          "match": "([#%@$])\\s*([a-zA-Z_][a-zA-Z0-9_]*)"
+        },
+        {
+          "captures": {
+            "1": { "name": "storage.type.symbol.night" },
+            "2": { "name": "entity.name.type.constant.night" }
+          },
+          "match": "(\\?)\\s*([a-zA-Z_][a-zA-Z0-9_]*)"
+        },
+        {
+          "name": "storage.type.symbol.night",
+          "match": "[#%@$?]"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "storage.type.symbol.pointer.night",
+          "match": "->>>|->>|->|<<<-|<<-|<-"
+        },
+        {
+          "name": "keyword.operator.logical.night",
+          "match": "(?<=\\s)\\.(?=\\s)"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "keyword.other.boolean.night",
+          "match": "\\b[01]\\b"
+        },
+        {
+          "name": "constant.numeric.night",
+          "match": "\\b[0-9]+(?:\\.[0-9]+)?\\b"
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "name": "storage.type.keyword.night",
+          "match": "\\b(func)\\b"
+        },
+        {
+          "name": "entity.name.function.night",
+          "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)(?=\\s*\\()"
+        }
+      ]
+    }
+  }
+}
