@@ -80,7 +80,7 @@
         {
           "comment": "Boolean Library Constants",
           "name": "support.constant.boolean.underscore",
-          "match": "\\b(true|false|nil)\\b"
+          "match": "\\b(true|false|void)\\b"
         }
       ]
     },
@@ -88,10 +88,10 @@
       "patterns": [
         {
           "comment": "Default terminal method call",
-          "match": "\\b(terminal)\\.(out|in|nl)\\b",
+          "match": "\\b(io)\\.(out|in|nl)\\b",
           "captures": {
             "1": { "name": "entity.name.type.module.underscore" },
-            "2": { "name": "support.function.terminal.underscore" }
+            "2": { "name": "support.function.io.underscore" }
           }
         },
         {
@@ -109,7 +109,7 @@
             "2": { "name": "storage.type.keyword.underscore" },
             "3": { "name": "entity.name.function.underscore" }
           },
-          "match": "([#%@$?])\\s*(func)\\s+([a-zA-Z_][a-zA-Z0-9_]*)"
+          "match": "([int, str, fp, void])\\s*(func)\\s+([a-zA-Z_][a-zA-Z0-9_]*)"
         }
       ]
     },
@@ -141,7 +141,7 @@
         },
         {
           "name": "storage.type.symbol.underscore",
-          "match": "[#%@$?]"
+          "match": "[int, fp, str, void]"
         }
       ]
     },
