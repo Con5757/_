@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Underscore Markdown Codeblock",
+  "scopeName": "markdown.underscore.codeblock",
+  "injectionSelector": "L:text.html.markdown",
+  "patterns": [{ "include": "#fenced-underscore" }],
+  "repository": {
+    "fenced-underscore": {
+      "begin": "(^|\\G)(\\s*)(`{3,}|~{3,})\\s*(?i:(u|u-lang|uscore|progu|_|score))\\s*$",
+      "beginCaptures": {
+        "3": { "name": "punctuation.definition.markdown" },
+        "4": { "name": "fenced_code.block.language.markdown" }
+      },
+      "end": "(^|\\G)(\\2|\\s{0,3})(\\3)\\s*$",
+      "endCaptures": { "3": { "name": "punctuation.definition.markdown" } },
+      "patterns": [
+        {
+          "begin": "(^|\\G)(\\s*)(.*)",
+          "while": "(^|\\G)(?!\\s*([`~]{3,})\\s*$)",
+          "contentName": "meta.embedded.block.underscore",
+          "patterns": [{ "include": "source._" }]
+        }
+      ]
+    }
+  }
+}

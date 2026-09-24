@@ -6,8 +6,7 @@
   "publisher": "con5757",
   "main": "./extension.js",
   "activationEvents": [
-    "onLanguage:markdown",
-    "onLanguage:underscore"
+    "onStartupFinished"
   ],
   "engines": {
     "vscode": "^1.70.0"
@@ -56,6 +55,9 @@
       }
     ],
     "markdown.markdownItPlugins": true,
+    "markdown.previewStyles": [
+      "./preview.css"
+    ],
     "snippets": [
       {
         "language": "underscore",

@@ -1,0 +1,57 @@
+/* ========================================= Underscore Markdown Preview ========================================= */
+pre.u-preview-block {
+  background: #1a1b26;
+  border-radius: 6px;
+}
+pre.u-preview-block code.underscore-preview-code {
+  background: #1a1b26;
+  color: #a9b1d6;
+} /* ========================================= Comments ========================================= */
+.underscore-preview-code .u-comment {
+  color: #565f89;
+} /* ========================================= Types int / fp / str / void ========================================= */
+.underscore-preview-code .u-type {
+  color: #bb9af7;
+} /* ========================================= Keywords if / else / retreat / kill / const ========================================= */
+.underscore-preview-code .u-keyword {
+  color: #f7768e;
+} /* ========================================= Function keyword func ========================================= */
+.underscore-preview-code .u-function-keyword {
+  color: #7dcfff;
+} /* ========================================= Function names / calls ========================================= */
+.underscore-preview-code .u-function {
+  color: #82aaff;
+} /* ========================================= Imports ?std / with ========================================= */
+.underscore-preview-code .u-import {
+  color: #f7768e;
+} /* ========================================= Libraries terminal / boolean / math / string / file std ========================================= */
+.underscore-preview-code .u-module {
+  color: #ff9e64;
+} /* ========================================= Standard library functions std.out / std.in / std.nl ========================================= */
+.underscore-preview-code .u-library-function {
+  color: #7dcfff;
+} /* ========================================= String functions length / slice / join / etc. ========================================= */
+.underscore-preview-code .u-string-function {
+  color: #7dcfff;
+} /* ========================================= Strings ========================================= */
+.underscore-preview-code .u-string {
+  color: #9ece6a;
+} /* ========================================= Booleans true / false ========================================= */
+.underscore-preview-code .u-boolean {
+  color: #ff9e64;
+} /* ========================================= Numbers ========================================= */
+.underscore-preview-code .u-number {
+  color: #ff9e64;
+} /* ========================================= Pointer operators -> --> <- <-- ========================================= */
+.underscore-preview-code .u-pointer {
+  color: #89ddff;
+} /* ========================================= Arithmetic operators + - * / % ========================================= */
+.underscore-preview-code .u-operator {
+  color: #89ddff;
+} /* ========================================= Function flag delimiters < > ========================================= */
+.underscore-preview-code .u-flag-delimiter {
+  color: #f7768e;
+} /* ========================================= Command flags -silent ========================================= */
+.underscore-preview-code .u-command-flag {
+  color: #e0af68;
+}
