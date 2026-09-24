@@ -6,8 +6,8 @@
 #include <string.h>
 
 void printTokens(Token tokens) {
-	for (int i = 0; tokens[i] ) {
-
+	for (int i = 0; tokens[i] = '\0'; i++) {
+		
 	}
 }
 

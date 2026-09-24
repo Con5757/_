@@ -1,6 +1,11 @@
 # filestructure
 # Language
 
+## Best practice
+
+## spacing/tabs
+
+
 
 # Simple Calculator
 ## used keywords
@@ -32,23 +37,22 @@
 `else`
 `count`
 
-## Best practice
-
-## spacing/tabs
-
 ## Code example:
 
-```u
+```_
 ?std ..imports are the ONLY part of underscore that use tabs instead of typical scope
     with io ..you can add more using colon or newlines
 
-fp func add(fp[2] input1, fp[2] input2) <void> {
-    retreat[2] input1 + input2
-} fp func sub(fp[2] input1, fp[2] input2) <void> {
+fp func add(fp[2] input1, fp[2] input2) <void> { .. you can also just remove <> for the same result
+    retreat[2] input1 + input2 ..the [2] next to the retreat is the decimal places as its not specified next to the function type
+} 
+fp func sub(fp[2] input1, fp[2] input2) <void> {
     retreat[2] input1 - input2
-} fp func mul(fp[2] input1, fp[2] input2) <void> {
+} 
+fp func mul(fp[2] input1, fp[2] input2) <void> {
     retreat[2] input1 * input2
-} fp func div(fp[2] input1, fp[2] input2) <void> {
+} 
+fp func div(fp[2] input1, fp[2] input2) <void> {
     retreat[2] input1 / input2
 }
 
@@ -100,4 +104,13 @@ enter 2 numbers to calculate
 4. Divide
 3
 20.25
+```
+
+```u 
+?std 
+    with io 
+    
+void func main <void> { 
+    std.out("Hello") 
+} 
 ```

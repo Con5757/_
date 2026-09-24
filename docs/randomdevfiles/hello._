@@ -1,0 +1,154 @@
+!.. 
+    UNDERSCORE SYNTAX TEST
+    Multiline comments
+..!
+
+.. Single-line comments
+
+.. Imports
+?std 
+    with io
+    with terminal
+    with string
+    with math
+    with file
+
+.. Types
+int
+fp
+str
+void
+
+
+
+.. Fixed-width types
+int8@variable
+int16@variable
+int32@varialble
+int64@variable
+
+.. Constants  
+const int MAX
+const int NUM
+
+.. Boolean values
+true
+false
+0
+1
+
+.. Numbers
+42
+123
+3.14159
+1000.50
+
+.. Function declarations
+void func main() <void> {
+    kill -silent
+}
+
+int func add() {
+    retreat
+}
+
+str func greet() {
+    retreat
+}
+
+fp func calculate() {
+    retreat
+}
+
+.. Function calls
+main()
+add()
+greet()
+calculate()
+
+.. Standard I/O
+std.out("Hello, world!")
+std.in()
+std.nl()
+
+.. String functions
+length()
+copy()
+overwrite()
+compare()
+subSearch()
+slice()
+sliceArray()
+join()
+up()
+low()
+trim()
+
+.. Control flow
+if
+elif
+else
+during
+repeat
+switch
+arg
+incase
+attempt
+end
+break
+continue
+
+.. Function control
+retreat
+kill
+
+.. Pointers
+->
+-->
+<- the '-' is uncolored and the comment isnt faded
+<-- ..uncolored and comment is isnt faded
+
+.. Assignment and comparison
+= ..uncolored and comment is isnt faded
+== ..uncolored and comment is isnt faded
+!= ..uncolored and comment is isnt faded
+<= ..uncolored and comment is isnt faded
+>=
+<
+>
+
+.. Arithmetic
++
+-
+*
+/
+%
+
+.. Strings
+"Hello, world!"
+'Single quoted string'
+"Escaped quote: \"hello\""
+'Escaped apostrophe: \'hello\''
+
+.. Function flags
+<void>
+<int>
+<fp>
+<str>
+<>
+
+.. Command flags
+-silent
+-debug ..gives debug recources such as compile speed and runtimes used etc etc, not good inside ides or debuggers/other compilers than usc
+-force ..forces the main function to immediately kill the program (unsafe)
+-bypass ..allows other functions to end the program when wanted
+
+.. Combined example
+void func process(params) <int> {
+    if params == true {
+        std.out("Processing...")
+        retreat
+    } else {
+        kill -silent -bypass ..bypass allows kill to be forced through something other than the main function
+    }
+}
