@@ -1,17 +1,15 @@
 ..arithmatic
-+
--
-*
-/
-% ..modulo
->
-<
-=>
-<=
++ - * / %
+++ --
++= -= *= /= %=
+
+..comparison
+> < >= <=
+== !=
 
 ..logical
 || ..or
-&& ..and
+&& ..and 
 ~ ..xor
 
 ! ..not
@@ -19,11 +17,38 @@
 !& ..nand
 !~ ..xnor
 
-..types
+..bitwise
+| & ^
+<< >>
+~?  
+
+..assignment
+=
++= -= *= /= %=
+&= |= ^=
+
+..grouping
+( )
+[ ]
+{ }
+< >
+
+..types (all sizes are in bytes)
 int name
-str name
-fp[size] name
+str name[size]
+fp name[size]
 void name
+
+..array
+int name<2> = [2, 15]
+str name[5]<2> = ["Hello", "under"] ..fp works the same way
+
+..vector (dynam-array)
+vec
+
+..access
+.
+:: ..namespaces
 
 ..pointers
 -> ..ptr reference pointer
@@ -33,6 +58,11 @@ void name
 
 @ ..the at symbol is used in some contexts for its literal meaning of 'at'
 
+..its a pointer variable not a pointer type. the arrow goes next to the variable name for best practice
+int ->num2 = 20
+std.out(@num2)
+std.out(<-num2)
+
 ..fixed types
 ..int
 int64@name
@@ -40,14 +70,53 @@ int32@name
 int16@name
 int8@name
 
+..fp
+fp64@name
+fp32@name
+fp16@name
+fp8@name
+
+..str
+str64@name
+str32@name
+str16@name
+str8@name
+
+..storage class specifiers
+const
+static
+
+..classes
+class
+public
+private
+hidden
+
+..
+data name {} ..struct, name also isnt needed, but if you want to you can
+set name {} ..enum
+alias ..typedef 
+
 ..conditional
 if 
 elif
 else
 
-count ..change
+count
 arg
-end
+end ..break
+incase
+
+..count structure
+cont ..continue
+
+..error checking
+attempt
+incase ..same incase as count/switch statements
+
+..loops
+during (conditional) {}
+repeat (init, condition, i++) {}
 
 ..function keywords
 func
