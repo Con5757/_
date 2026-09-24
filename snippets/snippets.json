@@ -37,5 +37,30 @@
   "str": {
     "prefix": "str",
     "body": ["str"]
+  },
+
+  "int64": {
+    "prefix": "int64",
+    "body": [
+      "int64@"
+    ]
+  },
+  "int32": {
+    "prefix": "int32",
+    "body": [
+      "int32@"
+    ]
+  },
+  "int16": {
+    "prefix": "int16",
+    "body": [
+      "int16@"
+    ]
+  },
+  "int8": {
+    "prefix": "int8",
+    "body": [
+      "int8@"
+    ]
   }
 }
