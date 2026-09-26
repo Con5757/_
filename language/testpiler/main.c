@@ -2,15 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <Windows.h>
+
+#define DEBUG_TOKENS 0
 
 #define MAX_TOKENS 1024
 #define MAX_AST_NODES 1024
 #define MAX_NAME 64
 
-// file
-const char* TEST_SOURCE =
-	"int = num 10\n"
-	"out(num)\n";
+#define C_COMPILER "gcc"
+#define OBJ_SUFFIX "-obj.c"
+#define EXE_SUFFIX "-c.exe"
 
 // lexer
 typedef enum {
@@ -35,10 +37,10 @@ typedef enum {
 	TOKEN_RIGHT_PAREN,
 
 	TOKEN_NEWLINE
-} TokenType;
+} isTokenType;
 
 typedef struct {
-	TokenType type;
+	isTokenType type;
 	char text[MAX_NAME];
 	int line;
 } Token;
@@ -47,10 +49,9 @@ Token tokens[MAX_TOKENS];
 int token_count = 0;
 
 // helper func for lex
-void addToken(TokenType type, const char* text, int line) {
+void addToken(isTokenType type, const char* text, int line) {
 	if (token_count >= MAX_TOKENS) {
 		printf("max_token error");
-		return 1;
 	}
 
 	tokens[token_count].type = type;
@@ -74,7 +75,7 @@ void lex(const char* source) {
 			i++;
 			continue;
 		} if (c == '\n') {
-			addToken(TOKEN_NEWLINE, '\\n', line);
+			addToken(TOKEN_NEWLINE, "\n", line);
 			line++;
 			i++;
 			continue;
@@ -87,7 +88,7 @@ void lex(const char* source) {
 
 			while (isdigit((unsigned char)source[i])) {
 				if (j < MAX_NAME - 1) 
-					num[j++] - source[i];
+					num[j++] = source[i];
 
 				i++;
 			}
@@ -157,12 +158,12 @@ void lex(const char* source) {
 
 		// parens/brackets
 		if (c == '(') { 
-			add_token(TOKEN_LEFT_PAREN, "(", line); 
+			addToken(TOKEN_LEFT_PAREN, "(", line); 
 			i++; 
 			continue; 
 		}
 		if (c == ')') { 
-			add_token(TOKEN_RIGHT_PAREN, ")", line); 
+			addToken(TOKEN_RIGHT_PAREN, ")", line); 
 			i++; 
 			continue;
 		}
@@ -183,7 +184,7 @@ typedef enum {
 	AST_OUT
 } ASTType;
 
-typedef struct {
+typedef struct ASTNode {
 	ASTType type;
 	char name[MAX_NAME];
 
@@ -214,7 +215,7 @@ Token* current(void) {
 	return &tokens[currentToken];
 }
 
-int match(TokenType type) {
+int match(isTokenType type) {
 	if (current()->type == type) {
 		currentToken++;
 		return 1;
@@ -228,7 +229,7 @@ void parserError(const char* message) {
 	exit(1);
 }
 
-Token* expect(TokenType type) {
+Token* expect(isTokenType type) {
 	if (current()->type != type) {
 		parserError("unexpected token");
 	}
@@ -242,7 +243,7 @@ ASTNode* parseIntDecl(void) { // int num = 10
 	expect(TOKEN_EQUAL);
 	Token* number = expect(TOKEN_NUM);
 
-	ASTNode* node = newast(AST_INT_DECL);
+	ASTNode* node = newAST(AST_INT_DECL);
 	strcpy(node->name, name->text);
 	node->value = atoi(number->text);
 
@@ -255,7 +256,7 @@ ASTNode* parseOut() { // out(num)
 	Token* name = expect(TOKEN_IDENTIFIER);
 	expect(TOKEN_RIGHT_PAREN);
 
-	ASTNode* node = newast(AST_OUT);
+	ASTNode* node = newAST(AST_OUT);
 	strcpy(node->name, name->text);
 	
 	return node;
@@ -274,7 +275,7 @@ ASTNode* parseStatement(void) {
 }
 
 ASTNode* parseProgram(void) {
-	ASTNode* program = new_ast(AST_PROGRAM);
+	ASTNode* program = newAST(AST_PROGRAM);
 
 	program->child = NULL;
 
@@ -339,7 +340,7 @@ void checkProgram(ASTNode* program) {
 			strcpy(vars[var_count++], node->name);
 		} else if (node->type == AST_OUT) {
 			if (!varExists(node->name)) {
-				semanticError("undefined var");
+				semanticError("undefined var", node->name);
 			}
 		}
 
@@ -368,6 +369,120 @@ void generateC(ASTNode* program, FILE* output) {
 	fprintf(output, "}\n");
 }
 
+void progress(const char* message) {
+	int width = 30;
+
+	for (int percent = 0; percent <= 100; percent++) {
+		int filled = (percent * width) / 100;
+
+		printf("\r[");
+
+		for (int i = 0; i < width; i++) {
+			if (i < filled)
+				printf("#");
+			else
+				printf("-");
+		}
+
+		printf("] %3d%% %s", percent, message);
+
+		fflush(stdout);
+	}
+
+	printf("\n");
+}
+
+void compileProgram(ASTNode* program, const char* sourceFile) {
+	char baseName[MAX_NAME];
+	char cFile[MAX_NAME + 20];
+	char exeFile[MAX_NAME + 30];
+
+	strncpy(baseName, sourceFile, MAX_NAME - 1);
+	baseName[MAX_NAME - 1] = '\0';
+
+	char* extension = strrchr(baseName, '.');
+
+	if (extension != NULL)
+		*extension = '\0';
+
+	snprintf(cFile, sizeof(cFile), "%s-obj.c", baseName);
+	snprintf(exeFile, sizeof(exeFile), "%s-compiled.exe", baseName);
+
+	progress("Generating C");
+
+	FILE* output = fopen(cFile, "w");
+
+	if (output == NULL) {
+		printf("Could not create '%s'\n", cFile);
+		exit(1);
+	}
+
+	generateC(program, output);
+
+	fclose(output);
+
+	printf("\n");
+	printf("// ========================================\n");
+	printf("// C OBJ\n");
+	printf("// ========================================\n\n");
+
+	FILE* generated = fopen(cFile, "r");
+
+	if (generated == NULL) {
+		printf("Could not read '%s'\n", cFile);
+		exit(1);
+	}
+
+	char line[512];
+
+	while (fgets(line, sizeof(line), generated) != NULL) {
+		printf("%s", line);
+	}
+
+	fclose(generated);
+
+
+	// Compile the generated C using GCC.
+	progress("Compiling");
+
+	char command[512];
+
+	snprintf(
+		command,
+		sizeof(command),
+		"gcc \"%s\" -o \"%s\"",
+		cFile,
+		exeFile
+	);
+
+	int result = system(command);
+
+	if (result != 0) {
+		printf("\nGCC compilation failed.\n");
+		exit(1);
+	}
+
+	progress("Running");
+
+	printf("\n");
+	printf("// ========================================\n");
+	printf("// COMPILED OUTPUT\n");
+	printf("// ========================================\n\n");
+
+	char runCommand[MAX_NAME + 40];
+
+	snprintf(
+		runCommand,
+		sizeof(runCommand),
+		"\"%s\"",
+		exeFile
+	);
+
+	system(runCommand);
+
+	printf("\n");
+}
+
 char* readFile(const char* filename) {
 	FILE* file = fopen(filename, "rb");
 	if (file == NULL) {
@@ -393,8 +508,6 @@ char* readFile(const char* filename) {
 	return buffer;
 }
 
-#define DEBUG_TOKENS 0
-
 void printTokens() {
 	for (int i = 0; i < token_count; i++) {
 		printf("TOKEN: %-15d TEXT: %s\n", tokens[i].type, tokens[i].text);
@@ -402,43 +515,29 @@ void printTokens() {
 }
 
 int main(int argc, char** argv) {
-	const char* source = TEST_SOURCE;
-	char* loadedSource = NULL;
-
-	if (argc >= 2) {
-		loadedSource = readFile(argv[1]);
-		source = loadedSource;
+	if (argc < 2) {
+		printf("usage: compiler <source file>\n");
+		return 1;
 	}
 
+	char* source = readFile(argv[1]);
+
+	progress("Lexing");
 	lex(source);
 
 #if DEBUG_TOKENS
+	printf("\n");
 	printTokens();
-#endif	
+#endif
 
+	progress("Parsing");
 	currentToken = 0;
 	ASTNode* program = parseProgram();
+
+	progress("Semantic analysis");
 	checkProgram(program);
+	compileProgram(program, argv[1]);
 
-	FILE* output = stdout;
-	if (argc == 3) {
-		output = fopen(argv[2], "w");
-		if (output == NULL) {
-			printf("could not crate an output file '%s'\n", argv[2]);
-			free(loadedSource);
-			return 1;
-		}
-	}
-
-	generateC(program, output);
-
-	if (output != stdout) {
-		fclose(output);
-
-		printf("compilation clean.\n");
-		printf("generated: %s\n", argv[2]);
-	}
-
-	free(loadedSource);
+	free(source);
 	return 0;
 }

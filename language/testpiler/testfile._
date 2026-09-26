@@ -1,0 +1,35 @@
+int num = 20
+out(num)
+
+int num2 = 10241
+out(num2)
+
+int num3 = 121
+out(num3)
+
+int num4 = 20
+out(num4)
+
+int num5 = 101
+out(num5)
+
+int num6 = 65
+out(num6)
+
+int num7 = 20
+out(num7)
+
+int num8 = 1241
+out(num8)
+
+int num9 = 51
+out(num9)
+
+int num10 = 20
+out(num10)
+
+int num11 = 100
+out(num11)
+
+int num12 = 581
+out(num12)
