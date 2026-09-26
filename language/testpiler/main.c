@@ -7,10 +7,12 @@
 #define MAX_AST_NODES 1024
 #define MAX_NAME 64
 
+// file
 const char* TEST_SOURCE =
 	"int = num 10\n"
 	"out(num)\n";
 
+// lexer
 typedef enum {
 	TOKEN_EOF,
 
@@ -23,6 +25,11 @@ typedef enum {
 	TOKEN_NUM,
 
 	TOKEN_EQUAL,
+
+	TOKEN_ADD,
+	TOKEN_SUB,
+	TOKEN_MUL,
+	TOKEN_DIV,
 
 	TOKEN_LEFT_PAREN,
 	TOKEN_RIGHT_PAREN,
@@ -105,6 +112,235 @@ void lex(const char* source) {
 			word[j] = '\0';
 
 			// can add more keywords here
+			// words
+			if (strcmp(word, "int") == 0) {
+				addToken(TOKEN_INT, word, line);
+			} else if (strcmp(word, "out") == 0) {
+				addToken(TOKEN_OUT, word, line);
+			} else {
+				addToken(TOKEN_IDENTIFIER, word, line);
+			}
+
+			continue;
  		}
+
+		// single char 
+		
+		// operators 
+		if (c == '+') {
+			addToken(TOKEN_ADD, "+", line);
+			i++;
+			continue;
+		}
+		if (c == '-') {
+			addToken(TOKEN_SUB, "-", line);
+			i++;
+			continue;
+		}
+		if (c == '*') {
+			addToken(TOKEN_MUL, "*", line);
+			i++;
+			continue;
+		}
+		if (c == '/') {
+			addToken(TOKEN_DIV, "/", line);
+			i++;
+			continue;
+		}
+
+		// equal
+		if (c == '=') {
+			addToken(TOKEN_EQUAL, "=", line);
+			i++;
+			continue;
+		}
+
+		// parens/brackets
+		if (c == '(') { 
+			add_token(TOKEN_LEFT_PAREN, "(", line); 
+			i++; 
+			continue; 
+		}
+		if (c == ')') { 
+			add_token(TOKEN_RIGHT_PAREN, ")", line); 
+			i++; 
+			continue;
+		}
+
+		printf("lexer error on line %d: unknown char '%c\n", line, c);
+		exit(i);
+	}
+
+	addToken(TOKEN_EOF, "", line);
+}
+
+// ast
+typedef enum {
+	AST_PROGRAM,
+	AST_INT_DECL,
+	AST_NUM,
+	AST_VAR,
+	AST_OUT
+} ASTType;
+
+typedef struct {
+	ASTType type;
+	char name[MAX_NAME];
+
+	int value;
+	struct ASTNode* child;
+} ASTNode;
+
+ASTNode ast_nodes[MAX_AST_NODES];
+int ast_count = 0;
+
+ASTNode* newAST(ASTType type) {
+	if (ast_count >= MAX_AST_NODES) {
+		printf("error, ast is too large\n");
+			exit(1);
+	}
+
+	ASTNode* node = &ast_nodes[ast_count++];
+	memset(node, 0, sizeof(ASTNode));
+	node->type = type;
+
+	return node;
+}
+
+// parser
+int current_token = 0;
+
+Token* current(void) {
+	return &tokens[current_token];
+}
+
+int match(TokenType type) {
+	if (current()->type == type) {
+		current_token++;
+		return 1;
+	}
+
+	return 0;
+}
+
+void parserError(const char* message) {
+	printf("parser error on line %d: %s\n", current()->line, message);
+	exit(1);
+}
+
+Token* expect(TokenType type) {
+	if (current()->type != type) {
+		parserError("unexpected token");
+	}
+
+	return &tokens[current_token++];
+}
+
+ASTNode* parseIntDecl(void) { // int num = 10
+	expect(TOKEN_INT);
+	Token* name = expect(TOKEN_IDENTIFIER);
+	expect(TOKEN_EQUAL);
+	Token* number = expect(TOKEN_NUM);
+
+	ASTNode* node = newast(AST_INT_DECL);
+	strcpy(node->name, name->text);
+	node->value = atoi(number->text);
+
+	return node;
+}
+
+ASTNode* parseOut() { // out(num)
+	expect(TOKEN_OUT);
+	expect(TOKEN_LEFT_PAREN);
+	Token* name = expect(TOKEN_IDENTIFIER);
+	expect(TOKEN_RIGHT_PAREN);
+
+	ASTNode* node = newast(AST_OUT);
+	strcpy(node->name, name->text);
+	
+	return node;
+}
+
+ASTNode* parseStatement(void) {
+	if (current()->type == TOKEN_INT) {
+		return parseIntDecl();
+	}
+	if (current()->type == TOKEN_OUT) {
+		return parseOut();
+	}
+	parserError("unknown statement");
+	
+	return NULL;
+}
+
+ASTNode* parseProgram(void) {
+	ASTNode* program = new_ast(AST_PROGRAM);
+
+	program->child = NULL;
+
+	ASTNode* first = NULL;
+	ASTNode* last = NULL;
+
+	while (current()->type != TOKEN_EOF) {
+		if (match(TOKEN_NEWLINE)) {
+			continue;
+		}
+
+		ASTNode* statement = parseStatement();
+
+		if (first == NULL) {
+			first = statement;
+		}
+		else {
+			last->child = statement;
+		}
+		last = statement;
+
+		if (current()->type == TOKEN_NEWLINE) {
+			match(TOKEN_NEWLINE);
+		} else if (current()->type != TOKEN_EOF) {
+			parserError("expected end of line");
+		}
+	}
+
+	program->child = first;
+
+	return program;
+}
+
+// semantic
+char vars[MAX_AST_NODES][MAX_NAME];
+int var_count = 0;
+
+int varExists(const char* name) {
+	for (int i = 0; i < var_count; i++) {
+		if (strcmp(vars[i], name) == 0) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+void semanticError(const char* message, const char* name) { 
+	printf("Semantic error: %s '%s'\n", message, name); 
+	exit(1);
+}
+
+void checkProgram(ASTNode* program) {
+	ASTNode* node = program->child;
+
+	while (node != NULL) {
+		if (node->type == AST_INT_DECL) {
+			if (varExists(node->name)) {
+				semanticError("variable already exists", node->name);
+			}
+
+			strcpy(vars[var_count++], node->name);
+		} else if (node->type == AST_OUT) {
+			if (!varExists(node->name)) {
+				semanticError("undefined var")
+			}
+		}
 	}
 }
