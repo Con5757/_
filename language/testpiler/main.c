@@ -208,15 +208,15 @@ ASTNode* newAST(ASTType type) {
 }
 
 // parser
-int current_token = 0;
+int currentToken = 0;
 
 Token* current(void) {
-	return &tokens[current_token];
+	return &tokens[currentToken];
 }
 
 int match(TokenType type) {
 	if (current()->type == type) {
-		current_token++;
+		currentToken++;
 		return 1;
 	}
 
@@ -233,7 +233,7 @@ Token* expect(TokenType type) {
 		parserError("unexpected token");
 	}
 
-	return &tokens[current_token++];
+	return &tokens[currentToken++];
 }
 
 ASTNode* parseIntDecl(void) { // int num = 10
@@ -339,8 +339,106 @@ void checkProgram(ASTNode* program) {
 			strcpy(vars[var_count++], node->name);
 		} else if (node->type == AST_OUT) {
 			if (!varExists(node->name)) {
-				semanticError("undefined var")
+				semanticError("undefined var");
 			}
 		}
+
+		node = node->child;
 	}
+}
+
+void generateC(ASTNode* program, FILE* output) {
+	fprintf(output, "#include <stdio.h>\n\n");
+	fprintf(output, "int main(void)\n");
+	fprintf(output, "{\n");
+
+	ASTNode* node = program->child;
+
+	while (node != NULL) {
+		if (node->type == AST_INT_DECL) {
+			fprintf(output, "\tint %s = %d;\n", node->name, node->value);
+		} else if (node->type == AST_OUT) { 
+			fprintf(output, "\tprintf(\"%%d\\n\", %s);\n", node->name); 
+		}
+
+		node = node->child;
+	}
+
+	fprintf(output, "\treturn 0;\n");
+	fprintf(output, "}\n");
+}
+
+char* readFile(const char* filename) {
+	FILE* file = fopen(filename, "rb");
+	if (file == NULL) {
+		printf("could not open '%s'\n", filename);
+		exit(1);
+	}
+
+	fseek(file, 0, SEEK_END);
+	long size = ftell(file);
+	fseek(file, 0, SEEK_SET);
+
+	char* buffer = malloc(size + 1);
+	if (buffer == NULL) {
+		printf("couldnt allocated source memory");
+		fclose(file);
+		exit(1);
+	}
+
+	fread(buffer, 1, size, file);
+	buffer[size] = '\0';
+	
+	fclose(file);
+	return buffer;
+}
+
+#define DEBUG_TOKENS 0
+
+void printTokens() {
+	for (int i = 0; i < token_count; i++) {
+		printf("TOKEN: %-15d TEXT: %s\n", tokens[i].type, tokens[i].text);
+	}
+}
+
+int main(int argc, char** argv) {
+	const char* source = TEST_SOURCE;
+	char* loadedSource = NULL;
+
+	if (argc >= 2) {
+		loadedSource = readFile(argv[1]);
+		source = loadedSource;
+	}
+
+	lex(source);
+
+#if DEBUG_TOKENS
+	printTokens();
+#endif	
+
+	currentToken = 0;
+	ASTNode* program = parseProgram();
+	checkProgram(program);
+
+	FILE* output = stdout;
+	if (argc == 3) {
+		output = fopen(argv[2], "w");
+		if (output == NULL) {
+			printf("could not crate an output file '%s'\n", argv[2]);
+			free(loadedSource);
+			return 1;
+		}
+	}
+
+	generateC(program, output);
+
+	if (output != stdout) {
+		fclose(output);
+
+		printf("compilation clean.\n");
+		printf("generated: %s\n", argv[2]);
+	}
+
+	free(loadedSource);
+	return 0;
 }
