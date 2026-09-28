@@ -1,3 +1,10 @@
 .git/
 .vs/
 .vscode/
+
+# not active pre-indev
+WOrKING.md
+ROADMAP.md
+CHANGELOG.md
+INSPO.md
+TEAM.md
