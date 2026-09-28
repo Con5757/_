@@ -90,7 +90,7 @@ static
 class
 public
 private
-hidden
+hidden ..all vars are until specified global
 
 ..
 data name {} ..struct, name also isnt needed, but if you want to you can
@@ -102,13 +102,20 @@ if
 elif
 else
 
-count
+switch
 arg
-end ..break
+break ..break
 incase
 
-..count structure
-cont ..continue
+..switch structure
+switch variable {
+	arg instance:
+		break
+
+	incase:
+		break
+}
+cont ..skip current iteration and continue
 
 ..error checking
 attempt
