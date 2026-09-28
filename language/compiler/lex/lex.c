@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 Token tokens[MAX_TOKENS];
 int tokenCount = 0;
@@ -44,13 +45,114 @@ void lex(const char *source) {
             int j = 0;
 
             while (isdigit((unsigned char)source[i])) {
-      
+                if (j < MAX_NAME - 1) {
+                    num[j++] = source[i];
+                }
+                i++;
             }
     
             num[j] = '\0';
             addToken(TOKEN_NUMBER, num, line);
             continue;
         }
-    }
-}
 
+		if (isalpha((unsigned char)c) || c == '_') {
+			char word[MAX_NAME];
+			int j = 0;
+
+			while (isalnum((unsigned char)source[i]) || source[i] == '_') {
+				if (j < MAX_NAME - 1)
+					word[j++] = source[i];
+
+				i++;
+			}
+
+			word[j] = '\0';
+
+            // types
+            if (strcmp(word, "int") == 0) {
+				addToken(TOKEN_INT, word, line);
+			} else if (strcmp(word, "str") == 0) {
+                addToken(TOKEN_STR, word, line);
+            } else if (strcmp(word, "fp") == 0) {
+                addToken(TOKEN_FP, word, line);
+            } else if (strcmp(word, "void") == 0) {
+                addToken(TOKEN_VOID, word, line);
+            }
+
+            else if (strcmp(word, "out") == 0) { // (move to runtime)
+				addToken(TOKEN_OUT, word, line);
+			} 
+            else {
+				addToken(TOKEN_VARIABLE, word, line);
+			}
+
+			continue;
+ 		}
+
+        if (c == '+') {
+			addToken(TOKEN_ADD, "+", line);
+			i++;
+			continue;
+		}
+		if (c == '-') {
+			addToken(TOKEN_SUB, "-", line);
+			i++;
+			continue;
+		}
+		if (c == '*') {
+			addToken(TOKEN_MUL, "*", line);
+			i++;
+			continue;
+		}
+		if (c == '/') {
+			addToken(TOKEN_DIV, "/", line);
+			i++;
+			continue;
+		}
+
+		// equal
+		if (c == '=') {
+			addToken(TOKEN_EQUAL, "=", line);
+			i++;
+			continue;
+		}
+
+		// parens/brackets
+		if (c == '(') { 
+			addToken(TOKEN_LEFT_PAREN, "(", line); 
+			i++; 
+			continue; 
+		}
+		if (c == ')') { 
+			addToken(TOKEN_RIGHT_PAREN, ")", line); 
+			i++; 
+			continue;
+		}
+        if (c == '(') { 
+			addToken(TOKEN_LEFT_SQUARE_PAREN, "[", line); 
+			i++; 
+			continue; 
+		}
+		if (c == ')') { 
+			addToken(TOKEN_RIGHT_SQUARE_PAREN, "]", line); 
+			i++; 
+			continue;
+		}
+        if (c == '(') { 
+			addToken(TOKEN_LEFT_CURLY_PAREN, "{", line); 
+			i++; 
+			continue; 
+		}
+		if (c == ')') { 
+			addToken(TOKEN_RIGHT_CURLY_PAREN, "}", line); 
+			i++; 
+			continue;
+		}
+
+		printf("lexer error on line %d: unknown char '%c\n", line, c);
+		exit(i);
+	}
+
+	addToken(TOKEN_EOF, "", line);
+}
