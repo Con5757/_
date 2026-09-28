@@ -1,0 +1,47 @@
+!init 
+    <void>
+
+!addons ..for addons like below where a file is used outside the raw language
+    ?std
+        with boolean
+
+!paths ..these are fake dirs
+    Folder/ ..root folder where this file is held 
+        Dir1/hello.u
+        Dir2/lex.u
+
+!variables
+@hello
+    global char ->pet ..this is a pointer if i didnt say already
+@lex
+    char ->sourceFile[size || buffer] ..again has all the components but doesnt give us the source
+
+!info ..alias, data, set || typedef, struct, enum
+@hello ..literally meaning at hello.u
+    data { ..you dont add any actual data to this, this is only to be interpreted and not for people to see raw code
+        global char ->name
+        int age
+        char grade
+        bool siblings
+    }
+
+@lex
+    alias set TokenList {
+        TOKEN_ALPHA,
+        TOKEN_NUM,
+        TOKEN_VARIABLE,
+    } TokenType:
+
+    alias data {
+        TokenType type
+        char ->value
+    } Token:
+
+!functions
+@apple
+    void printHello(void) <void> ..void also means no params
+
+@lex
+    Token lex(void) <void>
+
+!endit
