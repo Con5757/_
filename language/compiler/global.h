@@ -1,3 +1,6 @@
+#ifndef GLOBAL_H
+#define GLOBAL_H
+
 #define DEBUG_TOKENS 0
 
 #define MAX_TOKENS 1024
@@ -7,3 +10,5 @@
 #define C_COMPILER "gcc"
 #define OBJ_SUFFIX "-obj.c"
 #define EXE_SUFFIX "-c.exe"
+
+#endif
