@@ -7,6 +7,10 @@ typedef enum {
 	TOKEN_EOF,
 	TOKEN_NEWLINE,
 
+	// includes
+	TOKEN_WITH,
+	TOKEN_INCLUDE,
+
 	TOKEN_VARIABLE,
 	TOKEN_NUMBER,
 
@@ -29,6 +33,11 @@ typedef enum {
 	TOKEN_MUL,
 	TOKEN_DIV,
 	
+	// func
+	TOKEN_FUNC,
+	TOKEN_KILL,
+	TOKEN_RETREAT,
+
 	// parens
 	TOKEN_LEFT_PAREN, // (
 	TOKEN_RIGHT_PAREN, // )
