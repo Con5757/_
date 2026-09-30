@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 Token tokens[MAX_TOKENS];
 int tokenCount = 0;
 
