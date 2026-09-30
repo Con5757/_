@@ -56,10 +56,12 @@ ASTNode *parseIntDecl(void) { // int num = #
 
   return node;
 }
-ASTNode *parseOut() { // out(num)
+ASTNode *parseOut() {
   expect(TOKEN_OUT);
   expect(TOKEN_LEFT_PAREN);
-  Token *name = expect(TOKEN_NUMBER);
+
+  Token *name = expect(TOKEN_VARIABLE);
+
   expect(TOKEN_RIGHT_PAREN);
 
   ASTNode *node = newAST(AST_OUT);

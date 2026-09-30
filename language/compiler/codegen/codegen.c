@@ -1,5 +1,7 @@
 #include "codegen.h"
 #include "../global.h"
+#include <Windows.h>
+#include <stdio.h>
 
 void generateC(ASTNode *program, FILE *output) {
   fprintf(output, "#include <stdio.h>\n\n");
@@ -91,11 +93,21 @@ void compileProgram(ASTNode *program, const char *sourceFile) {
   printf("// COMPILED OUTPUT\n");
   printf("// ========================================\n\n");
 
+  printf("debug reached 1");
+
   char runCommand[MAX_NAME + 40];
+
+  printf("debug reached 2");
 
   snprintf(runCommand, sizeof(runCommand), "\"%s\"", exeFile);
 
+  printf("debug reached 3");
+
   system(runCommand);
 
+  printf("debug reached 4");
+
   printf("\n");
+
+  printf("debug reached 5");
 }

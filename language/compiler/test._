@@ -1,1 +1,4 @@
 int num = 20
+out(num)
+
+out("2140")

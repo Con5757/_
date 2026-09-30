@@ -3,3 +3,5 @@
 .vscode/
 
 compiler.exe
+test-compiled.exe
+test-obj.c

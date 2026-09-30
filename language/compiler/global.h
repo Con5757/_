@@ -12,5 +12,7 @@
 #define EXE_SUFFIX "-c.exe"
 
 void progress(const char *message);
+char *readFile(const char *filename);
+void printTokens();
 
 #endif

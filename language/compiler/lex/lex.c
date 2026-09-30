@@ -8,9 +8,11 @@
 Token tokens[MAX_TOKENS];
 int tokenCount = 0;
 
+// helper func for lex
 void addToken(isTokenType type, const char *text, int line) {
   if (tokenCount >= MAX_TOKENS) {
     printf("max_token error");
+    exit(1);
   }
 
   tokens[tokenCount].type = type;
@@ -110,71 +112,70 @@ void lex(const char *source) {
       addToken(TOKEN_INCLUDE, "?", line);
       i++;
       continue;
-
-      if (c == '+') {
-        addToken(TOKEN_ADD, "+", line);
-        i++;
-        continue;
-      }
-      if (c == '-') {
-        addToken(TOKEN_SUB, "-", line);
-        i++;
-        continue;
-      }
-      if (c == '*') {
-        addToken(TOKEN_MUL, "*", line);
-        i++;
-        continue;
-      }
-      if (c == '/') {
-        addToken(TOKEN_DIV, "/", line);
-        i++;
-        continue;
-      }
-
-      // equal
-      if (c == '=') {
-        addToken(TOKEN_EQUAL, "=", line);
-        i++;
-        continue;
-      }
-
-      // parens/brackets
-      if (c == '(') {
-        addToken(TOKEN_LEFT_PAREN, "(", line);
-        i++;
-        continue;
-      }
-      if (c == ')') {
-        addToken(TOKEN_RIGHT_PAREN, ")", line);
-        i++;
-        continue;
-      }
-      if (c == '(') {
-        addToken(TOKEN_LEFT_SQUARE_PAREN, "[", line);
-        i++;
-        continue;
-      }
-      if (c == ')') {
-        addToken(TOKEN_RIGHT_SQUARE_PAREN, "]", line);
-        i++;
-        continue;
-      }
-      if (c == '(') {
-        addToken(TOKEN_LEFT_CURLY_PAREN, "{", line);
-        i++;
-        continue;
-      }
-      if (c == ')') {
-        addToken(TOKEN_RIGHT_CURLY_PAREN, "}", line);
-        i++;
-        continue;
-      }
-
-      printf("lexer error on line %d: unknown char '%c\n", line, c);
-      exit(i);
+    }
+    if (c == '+') {
+      addToken(TOKEN_ADD, "+", line);
+      i++;
+      continue;
+    }
+    if (c == '-') {
+      addToken(TOKEN_SUB, "-", line);
+      i++;
+      continue;
+    }
+    if (c == '*') {
+      addToken(TOKEN_MUL, "*", line);
+      i++;
+      continue;
+    }
+    if (c == '/') {
+      addToken(TOKEN_DIV, "/", line);
+      i++;
+      continue;
     }
 
-    addToken(TOKEN_EOF, "", line);
+    // equal
+    if (c == '=') {
+      addToken(TOKEN_EQUAL, "=", line);
+      i++;
+      continue;
+    }
+
+    // parens/brackets
+    if (c == '(') {
+      addToken(TOKEN_LEFT_PAREN, "(", line);
+      i++;
+      continue;
+    }
+    if (c == ')') {
+      addToken(TOKEN_RIGHT_PAREN, ")", line);
+      i++;
+      continue;
+    }
+    if (c == '(') {
+      addToken(TOKEN_LEFT_SQUARE_PAREN, "[", line);
+      i++;
+      continue;
+    }
+    if (c == ')') {
+      addToken(TOKEN_RIGHT_SQUARE_PAREN, "]", line);
+      i++;
+      continue;
+    }
+    if (c == '(') {
+      addToken(TOKEN_LEFT_CURLY_PAREN, "{", line);
+      i++;
+      continue;
+    }
+    if (c == ')') {
+      addToken(TOKEN_RIGHT_CURLY_PAREN, "}", line);
+      i++;
+      continue;
+    }
+
+    printf("lexer error on line %d: unknown char '%c\n", line, c);
+    exit(i);
   }
+
+  addToken(TOKEN_EOF, "", line);
 }
