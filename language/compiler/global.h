@@ -11,4 +11,6 @@
 #define OBJ_SUFFIX "-obj.c"
 #define EXE_SUFFIX "-c.exe"
 
+void progress(const char *message);
+
 #endif

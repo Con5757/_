@@ -2,7 +2,6 @@
 #define PARSE_H
 
 #include "../global.h"
-#include "../lex/lex.c"
 #include "../lex/lex.h"
 
 typedef enum {
@@ -20,6 +19,8 @@ typedef struct ASTNode {
   int value;
   struct ASTNode *child;
 } ASTNode;
+
+extern int currentToken;
 
 ASTNode *newAST(ASTType type);
 Token *current(void);

@@ -54,6 +54,9 @@ typedef struct {
   int line;
 } Token;
 
+extern Token tokens[MAX_TOKENS];
+extern int tokenCount;
+
 // functions
 void addToken(isTokenType type, const char *text, int line);
 void lex(const char *source);
