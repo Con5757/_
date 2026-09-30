@@ -1,5 +1,5 @@
-#ifndef AST_H
-#define AST_H
+#ifndef PARSE_H
+#define PARSE_H
 
 #include "../global.h"
 #include "../lex/lex.c"
@@ -26,5 +26,13 @@ Token *current(void);
 int match(isTokenType type);
 void parserError(const char *message);
 Token *expect(isTokenType type);
+
+// parse
+ASTNode *parseProgram(void);
+ASTNode *parseStatement(void);
+
+// setups
+ASTNode *parseOut();
+ASTNode *parseIntDecl(void);
 
 #endif
