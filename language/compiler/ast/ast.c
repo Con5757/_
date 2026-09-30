@@ -42,3 +42,41 @@ Token *expect(isTokenType type) {
 
   return &tokens[currentToken++];
 }
+
+// structures
+ASTNode *parseIntDecl(void) { // int num = #
+  expect(TOKEN_INT);
+  Token *name = expect(TOKEN_VARIABLE);
+  expect(TOKEN_EQUAL);
+  Token *number = expect(TOKEN_NUMBER);
+
+  ASTNode *node = newAST(AST_INT_DECL);
+  strcpy(node->name, name->text);
+  node->value = atoi(number->text);
+
+  return node;
+}
+ASTNode *parseOut() { // out(num)
+  expect(TOKEN_OUT);
+  expect(TOKEN_LEFT_PAREN);
+  Token *name = expect(TOKEN_NUMBER);
+  expect(TOKEN_RIGHT_PAREN);
+
+  ASTNode *node = newAST(AST_OUT);
+  strcpy(node->name, name->text);
+
+  return node;
+}
+
+// parse setup
+ASTNode *parseStatement(void) {
+  if (current()->type == TOKEN_INT) {
+    return parseIntDecl();
+  }
+  if (current()->type == TOKEN_OUT) {
+    return parseOut();
+  }
+  parserError("unknown statement");
+
+  return NULL;
+}
