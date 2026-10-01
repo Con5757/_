@@ -7,6 +7,8 @@
 typedef enum {
   AST_PROGRAM,
   AST_INT_DECL,
+  AST_FP_DECL,
+  AST_STR_DECL,
   AST_NUM,
   AST_VAR,
   AST_OUT,
