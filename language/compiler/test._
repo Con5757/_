@@ -1,5 +1,143 @@
-int num = 20
-fp decimal = 2.12
+int num0 = 0
+int num1 = 1
+int num2 = 2
+int num3 = 10
+int num4 = 20
+int num5 = 42
+int num6 = 100
+int num7 = 256
+int num8 = 512
+int num9 = 1024
 
-out(num)
-out(decimal)
+fp decimal0 = 0.0
+fp decimal1 = 1.0
+fp decimal2 = 1.5
+fp decimal3 = 2.12
+fp decimal4 = 3.14
+fp decimal5 = 10.5
+fp decimal6 = 20.25
+fp decimal7 = 42.42
+fp decimal8 = 100.01
+fp decimal9 = 1024.75
+
+str text0[1] = "a"
+str text1[2] = "hi"
+str text2[3] = "hey"
+str text3[4] = "test"
+str text4[5] = "hello"
+str text5[6] = "hello!"
+str text6[7] = "testing"
+str text7[8] = "language"
+str text8[9] = "compiler"
+str text9[10] = "u_language"
+
+out(num0)
+out(num1)
+out(num2)
+out(num3)
+out(num4)
+out(num5)
+out(num6)
+out(num7)
+out(num8)
+out(num9)
+
+out(decimal0)
+out(decimal1)
+out(decimal2)
+out(decimal3)
+out(decimal4)
+out(decimal5)
+out(decimal6)
+out(decimal7)
+out(decimal8)
+out(decimal9)
+
+out(text0)
+out(text1)
+out(text2)
+out(text3)
+out(text4)
+out(text5)
+out(text6)
+out(text7)
+out(text8)
+out(text9)
+
+int negative0 = -1
+int negative1 = -10
+int negative2 = -20
+int negative3 = -100
+
+fp small0 = 0.01
+fp small1 = 0.10
+fp small2 = 0.25
+fp small3 = 0.50
+fp small4 = 0.99
+
+str single0[1] = "x"
+str single1[1] = "!"
+str single2[1] = "?"
+str single3[1] = "0"
+str single4[1] = "A"
+
+out(negative0)
+out(negative1)
+out(negative2)
+out(negative3)
+
+out(small0)
+out(small1)
+out(small2)
+out(small3)
+out(small4)
+
+out(single0)
+out(single1)
+out(single2)
+out(single3)
+out(single4)
+
+int large0 = 1000
+int large1 = 5000
+int large2 = 10000
+int large3 = 50000
+int large4 = 100000
+
+fp largeDecimal0 = 1000.123
+fp largeDecimal1 = 5000.555
+fp largeDecimal2 = 10000.001
+fp largeDecimal3 = 50000.999
+fp largeDecimal4 = 100000.5
+
+str phrase0[11] = "hello world"
+str phrase1[12] = "hello world!"
+str phrase2[13] = "test string!!"
+str phrase3[14] = "u language!!"
+str phrase4[15] = "compiler test!"
+
+out(large0)
+out(large1)
+out(large2)
+out(large3)
+out(large4)
+
+out(largeDecimal0)
+out(largeDecimal1)
+out(largeDecimal2)
+out(largeDecimal3)
+out(largeDecimal4)
+
+out(phrase0)
+out(phrase1)
+out(phrase2)
+out(phrase3)
+out(phrase4)
+
+int finalNum = 777
+fp finalFloat = 7.77
+str finalString[12] = "final test!"
+
+out(finalNum)
+out(finalFloat)
+out(finalString)

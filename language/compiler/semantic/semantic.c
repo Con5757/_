@@ -39,6 +39,12 @@ void checkProgram(ASTNode *program) {
       }
 
       strcpy(variables[varCount++], node->name);
+    } else if (node->type == AST_STR_DECL) {
+      if (varExists(node->name)) {
+        semanticError("variable already exists", node->name);
+      }
+
+      strcpy(variables[varCount++], node->name);
     }
 
     node = node->child;

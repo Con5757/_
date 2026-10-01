@@ -51,8 +51,6 @@ typedef enum {
   TOKEN_KILL,
   TOKEN_RETREAT,
 
-  // quotes
-  TOKEN_QUOTE,
   TOKEN_SINGLE_QUOTE,
 
   // parens

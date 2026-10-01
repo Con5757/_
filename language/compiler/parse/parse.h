@@ -24,6 +24,7 @@ typedef struct ASTNode {
   int typeSize;
   int value;
   double fpValue;
+  char strValue[MAX_NAME];
 
   struct ASTNode *child;
 } ASTNode;
