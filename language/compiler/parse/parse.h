@@ -14,21 +14,17 @@ typedef enum ASTType {
   AST_OUT,
 } ASTType;
 
-typedef enum ValueType { 
-  VALUE_INT, 
-  VALUE_FP, 
-  VALUE_STR 
-} ValueType;
+typedef enum ValueType { VALUE_INT, VALUE_FP, VALUE_STR } ValueType;
 
 typedef enum {
-    TYPE_INT,
-    TYPE_FLOAT,
-    TYPE_STR,
-    TYPE_VOID,
+  TYPE_INT,
+  TYPE_FLOAT,
+  TYPE_STR,
+  TYPE_VOID,
 } TypeKind;
 
 typedef struct {
-    TypeKind kind;
+  TypeKind kind;
 } Type;
 
 typedef struct ASTNode {
@@ -46,18 +42,18 @@ typedef struct ASTNode {
 
 // method structs
 typedef struct Param {
-  char* name;
+  char *name;
   Type type; // check later if tokenType is int, fp, str, void
 } Param;
 
 typedef struct Method {
   Type returnType;
-  char* name;
-  
-  Param* params;
+  char *name;
+
+  Param *params;
   int paramCount;
-  
-  ASTNode* body;
+
+  ASTNode *body;
 } Method;
 
 extern int currentToken;
