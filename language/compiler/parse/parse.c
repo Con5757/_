@@ -56,6 +56,23 @@ ASTNode *parseIntDecl(void) { // int num = #
 
   return node;
 }
+ASTNode *parseFpDecl() {
+  expect(TOKEN_FP);
+  Token *name = expect(TOKEN_VARIABLE);
+  expect(TOKEN_LEFT_SQUARE_PAREN);
+  Token *size = expect(TOKEN_NUMBER);
+  expect(TOKEN_RIGHT_SQUARE_PAREN);
+  expect(TOKEN_EQUAL);
+  Token *number = expect(TOKEN_NUMBER);
+
+  ASTNode *node = newAST(AST_FP_DECL);
+  strcpy(node->name, name->text);
+  node->typeSize = atof(size->text);
+  node->value = atof(number->text);
+
+  return node;
+}
+
 ASTNode *parseOut() {
   expect(TOKEN_OUT);
   expect(TOKEN_LEFT_PAREN);

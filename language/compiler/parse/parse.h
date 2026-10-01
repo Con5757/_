@@ -7,6 +7,8 @@
 typedef enum {
   AST_PROGRAM,
   AST_INT_DECL,
+  AST_FP_DECL,
+  AST_STR_DECL,
   AST_NUM,
   AST_VAR,
   AST_OUT,
@@ -33,12 +35,12 @@ int match(isTokenType type);
 void parserError(const char *message);
 Token *expect(isTokenType type);
 
-// parse
-ASTNode *parseProgram(void);
-ASTNode *parseStatement(void);
-
 // setups
 ASTNode *parseOut();
 ASTNode *parseIntDecl(void);
+
+// parse
+ASTNode *parseProgram(void);
+ASTNode *parseStatement(void);
 
 #endif

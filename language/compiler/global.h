@@ -1,7 +1,7 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#define DEBUG_TOKENS 1
+#define DEBUG_TOKENS 0
 
 #define MAX_TOKENS 1024
 #define MAX_AST_NODES 1024

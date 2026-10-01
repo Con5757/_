@@ -28,7 +28,7 @@ char *readFile(const char *filename) {
   fclose(file);
   return buffer;
 }
-void progress(const char *message) {
+void progress(const char *message) { // :p
   int width = 30;
 
   for (int percent = 0; percent <= 100; percent++) {
