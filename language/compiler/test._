@@ -1,4 +1,9 @@
 int num = 20
-out(num)
+fp floatingPoint[2] = 2.12 ..the brackets are for amount of 
+                           ..places and then we can translate this to like double 
+                           ..or float or long etc etc etc
+str hello[6] = "hello!" ..same concept here but just characters, might switch this to bytes in the future
 
-out("2140")
+out(num)
+out(floatingPoint)
+out(hello)

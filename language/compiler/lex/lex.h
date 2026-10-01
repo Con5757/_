@@ -27,6 +27,18 @@ typedef enum {
   // assign
   TOKEN_EQUAL,
 
+  // period
+  TOKEN_PERIOD,
+
+  // logic
+  NOT,
+  AND,
+  OR,
+  NOR,
+  XOR,
+  XNOR,
+  NAND,
+
   // operators
   TOKEN_ADD,
   TOKEN_SUB,
@@ -37,6 +49,10 @@ typedef enum {
   TOKEN_FUNC,
   TOKEN_KILL,
   TOKEN_RETREAT,
+
+  // quotes
+  TOKEN_QUOTE,
+  TOKEN_SINGLE_QUOTE,
 
   // parens
   TOKEN_LEFT_PAREN,         // (

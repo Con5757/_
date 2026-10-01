@@ -1,6 +1,7 @@
 #include "lex.h"
 #include "../global.h"
 #include <ctype.h>
+#include <excpt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -101,10 +102,35 @@ void lex(const char *source) {
         addToken(TOKEN_RETREAT, word, line);
       }
 
+      // logic
+      else if (strcmp(word, "||") == 0) {
+        addToken(OR, word, line);
+      } else if (strcmp(word, "&&") == 0) {
+        addToken(AND, word, line);
+      } else if (strcmp(word, "!|") == 0) {
+        addToken(NOR, word, line);
+      } else if (strcmp(word, "!&") == 0) {
+        addToken(NAND, word, line);
+      } else if (strcmp(word, "!~") == 0) {
+        addToken(XNOR, word, line);
+      }
+
       else {
         addToken(TOKEN_VARIABLE, word, line);
       }
 
+      continue;
+    }
+
+    // logic
+    if (c == '!') {
+      addToken(NOT, "!", line);
+      i++;
+      continue;
+    }
+    if (c == '~') {
+      addToken(XOR, "~", line);
+      i++;
       continue;
     }
 
@@ -134,9 +160,38 @@ void lex(const char *source) {
       continue;
     }
 
+    // quotes
+    if (c == '"') {
+      addToken(TOKEN_QUOTE, "\"", line);
+      i++;
+      continue;
+    }
+    if (c == '\'') {
+      addToken(TOKEN_SINGLE_QUOTE, "'", line);
+      i++;
+      continue;
+    }
+
     // equal
     if (c == '=') {
       addToken(TOKEN_EQUAL, "=", line);
+      i++;
+      continue;
+    }
+
+    // period
+    if (c == '.' && source[i + 1] == '.') {
+      i += 2;
+
+      while (source[i] != '\0' && source[i] != '\n') {
+        i++;
+      }
+
+      continue;
+    }
+
+    if (c == '.') {
+      addToken(TOKEN_PERIOD, ".", line);
       i++;
       continue;
     }
@@ -152,28 +207,28 @@ void lex(const char *source) {
       i++;
       continue;
     }
-    if (c == '(') {
+    if (c == '[') {
       addToken(TOKEN_LEFT_SQUARE_PAREN, "[", line);
       i++;
       continue;
     }
-    if (c == ')') {
+    if (c == ']') {
       addToken(TOKEN_RIGHT_SQUARE_PAREN, "]", line);
       i++;
       continue;
     }
-    if (c == '(') {
+    if (c == '{') {
       addToken(TOKEN_LEFT_CURLY_PAREN, "{", line);
       i++;
       continue;
     }
-    if (c == ')') {
+    if (c == '}') {
       addToken(TOKEN_RIGHT_CURLY_PAREN, "}", line);
       i++;
       continue;
     }
 
-    printf("lexer error on line %d: unknown char '%c\n", line, c);
+    printf("lexer error on line %d: unknown char %c\n", line, c);
     exit(i);
   }
 

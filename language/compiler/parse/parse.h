@@ -12,9 +12,14 @@ typedef enum {
   AST_OUT,
 } ASTType;
 
+typedef enum { TYPE_INT, TYPE_FP, TYPE_STR } ValueType;
+
 typedef struct ASTNode {
   ASTType type;
   char name[MAX_NAME];
+
+  ValueType valueType;
+  int typeSize;
 
   int value;
   struct ASTNode *child;
