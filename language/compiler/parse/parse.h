@@ -30,12 +30,12 @@ int match(isTokenType type);
 void parserError(const char *message);
 Token *expect(isTokenType type);
 
-// parse
-ASTNode *parseProgram(void);
-ASTNode *parseStatement(void);
-
 // setups
 ASTNode *parseOut();
 ASTNode *parseIntDecl(void);
+
+// parse
+ASTNode *parseProgram(void);
+ASTNode *parseStatement(void);
 
 #endif
