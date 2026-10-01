@@ -47,7 +47,7 @@ void lex(const char *source) {
       char num[MAX_NAME];
       int j = 0;
 
-      while (isdigit((unsigned char)source[i])) {
+      while (isdigit((unsigned char)source[i]) || source[i] == '.') {
         if (j < MAX_NAME - 1) {
           num[j++] = source[i];
         }
@@ -162,10 +162,32 @@ void lex(const char *source) {
 
     // quotes
     if (c == '"') {
-      addToken(TOKEN_QUOTE, "\"", line);
-      i++;
+      char string[MAX_NAME];
+      int j = 0;
+
+      i++; // skip opening quote
+
+      while (source[i] != '"' && source[i] != '\0') {
+        if (j < MAX_NAME - 1) {
+          string[j++] = source[i];
+        }
+
+        i++;
+      }
+
+      if (source[i] == '\0') {
+        printf("lexer error on line %d: unterminated string\n", line);
+        exit(1);
+      }
+
+      string[j] = '\0';
+
+      i++; // skip closing quote
+
+      addToken(TOKEN_STRING, string, line);
       continue;
     }
+
     if (c == '\'') {
       addToken(TOKEN_SINGLE_QUOTE, "'", line);
       i++;

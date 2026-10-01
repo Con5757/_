@@ -2,19 +2,47 @@
 #include "../global.h"
 #include <Windows.h>
 #include <stdio.h>
+#include <string.h>
 
 void generateC(ASTNode *program, FILE *output) {
   fprintf(output, "#include <stdio.h>\n\n");
   fprintf(output, "int main(void)\n");
   fprintf(output, "{\n");
 
+  ValueType variableTypes[MAX_AST_NODES];
+  char variableNames[MAX_AST_NODES][MAX_NAME];
+  int variableCount = 0;
   ASTNode *node = program->child;
 
   while (node != NULL) {
     if (node->type == AST_INT_DECL) {
       fprintf(output, "\tint %s = %d;\n", node->name, node->value);
-    } else if (node->type == AST_OUT) {
-      fprintf(output, "\tprintf(\"%%d\\n\", %s);\n", node->name);
+
+      strcpy(variableNames[variableCount], node->name);
+      variableTypes[variableCount] = VALUE_INT;
+      variableCount++;
+
+    } else if (node->type == AST_FP_DECL) {
+      fprintf(output, "\tfloat %s = %f;\n", node->name, node->fpValue);
+
+      strcpy(variableNames[variableCount], node->name);
+      variableTypes[variableCount] = VALUE_FP;
+      variableCount++;
+    }
+
+    else if (node->type == AST_OUT) {
+      for (int i = 0; i < variableCount; i++) {
+        if (strcmp(variableNames[i], node->name) == 0) {
+
+          if (variableTypes[i] == VALUE_INT) {
+            fprintf(output, "\tprintf(\"%%d\\n\", %s);\n", node->name);
+          } else if (variableTypes[i] == VALUE_FP) {
+            fprintf(output, "\tprintf(\"%%f\\n\", %s);\n", node->name);
+          }
+
+          break;
+        }
+      }
     }
 
     node = node->child;

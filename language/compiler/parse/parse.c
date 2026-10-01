@@ -59,20 +59,30 @@ ASTNode *parseIntDecl(void) { // int num = #
 ASTNode *parseFpDecl() {
   expect(TOKEN_FP);
   Token *name = expect(TOKEN_VARIABLE);
+  expect(TOKEN_EQUAL);
+  Token *number = expect(TOKEN_NUMBER);
+
+  ASTNode *node = newAST(AST_FP_DECL);
+  strcpy(node->name, name->text);
+  node->fpValue = atof(number->text);
+
+  return node;
+}
+ASTNode *parseStrDecl() {
+  expect(TOKEN_STR);
+  Token *name = expect(TOKEN_VARIABLE);
   expect(TOKEN_LEFT_SQUARE_PAREN);
-  Token *size = expect(TOKEN_NUMBER);
+  Token* size = expect(TOKEN_NUMBER);
   expect(TOKEN_RIGHT_SQUARE_PAREN);
   expect(TOKEN_EQUAL);
   Token *number = expect(TOKEN_NUMBER);
 
   ASTNode *node = newAST(AST_FP_DECL);
   strcpy(node->name, name->text);
-  node->typeSize = atof(size->text);
-  node->value = atof(number->text);
+  node->fpValue = atof(number->text);
 
-  return node;
+  return node; 
 }
-
 ASTNode *parseOut() {
   expect(TOKEN_OUT);
   expect(TOKEN_LEFT_PAREN);
@@ -95,8 +105,11 @@ ASTNode *parseStatement(void) {
   if (current()->type == TOKEN_OUT) {
     return parseOut();
   }
-  parserError("unknown statement");
+  if (current()->type == TOKEN_FP) {
+    return parseFpDecl();
+  }
 
+  parserError("unknown statement");
   return NULL;
 }
 ASTNode *parseProgram(void) {

@@ -10,7 +10,7 @@ int varCount = 0;
 int varExists(const char *name) {
   for (int i = 0; i < varCount; i++) {
     if (strcmp(variables[i], name) == 0) {
-      return 0;
+      return 1;
     }
   }
 
@@ -28,12 +28,17 @@ void checkProgram(ASTNode *program) {
       if (varExists(node->name)) {
         semanticError("variable already exists", node->name);
       }
-
       strcpy(variables[varCount++], node->name);
     } else if (node->type == AST_OUT) {
       if (!varExists(node->name)) {
         semanticError("undefined var", node->name);
       }
+    } else if (node->type == AST_FP_DECL) {
+      if (varExists(node->name)) {
+        semanticError("variable already exists", node->name);
+      }
+
+      strcpy(variables[varCount++], node->name);
     }
 
     node = node->child;

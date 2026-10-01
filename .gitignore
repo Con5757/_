@@ -2,6 +2,6 @@
 .vs/
 .vscode/
 
-compiler.exe
+uc.exe
 test-compiled.exe
 test-obj.c

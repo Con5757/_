@@ -12,6 +12,7 @@ typedef enum {
   TOKEN_INCLUDE,
 
   TOKEN_VARIABLE,
+  TOKEN_STRING,
   TOKEN_NUMBER,
 
   // types

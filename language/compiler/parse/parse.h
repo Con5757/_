@@ -14,7 +14,7 @@ typedef enum {
   AST_OUT,
 } ASTType;
 
-typedef enum { TYPE_INT, TYPE_FP, TYPE_STR } ValueType;
+typedef enum { VALUE_INT, VALUE_FP, VALUE_STR } ValueType;
 
 typedef struct ASTNode {
   ASTType type;
@@ -22,8 +22,9 @@ typedef struct ASTNode {
 
   ValueType valueType;
   int typeSize;
-
   int value;
+  double fpValue;
+
   struct ASTNode *child;
 } ASTNode;
 
@@ -38,6 +39,7 @@ Token *expect(isTokenType type);
 // setups
 ASTNode *parseOut();
 ASTNode *parseIntDecl(void);
+ASTNode *parseFpDecl();
 
 // parse
 ASTNode *parseProgram(void);
