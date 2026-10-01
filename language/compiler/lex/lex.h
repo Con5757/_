@@ -47,7 +47,6 @@ typedef enum {
   TOKEN_DIV,
 
   // func
-  TOKEN_FUNC,
   TOKEN_KILL,
   TOKEN_RETREAT,
 
