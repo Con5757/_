@@ -151,7 +151,7 @@ Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) before contributing to the proj
 
 ## Bug Reporting
 
-For notifying vulnerabilities, bugs and actionable issues, refer to [`SECURITY.md`](SECURITY.md) along with [`WORKING.md`](WORKING.md) to see which actions and bugs are being
+For notifying vulnerabilities, bugs and actionable issues, refer to [`SECURITY.md`](SECURITY.md) along with [`WORKING.md`](WORKING.md) to see which actions and bugs are being worked on at the moment.
 
 ## License
 
@@ -160,3 +160,7 @@ Underscore is licensed under the **GNU General Public License v3.0**.
 See [`LICENSE`](LICENSE) for the complete license text.
 
 Copyright © 2026 Underscore contributors.
+
+## Credit
+
+Document written by: Con5757
