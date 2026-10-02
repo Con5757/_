@@ -24,7 +24,7 @@ with io ..imports io functions like in and out
 void func main() <void> { ..normal main function strucutre
     io.out("hello world!"); ..simple printf() or console.log() statement
     kill -silent -clean ..ends the program similar to return 0;
-                        ..-silent, -clean are flags, meaning dont say anything when you're done, and 'cls'
+                        ..-silent, -clean are flags, meaning "dont say anything when you're done", and 'cls'
                         ..or 'clear' the terminal once you're done
 }
 ```
