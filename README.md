@@ -41,7 +41,7 @@ Underscore is currently in active development.
 
 ### Currently supported
 
-- Simple data types
+- Data types
 - File structure
 - Variables
 - Conditionals
