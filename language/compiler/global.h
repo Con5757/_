@@ -1,6 +1,10 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 extern int debugTokens;
 extern int debugObjs;
 extern int debugProgress;
