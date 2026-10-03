@@ -76,7 +76,18 @@ The compiler architecture is actively evolving, and this pipeline will change as
 Build Underscore using:
 
 ```bash
-uc file.extension
+uc file.u
+```
+
+### Extensions
+
+Currently the language detects four different extensions. Although there's four, the main two currently used in all doc files and test files is ._ or .u
+
+```bash
+uc test._
+uc calc.u
+uc test3.score
+uc calc62.ulang
 ```
 
 Additional compiler flags and options can be found in the docs branch.
