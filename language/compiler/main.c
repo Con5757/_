@@ -66,30 +66,33 @@ void printTokens() {
   }
 }
 void parseFlags(int argc, char **argv) {
-  for (int i = 1; i < argc; i++) {
+  for (int i = 2; i < argc; i++) {
 
     if (strcmp(argv[i], "--tokens") == 0) {
       debugTokens = 1;
-    }
-
-    else if (strcmp(argv[i], "--no-tokens") == 0) {
-      debugTokens = 0;
     }
 
     else if (strcmp(argv[i], "--objs") == 0) {
       debugObjs = 1;
     }
 
-    else if (strcmp(argv[i], "--no-objs") == 0) {
-      debugObjs = 0;
-    }
-
     else if (strcmp(argv[i], "--progress") == 0) {
       debugProgress = 1;
     }
 
-    else if (strcmp(argv[i], "--no-progress") == 0) {
-      debugProgress = 0;
+    else if (strcmp(argv[i], "--help") == 0) {
+      printf("Usage: compiler <source file> [flags]\n\n");
+      printf("Flags:\n");
+      printf("  --tokens       Print lexer tokens\n");
+      printf("  --objs         Print generated C\n");
+      printf("  --progress     Show compiler progress\n");
+      printf("  --help         Show this help\n");
+      exit(0);
+    }
+
+    else {
+      printf("unknown flag '%s'\n", argv[i]);
+      exit(1);
     }
   }
 }
