@@ -4,10 +4,6 @@
 #include "parse/parse.h"
 #include "semantic/semantic.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 int debugTokens = 0;
 int debugObjs = 0;
 int debugProgress = 0;
