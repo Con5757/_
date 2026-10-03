@@ -16,6 +16,7 @@
     { "include": "#numbers" },
     { "include": "#functions" }
   ],
+
   "repository": {
     "comments": {
       "patterns": [
@@ -25,10 +26,14 @@
           "begin": "!\\.\\.",
           "end": "\\.\\.!",
           "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.begin.underscore" }
+            "0": {
+              "name": "punctuation.definition.comment.begin.underscore"
+            }
           },
           "endCaptures": {
-            "0": { "name": "punctuation.definition.comment.end.underscore" }
+            "0": {
+              "name": "punctuation.definition.comment.end.underscore"
+            }
           }
         },
         {
@@ -37,11 +42,14 @@
           "begin": "\\.\\.",
           "end": "$",
           "beginCaptures": {
-            "0": { "name": "punctuation.definition.comment.underscore" }
+            "0": {
+              "name": "punctuation.definition.comment.underscore"
+            }
           }
         }
       ]
     },
+
     "strings": {
       "patterns": [
         {
@@ -49,13 +57,20 @@
           "begin": "\"",
           "end": "\"",
           "beginCaptures": {
-            "0": { "name": "punctuation.definition.string.begin.underscore" }
+            "0": {
+              "name": "punctuation.definition.string.begin.underscore"
+            }
           },
           "endCaptures": {
-            "0": { "name": "punctuation.definition.string.end.underscore" }
+            "0": {
+              "name": "punctuation.definition.string.end.underscore"
+            }
           },
           "patterns": [
-            { "name": "constant.character.escape.underscore", "match": "\\\\." }
+            {
+              "name": "constant.character.escape.underscore",
+              "match": "\\\\."
+            }
           ]
         },
         {
@@ -63,17 +78,25 @@
           "begin": "'",
           "end": "'",
           "beginCaptures": {
-            "0": { "name": "punctuation.definition.string.begin.underscore" }
+            "0": {
+              "name": "punctuation.definition.string.begin.underscore"
+            }
           },
           "endCaptures": {
-            "0": { "name": "punctuation.definition.string.end.underscore" }
+            "0": {
+              "name": "punctuation.definition.string.end.underscore"
+            }
           },
           "patterns": [
-            { "name": "constant.character.escape.underscore", "match": "\\\\." }
+            {
+              "name": "constant.character.escape.underscore",
+              "match": "\\\\."
+            }
           ]
         }
       ]
     },
+
     "imports": {
       "patterns": [
         {
@@ -93,12 +116,13 @@
         }
       ]
     },
+
     "keywords": {
       "patterns": [
         {
           "comment": "Control-flow keywords",
           "name": "keyword.control.underscore",
-          "match": "\\b(if|elif|else|during|repeat|switch|arg|incase|attempt|end|break|continue|main|as)\\b"
+          "match": "\\b(if|elif|else|during|repeat|switch|arg|incase|attempt|break|continue|main)\\b"
         },
         {
           "comment": "Function control keywords",
@@ -108,15 +132,41 @@
         {
           "comment": "Constant declaration",
           "name": "storage.type.underscore",
-          "match": "\\bconst\\b"
+          "match": "\\b(const|static|global)\\b"
         },
         {
           "comment": "Boolean values",
           "name": "constant.language.boolean.underscore",
-          "match": "\\b(true|false)\\b"
+          "match": "\\b(true|false|null)\\b"
+        },
+        {
+          "comment": "Class declaration",
+          "name": "storage.type.class.underscore",
+          "match": "\\bclass\\b"
+        },
+        {
+          "comment": "Struct declaration",
+          "name": "storage.type.struct.underscore",
+          "match": "\\bdata\\b"
+        },
+        {
+          "comment": "Enum declaration",
+          "name": "storage.type.enum.underscore",
+          "match": "\\bset\\b"
+        },
+        {
+          "comment": "Type alias declaration",
+          "name": "storage.type.alias.underscore",
+          "match": "\\balias\\b"
+        },
+        {
+          "comment": "Access and declaration modifiers",
+          "name": "storage.modifier.underscore",
+          "match": "\\b(public|private|protected|hidden)\\b"
         }
       ]
     },
+
     "types": {
       "patterns": [
         {
@@ -128,22 +178,71 @@
           "comment": "Fixed-width integer declaration such as int64@name",
           "match": "\\b(int)(8|16|32|64)(@)([a-zA-Z_][a-zA-Z0-9_]*)",
           "captures": {
-            "1": { "name": "storage.type.underscore" },
-            "2": { "name": "constant.numeric.bitwidth.underscore" },
-            "3": { "name": "storage.type.symbol.underscore" },
-            "4": { "name": "variable.other.typed.underscore" }
+            "1": {
+              "name": "storage.type.underscore"
+            },
+            "2": {
+              "name": "constant.numeric.bitwidth.underscore"
+            },
+            "3": {
+              "name": "storage.type.symbol.underscore"
+            },
+            "4": {
+              "name": "variable.other.typed.underscore"
+            }
+          }
+        },
+        {
+          "comment": "Fixed-width floating-point declaration such as fp64@name",
+          "match": "\\b(fp)(8|16|32|64)(@)([a-zA-Z_][a-zA-Z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "storage.type.underscore"
+            },
+            "2": {
+              "name": "constant.numeric.bitwidth.underscore"
+            },
+            "3": {
+              "name": "storage.type.symbol.underscore"
+            },
+            "4": {
+              "name": "variable.other.typed.underscore"
+            }
+          }
+        },
+        {
+          "comment": "Fixed-width string declaration such as str64@name",
+          "match": "\\b(str)(8|16|32|64)(@)([a-zA-Z_][a-zA-Z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "storage.type.underscore"
+            },
+            "2": {
+              "name": "constant.numeric.bitwidth.underscore"
+            },
+            "3": {
+              "name": "storage.type.symbol.underscore"
+            },
+            "4": {
+              "name": "variable.other.typed.underscore"
+            }
           }
         }
       ]
     },
+
     "library-members": {
       "patterns": [
         {
           "comment": "Standard I/O methods",
           "match": "\\b(std)\\.(out|in|nl)\\b",
           "captures": {
-            "1": { "name": "entity.name.type.module.underscore" },
-            "2": { "name": "support.function.io.underscore" }
+            "1": {
+              "name": "entity.name.type.module.underscore"
+            },
+            "2": {
+              "name": "support.function.io.underscore"
+            }
           }
         },
         {
@@ -153,28 +252,37 @@
         }
       ]
     },
+
     "typed-functions": {
       "patterns": [
         {
           "comment": "Typed function declaration",
           "match": "\\b(int|fp|str|void)\\s+(func)\\s+([a-zA-Z_][a-zA-Z0-9_]*)",
           "captures": {
-            "1": { "name": "storage.type.underscore" },
-            "2": { "name": "storage.type.keyword.underscore" },
-            "3": { "name": "entity.name.function.underscore" }
+            "1": {
+              "name": "storage.type.underscore"
+            },
+            "2": {
+              "name": "storage.type.keyword.underscore"
+            },
+            "3": {
+              "name": "entity.name.function.underscore"
+            }
           }
         }
       ]
     },
+
     "pointers": {
       "patterns": [
         {
           "comment": "Pointer/address operators",
           "name": "keyword.operator.pointer.underscore",
-          "match": "-->|->|<--|<-"
+          "match": "-->|->|<--|<-|@"
         }
       ]
     },
+
     "flags": {
       "patterns": [
         {
@@ -183,10 +291,14 @@
           "begin": "<(?=[^\\n>]*>)",
           "end": ">",
           "beginCaptures": {
-            "0": { "name": "punctuation.definition.flags.begin.underscore" }
+            "0": {
+              "name": "punctuation.definition.flags.begin.underscore"
+            }
           },
           "endCaptures": {
-            "0": { "name": "punctuation.definition.flags.end.underscore" }
+            "0": {
+              "name": "punctuation.definition.flags.end.underscore"
+            }
           },
           "patterns": [
             {
@@ -202,6 +314,7 @@
         }
       ]
     },
+
     "operators": {
       "patterns": [
         {
@@ -211,6 +324,7 @@
         }
       ]
     },
+
     "numbers": {
       "patterns": [
         {
@@ -225,6 +339,7 @@
         }
       ]
     },
+
     "functions": {
       "patterns": [
         {

@@ -1,6 +1,6 @@
 {
   "name": "underscore-extensionpack",
-  "displayName": "Underscore Language Extension",
+  "displayName": "Underscore+",
   "description": "Syntax Highlighting and Autofill for Underscore scripts in VScode",
   "version": "1.0.3",
   "publisher": "con5757",

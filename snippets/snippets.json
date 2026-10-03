@@ -1,31 +1,4 @@
 {
-  "out": {
-    "prefix": "out",
-    "body": ["out($1)"]
-  },
-
-  "in": {
-    "prefix": "in",
-    "body": ["in($1)"]
-  },
-
-  "ptr": {
-    "prefix": "ptr",
-    "body": ["->"]
-  },
-  "dptr": {
-    "prefix": "dptr",
-    "body": ["-->"]
-  },
-  "deptr": {
-    "prefix": "deptr",
-    "body": ["<-"]
-  },
-  "ddeptr": {
-    "prefix": "ddeptr",
-    "body": ["<--"]
-  },
-
   "int": {
     "prefix": "int",
     "body": ["int"]
@@ -37,6 +10,10 @@
   "str": {
     "prefix": "str",
     "body": ["str"]
+  },
+  "void": {
+    "prefix": "void",
+    "body": ["void"]
   },
 
   "int64": {
