@@ -6,10 +6,15 @@
 typedef enum {
   TOKEN_EOF,
   TOKEN_NEWLINE,
+  TOKEN_COMMA,
+  TOKEN_MAIN,
 
   // includes
   TOKEN_WITH,
   TOKEN_INCLUDE,
+
+  // kill flags
+  TOKEN_KILL_SILENT,
 
   TOKEN_VARIABLE,
   TOKEN_STRING,
@@ -47,6 +52,7 @@ typedef enum {
   TOKEN_DIV,
 
   // func
+  TOKEN_FUNC,
   TOKEN_KILL,
   TOKEN_RETREAT,
 
@@ -58,8 +64,9 @@ typedef enum {
   TOKEN_LEFT_SQUARE_PAREN,  // [
   TOKEN_RIGHT_SQUARE_PAREN, // ]
   TOKEN_LEFT_CURLY_PAREN,   // {
-  TOKEN_RIGHT_CURLY_PAREN   // }
-
+  TOKEN_RIGHT_CURLY_PAREN,  // }
+  TOKEN_LEFT_VEC_PAREN,     // <
+  TOKEN_RIGHT_VEC_PAREN     // >
 } isTokenType;
 
 typedef struct {

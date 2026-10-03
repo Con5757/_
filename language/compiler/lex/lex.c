@@ -76,6 +76,11 @@ void lex(const char *source) {
         addToken(TOKEN_WITH, word, line);
       }
 
+      // flags
+      else if (strcmp(word, "-silent") == 0) {
+        addToken(TOKEN_KILL_SILENT, word, line);
+      }
+
       // types
       else if (strcmp(word, "int") == 0) {
         addToken(TOKEN_INT, word, line);
@@ -86,6 +91,12 @@ void lex(const char *source) {
       } else if (strcmp(word, "void") == 0) {
         addToken(TOKEN_VOID, word, line);
       }
+
+      else if (strcmp(word, "main") == 0) {
+        addToken(TOKEN_MAIN, word, line);
+      }
+
+      
 
       else if (strcmp(word, "out") == 0) { // (move to runtime)
         addToken(TOKEN_OUT, word, line);
@@ -185,6 +196,23 @@ void lex(const char *source) {
       i++; // skip closing quote
 
       addToken(TOKEN_STRING, string, line);
+      continue;
+    }
+
+    if (c == ',') {
+      addToken(TOKEN_COMMA, ",", line);
+      i++;
+      continue;
+    }
+
+    if (c == '<') {
+      addToken(TOKEN_LEFT_VEC_PAREN, "<", line);
+      i++;
+      continue;
+    }
+    if (c == '>') {
+      addToken(TOKEN_RIGHT_VEC_PAREN, ">", line);
+      i++;
       continue;
     }
 

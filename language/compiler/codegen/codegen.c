@@ -1,51 +1,186 @@
 #include "codegen.h"
-#include "../global.h"
-#include <Windows.h>
 #include <stdio.h>
-#include <string.h>
+
+// helper
+static const char *generateType(Type type) {
+  switch (type.kind) {
+  case TYPE_INT:
+    return "int";
+  case TYPE_FP:
+    return "float";
+  case TYPE_STR:
+    return "char *";
+  case TYPE_VOID:
+    return "void";
+
+  default:
+    return "void";
+  }
+}
+static void generateExpression(ASTNode *node, FILE *output) {
+  if (node == NULL) {
+    return;
+  }
+  switch (node->type) {
+  case AST_NUM:
+    fprintf(output, "%d", node->value);
+    return;
+
+  case AST_VAR:
+    fprintf(output, "%s", node->name);
+    return;
+
+  case AST_ADD:
+    fprintf(output, "(");
+    generateExpression(node->child, output);
+    fprintf(output, " + ");
+    generateExpression(node->right, output);
+    fprintf(output, ")");
+    return;
+
+  case AST_SUB:
+    fprintf(output, "(");
+    generateExpression(node->child, output);
+    fprintf(output, " - ");
+    generateExpression(node->right, output);
+    fprintf(output, ")");
+    return;
+
+  case AST_MUL:
+    fprintf(output, "(");
+    generateExpression(node->child, output);
+    fprintf(output, " * ");
+    generateExpression(node->right, output);
+    fprintf(output, ")");
+    return;
+
+  case AST_DIV:
+    fprintf(output, "(");
+    generateExpression(node->child, output);
+    fprintf(output, " / ");
+    generateExpression(node->right, output);
+    fprintf(output, ")");
+    return;
+
+  default:
+    fprintf(output, "/* unknown expression */");
+    return;
+  }
+}
+static void generateRetreat(ASTNode *node, FILE *output) {
+  fprintf(output, "\treturn ");
+  generateExpression(node->child, output);
+  fprintf(output, ";\n");
+}
+static void generateStatement(ASTNode *node, FILE *output) {
+  if (node == NULL) {
+    return;
+  }
+
+  switch (node->type) {
+  case AST_RETREAT:
+    generateRetreat(node, output);
+    break;
+  default:
+    break;
+  }
+}
+static void generateMethod(Method *method, FILE *output) {
+  fprintf(output, "%s %s(", generateType(method->returnType), method->name);
+
+  for (int i = 0; i < method->paramCount; i++) {
+    Param *param = &method->params[i];
+    fprintf(output, "%s %s", generateType(param->type), param->name);
+
+    if (i < method->paramCount - 1) {
+      fprintf(output, ", ");
+    }
+  }
+
+  fprintf(output, ")\n");
+  fprintf(output, "{\n");
+
+  ASTNode *statement = method->body;
+
+  while (statement != NULL) {
+    generateStatement(statement, output);
+    statement = statement->child;
+  }
+
+  fprintf(output, "}\n\n");
+}
 
 void generateC(ASTNode *program, FILE *output) {
   fprintf(output, "#include <stdio.h>\n\n");
+
+  ASTNode *node = program->child;
+
+  while (node != NULL) {
+
+    if (node->type == AST_METHOD) {
+      generateMethod(node->method, output);
+    }
+
+    node = node->child;
+  }
+
   fprintf(output, "int main(void)\n");
   fprintf(output, "{\n");
 
   ValueType variableTypes[MAX_AST_NODES];
   char variableNames[MAX_AST_NODES][MAX_NAME];
   int variableCount = 0;
-  ASTNode *node = program->child;
+
+  node = program->child;
 
   while (node != NULL) {
+
     if (node->type == AST_INT_DECL) {
+
       fprintf(output, "\tint %s = %d;\n", node->name, node->value);
 
       strcpy(variableNames[variableCount], node->name);
       variableTypes[variableCount] = VALUE_INT;
       variableCount++;
 
-    } else if (node->type == AST_FP_DECL) {
+    }
+
+    else if (node->type == AST_FP_DECL) {
+
       fprintf(output, "\tfloat %s = %f;\n", node->name, node->fpValue);
 
       strcpy(variableNames[variableCount], node->name);
       variableTypes[variableCount] = VALUE_FP;
       variableCount++;
-    } else if (node->type == AST_STR_DECL) {
+
+    }
+
+    else if (node->type == AST_STR_DECL) {
+
       fprintf(output, "\tchar %s[%d] = \"%s\";\n", node->name,
               node->typeSize + 1, node->strValue);
 
       strcpy(variableNames[variableCount], node->name);
       variableTypes[variableCount] = VALUE_STR;
       variableCount++;
+
     }
 
     else if (node->type == AST_OUT) {
+
       for (int i = 0; i < variableCount; i++) {
+
         if (strcmp(variableNames[i], node->name) == 0) {
 
           if (variableTypes[i] == VALUE_INT) {
             fprintf(output, "\tprintf(\"%%d\\n\", %s);\n", node->name);
-          } else if (variableTypes[i] == VALUE_FP) {
+          }
+
+          else if (variableTypes[i] == VALUE_FP) {
             fprintf(output, "\tprintf(\"%%f\\n\", %s);\n", node->name);
-          } else if (variableTypes[i] == VALUE_STR) {
+          }
+
+          else if (variableTypes[i] == VALUE_STR) {
             fprintf(output, "\tprintf(\"%%s\\n\", %s);\n", node->name);
           }
 
@@ -125,7 +260,7 @@ void compileProgram(ASTNode *program, const char *sourceFile) {
 
   progress("Running");
 
-  printf("\n");
+  printf("\n\n");
   printf("// ========================================\n");
   printf("// COMPILED OUTPUT\n");
   printf("// ========================================\n\n");
