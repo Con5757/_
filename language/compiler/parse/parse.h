@@ -87,7 +87,7 @@ int match(isTokenType type);
 void parserError(const char *message);
 Token *expect(isTokenType type);
 
-// setups
+// structs
 ASTNode *parseOut();
 ASTNode *parseIntDecl(void);
 ASTNode *parseFpDecl();
@@ -96,11 +96,14 @@ ASTNode *parseStrDecl();
 ASTNode *parseMethod(void);
 ASTNode *parseRetreat(void);
 
-// parse
+// helper
 int isMethod(void);
+
+// parse
 ASTNode *parsePrimary(void);
 ASTNode *parseTerm(void);
 ASTNode *parseExpression(void);
+ASTNode* parseCall(void);
 ASTNode *parseProgram(void);
 ASTNode *parseStatement(void);
 

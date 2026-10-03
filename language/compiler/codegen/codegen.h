@@ -14,9 +14,10 @@ static void generateExpression(ASTNode *node, FILE *output);
 static void generateRetreat(ASTNode *node, FILE *output);
 static void generateStatement(ASTNode *node, FILE *output);
 static void generateMethod(Method *method, FILE *output);
+static void generateOut(ASTNode *node, FILE *output);
 
 // main
 void generateC(ASTNode *program, FILE *output);
 void compileProgram(ASTNode *program, const char *sourceFile);
 
-#endif
+#endif 

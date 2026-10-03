@@ -2,4 +2,4 @@ int func add(int a, int b) <void> {
     retreat a + b
 }
 
-out(add(2, 6))
+out(add(1, 6))

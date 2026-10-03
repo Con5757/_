@@ -91,13 +91,14 @@ ASTNode *parseStrDecl() {
   return node;
 }
 
-ASTNode *parseOut() {
+ASTNode *parseOut(void) {
   ASTNode *node = newAST(AST_OUT);
 
   expect(TOKEN_OUT);
   expect(TOKEN_LEFT_PAREN);
-  Token *name = expect(TOKEN_VARIABLE);
+
   node->child = parseExpression();
+
   expect(TOKEN_RIGHT_PAREN);
 
   return node;
@@ -231,7 +232,7 @@ ASTNode *parseRetreat(void) {
   return node;
 }
 
-// parse setup
+
 // helper
 int isMethod(void) {
   isTokenType type = current()->type;
@@ -243,25 +244,49 @@ int isMethod(void) {
 
   return tokens[currentToken + 1].type == TOKEN_FUNC;
 }
+
+// parse setup
 ASTNode *parsePrimary(void) {
   if (current()->type == TOKEN_NUMBER) {
-    ASTNode *node = newAST(AST_NUM);
+    ASTNode* node = newAST(AST_NUM);
 
-    node->valueType = VALUE_INT;
-    node->value = atoi(current()->text);
+    if (strchr(current()->text, '.') != NULL) {
+      node->valueType = VALUE_FP;
+      node->fpValue = atof(current()->text);
+    } else {
+      node->valueType = VALUE_INT;
+      node->value = atoi(current()->text);
+    }
     currentToken++;
 
     return node;
   }
 
+  // variable or function call
   if (current()->type == TOKEN_VARIABLE) {
+
+    if (tokens[currentToken + 1].type == TOKEN_LEFT_PAREN) {
+      return parseCall();
+    }
+
     ASTNode *node = newAST(AST_VAR);
 
     strcpy(node->name, current()->text);
+
     currentToken++;
 
     return node;
   }
+
+  // parenthesized expression
+  if (match(TOKEN_LEFT_PAREN)) {
+    ASTNode *node = parseExpression();
+
+    expect(TOKEN_RIGHT_PAREN);
+
+    return node;
+  }
+
   parserError("expected expression");
   return NULL;
 }
@@ -269,10 +294,12 @@ ASTNode *parseTerm(void) {
   ASTNode *left = parsePrimary();
 
   while (current()->type == TOKEN_MUL || current()->type == TOKEN_DIV) {
+
     isTokenType operator = current()->type;
     currentToken++;
 
     ASTNode *right = parsePrimary();
+
     ASTNode *node;
 
     if (operator == TOKEN_MUL) {
@@ -314,6 +341,40 @@ ASTNode *parseExpression(void) {
   }
 
   return left;
+}
+ASTNode* parseCall(void) {
+  ASTNode* node = newAST(AST_CALL);
+
+  Token* name = expect(TOKEN_VARIABLE);
+  strcpy(node->name, name->text);
+
+  expect(TOKEN_LEFT_PAREN);
+
+  ASTNode* first = NULL;
+  ASTNode *last = NULL;
+
+  if (!match(TOKEN_RIGHT_PAREN)) {
+    while (1) {
+      ASTNode* argument = parseExpression();
+
+      if (first == NULL) {
+        first = argument;
+      } else {
+        last->next = argument;
+      }
+
+      last = argument;
+
+      if (match(TOKEN_RIGHT_PAREN)) {
+        break;
+      }
+
+      expect(TOKEN_COMMA);
+    }
+  }
+  node->child = first;
+
+  return node;
 }
 ASTNode *parseStatement(void) {
 

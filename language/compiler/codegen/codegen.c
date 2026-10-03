@@ -1,5 +1,4 @@
 #include "codegen.h"
-#include <stdio.h>
 
 // helper
 static const char *generateType(Type type) {
@@ -18,17 +17,19 @@ static const char *generateType(Type type) {
   }
 }
 static void generateExpression(ASTNode *node, FILE *output) {
-  if (node == NULL) {
-    return;
-  }
   switch (node->type) {
+
   case AST_NUM:
-    fprintf(output, "%d", node->value);
-    return;
+    if (node->valueType == VALUE_FP) {
+      fprintf(output, "%f", node->fpValue);
+    } else {
+      fprintf(output, "%d", node->value);
+    }
+    break;
 
   case AST_VAR:
     fprintf(output, "%s", node->name);
-    return;
+    break;
 
   case AST_ADD:
     fprintf(output, "(");
@@ -36,7 +37,7 @@ static void generateExpression(ASTNode *node, FILE *output) {
     fprintf(output, " + ");
     generateExpression(node->right, output);
     fprintf(output, ")");
-    return;
+    break;
 
   case AST_SUB:
     fprintf(output, "(");
@@ -44,7 +45,7 @@ static void generateExpression(ASTNode *node, FILE *output) {
     fprintf(output, " - ");
     generateExpression(node->right, output);
     fprintf(output, ")");
-    return;
+    break;
 
   case AST_MUL:
     fprintf(output, "(");
@@ -52,7 +53,7 @@ static void generateExpression(ASTNode *node, FILE *output) {
     fprintf(output, " * ");
     generateExpression(node->right, output);
     fprintf(output, ")");
-    return;
+    break;
 
   case AST_DIV:
     fprintf(output, "(");
@@ -60,11 +61,29 @@ static void generateExpression(ASTNode *node, FILE *output) {
     fprintf(output, " / ");
     generateExpression(node->right, output);
     fprintf(output, ")");
-    return;
+    break;
+
+  case AST_CALL: {
+    fprintf(output, "%s(", node->name);
+
+    ASTNode *arg = node->child;
+
+    while (arg != NULL) {
+      generateExpression(arg, output);
+
+      if (arg->next != NULL) {
+        fprintf(output, ", ");
+      }
+
+      arg = arg->next;
+    }
+
+    fprintf(output, ")");
+    break;
+  }
 
   default:
-    fprintf(output, "/* unknown expression */");
-    return;
+    break;
   }
 }
 static void generateRetreat(ASTNode *node, FILE *output) {
@@ -78,9 +97,28 @@ static void generateStatement(ASTNode *node, FILE *output) {
   }
 
   switch (node->type) {
+
+  case AST_INT_DECL:
+    fprintf(output, "\tint %s = %d;\n", node->name, node->value);
+    break;
+
+  case AST_FP_DECL:
+    fprintf(output, "\tfloat %s = %f;\n", node->name, node->fpValue);
+    break;
+
+  case AST_STR_DECL:
+    fprintf(output, "\tchar %s[%d] = \"%s\";\n", node->name, node->typeSize + 1,
+            node->strValue);
+    break;
+
+  case AST_OUT:
+    generateOut(node, output);
+    break;
+
   case AST_RETREAT:
     generateRetreat(node, output);
     break;
+
   default:
     break;
   }
@@ -104,92 +142,60 @@ static void generateMethod(Method *method, FILE *output) {
 
   while (statement != NULL) {
     generateStatement(statement, output);
-    statement = statement->child;
+    statement = statement->next;
   }
 
   fprintf(output, "}\n\n");
+}
+static void generateOut(ASTNode *node, FILE *output) {
+  ASTNode *expression = node->child;
+
+  switch (expression->valueType) {
+
+  case VALUE_INT:
+    fprintf(output, "\tprintf(\"%%d\\n\", ");
+    break;
+
+  case VALUE_FP:
+    fprintf(output, "\tprintf(\"%%f\\n\", ");
+    break;
+
+  case VALUE_STR:
+    fprintf(output, "\tprintf(\"%%s\\n\", ");
+    break;
+
+  case VALUE_VOID:
+    return;
+  }
+
+  generateExpression(expression, output);
+
+  fprintf(output, ");\n");
 }
 
 void generateC(ASTNode *program, FILE *output) {
   fprintf(output, "#include <stdio.h>\n\n");
 
   ASTNode *node = program->child;
-
   while (node != NULL) {
-
     if (node->type == AST_METHOD) {
       generateMethod(node->method, output);
     }
 
-    node = node->child;
+    node = node->next;
   }
 
   fprintf(output, "int main(void)\n");
   fprintf(output, "{\n");
 
-  ValueType variableTypes[MAX_AST_NODES];
-  char variableNames[MAX_AST_NODES][MAX_NAME];
-  int variableCount = 0;
-
   node = program->child;
 
   while (node != NULL) {
-
-    if (node->type == AST_INT_DECL) {
-
-      fprintf(output, "\tint %s = %d;\n", node->name, node->value);
-
-      strcpy(variableNames[variableCount], node->name);
-      variableTypes[variableCount] = VALUE_INT;
-      variableCount++;
-
+    if (node->type != AST_METHOD) {
+      generateStatement(node, output);
     }
 
-    else if (node->type == AST_FP_DECL) {
-
-      fprintf(output, "\tfloat %s = %f;\n", node->name, node->fpValue);
-
-      strcpy(variableNames[variableCount], node->name);
-      variableTypes[variableCount] = VALUE_FP;
-      variableCount++;
-
-    }
-
-    else if (node->type == AST_STR_DECL) {
-
-      fprintf(output, "\tchar %s[%d] = \"%s\";\n", node->name,
-              node->typeSize + 1, node->strValue);
-
-      strcpy(variableNames[variableCount], node->name);
-      variableTypes[variableCount] = VALUE_STR;
-      variableCount++;
-
-    }
-
-    else if (node->type == AST_OUT) {
-
-      for (int i = 0; i < variableCount; i++) {
-
-        if (strcmp(variableNames[i], node->name) == 0) {
-
-          if (variableTypes[i] == VALUE_INT) {
-            fprintf(output, "\tprintf(\"%%d\\n\", %s);\n", node->name);
-          }
-
-          else if (variableTypes[i] == VALUE_FP) {
-            fprintf(output, "\tprintf(\"%%f\\n\", %s);\n", node->name);
-          }
-
-          else if (variableTypes[i] == VALUE_STR) {
-            fprintf(output, "\tprintf(\"%%s\\n\", %s);\n", node->name);
-          }
-
-          break;
-        }
-      }
-    }
-
-    node = node->child;
+    node = node->next;
   }
 
   fprintf(output, "\treturn 0;\n");
@@ -223,7 +229,7 @@ void compileProgram(ASTNode *program, const char *sourceFile) {
   generateC(program, output);
 
   fclose(output);
-
+#if DEBUG_OBJS
   printf("\n");
   printf("// ========================================\n");
   printf("// C OBJ\n");
@@ -243,7 +249,7 @@ void compileProgram(ASTNode *program, const char *sourceFile) {
   }
 
   fclose(generated);
-
+#endif
   // Compile the generated C using GCC.
   progress("Compiling");
 
@@ -259,17 +265,16 @@ void compileProgram(ASTNode *program, const char *sourceFile) {
   }
 
   progress("Running");
-
+#if DEBUG_OBJS
   printf("\n\n");
   printf("// ========================================\n");
   printf("// COMPILED OUTPUT\n");
   printf("// ========================================\n\n");
-
+#endif
   char runCommand[MAX_NAME + 40];
 
   snprintf(runCommand, sizeof(runCommand), "\"%s\"", exeFile);
 
   system(runCommand);
-
-  printf("\n");
+  clearProgress();
 }

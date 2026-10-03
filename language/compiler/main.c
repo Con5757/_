@@ -4,6 +4,10 @@
 #include "parse/parse.h"
 #include "semantic/semantic.h"
 
+int debugTokens = 0;
+int debugObjs = 0;
+int debugProgress = 0;
+
 char *readFile(const char *filename) {
   FILE *file = fopen(filename, "rb");
   if (file == NULL) {
@@ -28,7 +32,8 @@ char *readFile(const char *filename) {
   fclose(file);
   return buffer;
 }
-void progress(const char *message) { // :p
+void progress(const char *message) {
+#if DEBUG_PROGRESS
   int width = 30;
 
   for (int percent = 0; percent <= 100; percent++) {
@@ -47,12 +52,45 @@ void progress(const char *message) { // :p
 
     fflush(stdout);
   }
-
-  printf("\n");
+#endif
+}
+void clearProgress(void) {
+#if DEBUG_PROGRESS
+  printf("\r%*s\r", 80, "");
+  fflush(stdout);
+#endif
 }
 void printTokens() {
   for (int i = 0; i < tokenCount; i++) {
     printf("TOKEN: %-15d TEXT: %s\n", tokens[i].type, tokens[i].text);
+  }
+}
+void parseFlags(int argc, char **argv) {
+  for (int i = 1; i < argc; i++) {
+
+    if (strcmp(argv[i], "--tokens") == 0) {
+      debugTokens = 1;
+    }
+
+    else if (strcmp(argv[i], "--no-tokens") == 0) {
+      debugTokens = 0;
+    }
+
+    else if (strcmp(argv[i], "--objs") == 0) {
+      debugObjs = 1;
+    }
+
+    else if (strcmp(argv[i], "--no-objs") == 0) {
+      debugObjs = 0;
+    }
+
+    else if (strcmp(argv[i], "--progress") == 0) {
+      debugProgress = 1;
+    }
+
+    else if (strcmp(argv[i], "--no-progress") == 0) {
+      debugProgress = 0;
+    }
   }
 }
 
@@ -68,7 +106,7 @@ int main(int argc, char **argv) {
   lex(source);
 
 #if DEBUG_TOKENS
-  printf("\n");
+  clearProgress();
   printTokens();
 #endif
 
@@ -78,6 +116,7 @@ int main(int argc, char **argv) {
 
   progress("Semantic analysis");
   checkProgram(program);
+
   compileProgram(program, argv[1]);
 
   free(source);
