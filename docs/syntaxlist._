@@ -85,6 +85,7 @@ str8@name
 ..storage class specifiers
 const
 static
+global 
 
 ..classes
 class
@@ -148,9 +149,21 @@ go to document: docs/functions/vectorparams.md
 go to document: docs/functions/killflags.md
 ..!
 
-..imports/includes
-?lib ..not an actual library just a placeholder
-    with lib ..including a lib from a verified external or std
+..includes
+with lib
 
-?rootFolder ..the folder which the external lib is found or another file
-    with "dir/file.u" ..you MUST have the quotes so the compiler doesnt skip the file in the usage case of '../'
+..memory lib
+..stack
+allocate()
+free()
+
+..boolean lib
+true
+false
+null
+
+..io lib
+in()
+out()
+
+..string

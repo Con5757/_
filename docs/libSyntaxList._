@@ -1,0 +1,121 @@
+..below is how you include files
+?std ..library name
+    with memory ..individual books
+    with io
+    with file
+    with string
+    with math
+    with vector
+    with system
+    with time
+    with random
+    with convert
+    with thread
+    with sync
+    with regex
+    with network
+    with encoding
+
+..memory
+memory.alloc() ..allocate
+memory.zalloc() ..zero allocation
+memory.mresize() ..resize allocation
+memory.escape() ..frees memory
+memory.sizeof() ..size of type/int
+memory.mcopy() ..memcpy
+memory.mmove() ..ptr::copy()
+memory.mset() ..memset
+
+..io
+io.out() ..printf(), print(), println!()
+io.in() ..getline(), input()
+io.nl() || "\n" ..newline
+io.strout(str, index) ..sends out the single char at the index
+io.charin() ..reads the first character entered to the terminal similar to a scanf() 
+io.errout() ..eprintln!()
+io.flush() ..flush()
+
+..file
+file.open(file, mode) ..doesnt create if it cant find, fopen(), File::open()
+file.create(name) ..fopen(.., "w")
+file.close(file)
+file.read(file)
+file.write(file, contents)
+file.delete(file)
+file.rename(file, newName)
+file.gpath(file)
+file.gsize(file)
+
+..string
+string.length(str) ..gets the length, len()
+string.copy(str) ..copy()
+string.connect(str, str)
+string.substr(str, str)
+string.slice(str, index, index)
+string.replace()
+string.up()
+string.low()
+string.trim()
+
+..math
+math.abs()
+math.sqrt()
+math.min(int || fp, int || fp)
+math.max(int || fp, int || fp)
+math.round(fp) ..nearest
+math.rdown(fp)
+math.rup(fp)
+math.sin()
+math.tan()
+math.cos()
+math.asin()
+math.atan()
+math.acos()
+math.log()
+math.logx(int || fp, base)
+math.exp()
+math.pi()
+
+..vector, allows some keywords but mainly the vec || vec2-3 keywords
+vec <type>name ..init
+
+vector.alloc(vector)
+vector.endin(vector)
+vector.endout(vector)
+vector.insert(vector, contents, index)
+vector.remove(vector, index)
+vector.length(vector)
+vector.erase(vector)
+
+..system
+system.exit()
+system.gcode()
+system.wait()
+system.readenv()
+system.setenv()
+system.curdir()
+system.chadir()
+system.args()
+
+..time
+time.utime() ..unix time
+time.ctime() ..current time
+time.utctime()
+time.sleep()
+time.format()
+time.parsetime()
+time.timedif(timeformat, timeformat) ..depends on the api, built in one will come later
+
+..random
+
+..convert
+
+..thread
+
+..sync
+
+..regex
+
+..encoding
+
+..network
