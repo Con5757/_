@@ -229,33 +229,42 @@ void compileProgram(ASTNode *program, const char *sourceFile) {
   generateC(program, output);
 
   fclose(output);
-#if DEBUG_OBJS
-  printf("\n");
-  printf("// ========================================\n");
-  printf("// C OBJ\n");
-  printf("// ========================================\n\n");
 
-  FILE *generated = fopen(cFile, "r");
+  if (debugObjs) {
+    clearProgress();
 
-  if (generated == NULL) {
-    printf("Could not read '%s'\n", cFile);
-    exit(1);
+    printf("\n");
+    printf("// ========================================\n");
+    printf("// C OBJ\n");
+    printf("// ========================================\n\n");
+
+    FILE *generated = fopen(cFile, "r");
+
+    if (generated == NULL) {
+      printf("Could not read '%s'\n", cFile);
+      exit(1);
+    }
+
+    char line[512];
+
+    while (fgets(line, sizeof(line), generated) != NULL) {
+      printf("%s", line);
+    }
+
+    fclose(generated);
   }
 
-  char line[512];
-
-  while (fgets(line, sizeof(line), generated) != NULL) {
-    printf("%s", line);
-  }
-
-  fclose(generated);
-#endif
-  // Compile the generated C using GCC.
   progress("Compiling");
 
   char command[512];
 
-  snprintf(command, sizeof(command), "gcc \"%s\" -o \"%s\"", cFile, exeFile);
+  snprintf(
+      command,
+      sizeof(command),
+      "gcc \"%s\" -o \"%s\"",
+      cFile,
+      exeFile
+  );
 
   int result = system(command);
 
@@ -265,16 +274,28 @@ void compileProgram(ASTNode *program, const char *sourceFile) {
   }
 
   progress("Running");
-#if DEBUG_OBJS
-  printf("\n\n");
-  printf("// ========================================\n");
-  printf("// COMPILED OUTPUT\n");
-  printf("// ========================================\n\n");
-#endif
+
+  if (debugObjs) {
+    clearProgress();
+
+    printf("\n\n");
+    printf("// ========================================\n");
+    printf("// COMPILED OUTPUT\n");
+    printf("// ========================================\n\n");
+  }
+
   char runCommand[MAX_NAME + 40];
 
-  snprintf(runCommand, sizeof(runCommand), "\"%s\"", exeFile);
+  snprintf(
+      runCommand,
+      sizeof(runCommand),
+      "\"%s\"",
+      exeFile
+  );
 
   system(runCommand);
+
   clearProgress();
+
+  printf("\n");
 }
