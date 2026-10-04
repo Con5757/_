@@ -19,7 +19,8 @@ Underscore is also a long-term personal project exploring language design, compi
 A simple program can look like:
 
 ```_
-with io ..imports io functions like in and out
+?std
+    with io ..imports io functions like in and out
 
 void func main() <void> { ..normal main function strucutre
     io.out("hello world!"); ..simple printf() or console.log() statement
