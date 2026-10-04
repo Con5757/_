@@ -1,0 +1,21 @@
+?init
+?paths
+    null
+
+?macros
+    null
+
+?includes 
+    null
+
+?variables
+    null
+
+?structs
+    null
+
+?functions
+@string
+    length(str)
+
+?endit
