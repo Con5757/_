@@ -112,7 +112,7 @@
         {
           "comment": "Library names",
           "name": "entity.name.type.module.underscore",
-          "match": "\\b(terminal|boolean|math|string|file)\\b"
+          "match": "\\b(io|boolean|math|string|file)\\b"
         }
       ]
     },
@@ -230,29 +230,6 @@
         }
       ]
     },
-
-    "library-members": {
-      "patterns": [
-        {
-          "comment": "Standard I/O methods",
-          "match": "\\b(std)\\.(out|in|nl)\\b",
-          "captures": {
-            "1": {
-              "name": "entity.name.type.module.underscore"
-            },
-            "2": {
-              "name": "support.function.io.underscore"
-            }
-          }
-        },
-        {
-          "comment": "String functions",
-          "name": "support.function.string.underscore",
-          "match": "\\b(length|copy|overwrite|compare|subSearch|slice|sliceArray|join|up|low|trim)\\b(?=\\s*\\()"
-        }
-      ]
-    },
-
     "typed-functions": {
       "patterns": [
         {
