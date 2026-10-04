@@ -1,6 +1,6 @@
 ?init
-?paths
-    null
+?files
+    "string._"
 
 ?macros
     null
@@ -16,6 +16,8 @@
 
 ?functions
 @string
-    length(str)
+    int length(str)
+    str up(str)
+    str low(str)
 
 ?endit
