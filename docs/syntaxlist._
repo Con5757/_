@@ -150,20 +150,5 @@ go to document: docs/functions/killflags.md
 ..!
 
 ..includes
-with lib
-
-..memory lib
-..stack
-allocate()
-free()
-
-..boolean lib
-true
-false
-null
-
-..io lib
-in()
-out()
-
-..string
+?std ..lib name, '?' roughly means find
+	with memory ..lib file
