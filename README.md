@@ -1,6 +1,6 @@
 # Underscore
 
-Underscore is a low-level programming language focused on familiar, readable syntax without sacrificing the control and flexibility expected from a systems level language.
+Underscore is a hybrid low-level programming language focused on familiar, readable syntax without sacrificing the control and flexibility expected from a systems level language.
 
 Underscore expands on ideas from C while introducing its own concepts and features, making it a separate language rather than simply another C implementation/reproduction.
 
