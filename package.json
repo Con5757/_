@@ -28,7 +28,8 @@
           "._",
           ".score",
           ".u",
-          ".usc"
+          ".ulang",
+          ".ufg"
         ],
         "configuration": "./language-configuration.json",
         "icon": {
