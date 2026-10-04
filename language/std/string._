@@ -8,7 +8,7 @@ int length(str string) {
 
     retreat count
 }
-str upper(str string) {
+str up(str string) {
     int i = 0
     during text[i] != 0 {
         if text[i] >= 'a' && text[i] <= 'z' {
@@ -20,7 +20,7 @@ str upper(str string) {
 
     retreat string
 }
-str upper(str string) {
+str low(str string) {
     int i = 0
     during text[i] != 0 {
         if text[i] >= 'a' && text[i] <= 'z' {
