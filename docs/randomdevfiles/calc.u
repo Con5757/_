@@ -1,0 +1,44 @@
+?std
+    with io
+
+fp add(fp a, fp b) {
+    retreat a + b
+}
+fp sub(fp a, fp b) {
+    retreat a - b
+}
+fp mul(fp a, fp b) {
+    retreat a * b
+}
+fp div(fp a, fp b) {
+    retreat a / b
+}
+
+void main(void) <void> {
+    io.out("enter the first number: ")
+    fp num1 = io.in(fp).nl()
+    io.out("enter the second number: ")
+    fp num1 = io.in(fp).nl()
+
+    io.out("1. ADD\n2. SUB\n3. MUL\n4. DIV\n")
+    operator = io.in(int)
+
+    switch operator {
+        arg 1:
+            io.out(add(num1, num2))
+            break;
+        arg 2:
+            io.out(sub(num1, num2))
+            break;
+        arg 3:
+            io.out(mul(num1, num2))
+            break;
+        arg 4:
+            io.out(div(num1, num2))
+            break;
+
+        incase:
+            io.out("invalid operator")
+            break;
+    }
+}
