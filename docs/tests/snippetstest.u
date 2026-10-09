@@ -1,0 +1,237 @@
+?library ..good
+
+.. basic types ..good
+int number = 20
+fp decimal = 20.20
+str message = "Hello, Underscore"
+void
+
+.. fixed-width types
+int64@bigNumber = 100000
+int32@normalNumber = 500
+int16@smallNumber = 25
+int8@tinyNumber = 5
+
+fp64@bigFloat = 3.14159
+fp32@float = 2.5
+fp16@smallFloat = 1.5
+fp8@tinyFloat = 0.5
+
+str64@longText = "A long string"
+str32@text = "Hello"
+str16@shortText = "Test"
+str8@tinyText = "Hi"
+
+.. storage classes
+const int max = 100
+static int counter = 0
+global int globalValue = 10
+
+.. arrays
+int numbers<5> = [1, 2, 3, 4, 5]
+str words<2> = ["Hello", "Under"]
+fp values<3> = [1.5, 2.5, 3.5]
+
+int first = numbers[0]
+str firstWord = words[0]
+
+.. vector
+
+
+.. arithmetic
+int add = number + 10
+int sub = number - 10
+int mul = number * 2
+int div = number / 2
+int mod = number % 3
+
+number++
+number--
+
+number += 5
+number -= 5
+number *= 2
+number /= 2
+number %= 3
+
+.. comparison
+if (number > 10) {
+	std.out("greater")
+}
+
+if (number < 100) {
+	std.out("less")
+}
+
+if (number >= 10) {
+	std.out("greater or equal")
+}
+
+if (number <= 100) {
+	std.out("less or equal")
+}
+
+if (number == 42) {
+	std.out("equal")
+}
+
+if (number != 0) {
+	std.out("not equal")
+}
+
+.. logical
+if (number > 0 && number < 100) {
+	std.out("and")
+}
+
+if (number == 42 || number == 10) {
+	std.out("or")
+}
+
+if (number > 10 ~ number < 50) {
+	std.out("xor")
+}
+
+if (!false) {
+	std.out("not")
+}
+
+if (number !| 0) {
+	std.out("nor")
+}
+
+if (number !& 0) {
+	std.out("nand")
+}
+
+if (number !~ 42) {
+	std.out("xnor")
+}
+
+.. bitwise
+int bitOr = number | 2
+int bitAnd = number & 2
+int bitXor = number ^ 2
+int leftShift = number << 2
+int rightShift = number >> 2
+int specialBit = number ~? 2
+
+number &= 3
+number |= 4
+number ^= 1
+
+.. grouping
+int grouped = (number + 10) * 2
+
+.. pointers
+int ->numPtr = 20
+int -->numDPtr = 30
+
+int dereferenced = <-numPtr
+int doubleDereferenced = <--numDPtr
+
+std.out(@numPtr)
+std.out(<-numPtr)
+
+.. member access
+std.out(message)
+
+.. namespace access
+std::out(message)
+
+.. conditionals
+if (number > 50) {
+	std.out("large")
+} elif (number > 25) {
+	std.out("medium")
+} else {
+	std.out("small")
+}
+
+.. switch
+switch number {
+	arg 10:
+		std.out("ten")
+		break
+
+	arg 20:
+		std.out("twenty")
+		break
+
+	arg 42:
+		std.out("answer")
+		break
+
+	incase:
+		std.out("something else")
+		break
+}
+
+.. loop
+during (number < 50) {
+	number++
+	
+	if (number == 45) {
+		cont
+	}
+}
+
+.. repeat loop
+repeat (int i = 0, i < 10, i++) {
+	std.out(i)
+}
+
+.. error handling
+attempt {
+	std.out("attempt")
+} incase {
+	std.out("error")
+}
+
+.. data
+data Person {
+	str name
+	int age
+	fp height
+}
+
+.. enum
+set {
+	RED
+	GREEN
+	BLUE
+}
+
+..enum example
+alias set {
+	TOKEN_TEST
+} TokenType
+
+.. alias
+alias int Number
+
+.. function
+int addNumbers(int a, int b) <void> {
+	int result = a + b
+	retreat result
+}
+
+.. pointer function
+int readPointer(int ->value) <void> {
+	retreat <-value
+}
+
+.. main
+void main() <void> {
+	
+	int a = 10
+	int b = 20
+	
+	int result = addNumbers(a, b)
+	
+	std.out(result)
+	std.out(message)
+	std.out(numbers[2])
+	
+	kill
+}

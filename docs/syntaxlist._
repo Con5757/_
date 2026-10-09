@@ -94,9 +94,9 @@ private
 hidden ..all vars are until specified global
 
 ..
-data name {} ..struct, name also isnt needed, but if you want to you can
-set name {} ..enum
-alias ..typedef 
+data {} ..struct, name also isnt needed, but if you want to you can
+set {} ..enum
+alias  ..typedef 
 
 ..conditional
 if 
@@ -105,7 +105,7 @@ else
 
 switch
 arg
-break ..break
+break 
 incase
 
 ..switch structure
@@ -127,7 +127,6 @@ during (conditional) {}
 repeat (init, condition, i++) {}
 
 ..function keywords
-func
 retreat
 main
 kill
@@ -135,7 +134,7 @@ kill
 <func flags>
 
 ..main structure
-void func main() <void> {
+void main() <void> {
     kill
 }
 
