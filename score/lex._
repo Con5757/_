@@ -1,0 +1,14 @@
+?std
+	with string
+
+alias data {
+	; directory
+	CMD_CHANGE_DIR ; c@ path || . || ..
+	CMD_MAKE_DIR ; m@ ~path name
+	CMD_DELETE_DIR ; d@ ~path
+} CMDType
+
+alias struct {
+	CMDtype type
+	str ->value
+} CMD
