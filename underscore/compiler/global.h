@@ -21,5 +21,7 @@ void progress(const char *message);
 void clearProgress(void);
 char *readFile(const char *filename);
 void printTokens(void);
+void printHelp(void);
+void parseFlags(int argc, char **argv);
 
 #endif

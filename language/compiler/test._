@@ -1,7 +1,0 @@
-int func add(int a, int b) <void> {
-    retreat a + b
-}
-
-void func m() <void> {
-    out(add(1, 6))
-}
