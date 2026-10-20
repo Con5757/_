@@ -1,14 +1,15 @@
 ?std
 	with string
 
-alias data {
+alias set {
 	; directory
 	CMD_CHANGE_DIR ; c@ path || . || ..
 	CMD_MAKE_DIR ; m@ ~path name
 	CMD_DELETE_DIR ; d@ ~path
 } CMDType
 
-alias struct {
+alias data {
 	CMDtype type
 	str ->value
 } CMD
+
