@@ -1,0 +1,8 @@
+?init
+?files
+	"./lex._"
+?macros
+@lex
+	MACRO MAX_TOKENS 1024
+
+?endit
