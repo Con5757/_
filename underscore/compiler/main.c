@@ -69,7 +69,6 @@ void clearProgress(void) {
   printf("\r%*s\r", 80, "");
   fflush(stdout);
 }
-
 void printTokens(void) {
   for (int i = 0; i < tokenCount; i++) {
     printf(
@@ -79,7 +78,6 @@ void printTokens(void) {
     );
   }
 }
-
 void printHelp(void) {
   printf("Usage: compiler <source file> [flags]\n\n");
 
@@ -89,7 +87,6 @@ void printHelp(void) {
   printf("  -progress     Show compiler progress\n");
   printf("  -help         Show this help\n");
 }
-
 void parseFlags(int argc, char **argv) {
   for (int i = 2; i < argc; i++) {
 

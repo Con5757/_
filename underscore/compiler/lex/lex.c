@@ -230,8 +230,7 @@ void lex(const char *source) {
     }
 
     // period
-    if (c == '.' && source[i + 1] == '.') {
-      i += 2;
+    if (c == ';') {
 
       while (source[i] != '\0' && source[i] != '\n') {
         i++;

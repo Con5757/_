@@ -90,7 +90,6 @@ ASTNode *parseStrDecl() {
 
   return node;
 }
-
 ASTNode *parseOut(void) {
   ASTNode *node = newAST(AST_OUT);
 
@@ -103,7 +102,6 @@ ASTNode *parseOut(void) {
 
   return node;
 }
-
 ASTNode *parseMethod(void) {
   ASTNode *node = newAST(AST_METHOD);
   node->method = malloc(sizeof(Method));
@@ -342,7 +340,7 @@ ASTNode *parseExpression(void) {
 
   return left;
 }
-ASTNode* parseCall(void) {
+ASTNode *parseCall(void) {
   ASTNode* node = newAST(AST_CALL);
 
   Token* name = expect(TOKEN_VARIABLE);
