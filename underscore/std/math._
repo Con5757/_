@@ -1,0 +1,17 @@
+fp sqrt(fp x) {
+    if num < 1.0 {
+
+    }
+    if num == 0.0 || num == 1.0 {
+
+    }
+
+    fp guess = num
+    fp nextGuess
+
+    fp precision = 0.0000001
+
+    during 1 {
+        nextGuess = 0.5 * (guess +())
+    }
+}

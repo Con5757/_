@@ -1,6 +1,7 @@
 ?init
 ?files
     "string._"
+    "math._"
 
 ?macros
     null
@@ -16,8 +17,11 @@
 
 ?functions
 @string
-    int length(str)
-    str up(str)
-    str low(str)
+    int length(str) <void>
+    str up(str) <void>
+    str low(str) <void>
+
+@math
+    fp sqrt(fp) <void>
 
 ?endit
