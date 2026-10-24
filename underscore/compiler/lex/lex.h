@@ -7,36 +7,42 @@ typedef enum {
   TOKEN_EOF,
   TOKEN_NEWLINE,
   TOKEN_COMMA,
+  TOKEN_COLON,
   TOKEN_MAIN,
 
-  // includes
   TOKEN_WITH,
   TOKEN_INCLUDE,
-
-  // kill flags
   TOKEN_KILL_SILENT,
+  TOKEN_KILL_FLAG,
 
   TOKEN_VARIABLE,
   TOKEN_STRING,
   TOKEN_NUMBER,
+  TOKEN_FIXED_TYPE,
+  TOKEN_TRUE,
+  TOKEN_FALSE,
 
-  // types
   TOKEN_INT,
   TOKEN_STR,
   TOKEN_FP,
   TOKEN_VOID,
-
-  // io (move to lib and runtime later)
   TOKEN_IN,
   TOKEN_OUT,
 
-  // assign
   TOKEN_EQUAL,
+  TOKEN_EQUAL_EQUAL,
+  TOKEN_NOT_EQUAL,
+  TOKEN_GREATER_EQUAL,
+  TOKEN_LESS_EQUAL,
 
-  // period
   TOKEN_PERIOD,
+  TOKEN_NAMESPACE,
+  TOKEN_AT,
+  TOKEN_PTR,
+  TOKEN_DEREF,
+  TOKEN_DPTR,
+  TOKEN_DDEREF,
 
-  // logic
   NOT,
   AND,
   OR,
@@ -45,41 +51,83 @@ typedef enum {
   XNOR,
   NAND,
 
-  // operators
+  TOKEN_BIT_OR,
+  TOKEN_BIT_AND,
+  TOKEN_BIT_XOR,
+  TOKEN_SHIFT_LEFT,
+  TOKEN_SHIFT_RIGHT,
+  TOKEN_SPECIAL_BITWISE,
+
   TOKEN_ADD,
   TOKEN_SUB,
   TOKEN_MUL,
   TOKEN_DIV,
+  TOKEN_MOD,
+  TOKEN_INCREMENT,
+  TOKEN_DECREMENT,
 
-  // func
+  TOKEN_ADD_ASSIGN,
+  TOKEN_SUB_ASSIGN,
+  TOKEN_MUL_ASSIGN,
+  TOKEN_DIV_ASSIGN,
+  TOKEN_MOD_ASSIGN,
+  TOKEN_BIT_AND_ASSIGN,
+  TOKEN_BIT_OR_ASSIGN,
+  TOKEN_BIT_XOR_ASSIGN,
+
   TOKEN_FUNC,
   TOKEN_KILL,
   TOKEN_RETREAT,
+  TOKEN_IF,
+  TOKEN_ELIF,
+  TOKEN_ELSE,
+  TOKEN_SWITCH,
+  TOKEN_ARG,
+  TOKEN_BREAK,
+  TOKEN_INCASE,
+  TOKEN_CONT,
+  TOKEN_ATTEMPT,
+  TOKEN_DURING,
+  TOKEN_REPEAT,
+
+  TOKEN_CONST,
+  TOKEN_STATIC,
+  TOKEN_GLOBAL,
+  TOKEN_CLASS,
+  TOKEN_PUBLIC,
+  TOKEN_PRIVATE,
+  TOKEN_HIDDEN,
+  TOKEN_DATA,
+  TOKEN_SET,
+  TOKEN_ALIAS,
+  TOKEN_VEC,
 
   TOKEN_SINGLE_QUOTE,
 
-  // parens
-  TOKEN_LEFT_PAREN,         // (
-  TOKEN_RIGHT_PAREN,        // )
-  TOKEN_LEFT_SQUARE_PAREN,  // [
-  TOKEN_RIGHT_SQUARE_PAREN, // ]
-  TOKEN_LEFT_CURLY_PAREN,   // {
-  TOKEN_RIGHT_CURLY_PAREN,  // }
-  TOKEN_LEFT_VEC_PAREN,     // <
-  TOKEN_RIGHT_VEC_PAREN     // >
+  TOKEN_LEFT_PAREN,
+  TOKEN_RIGHT_PAREN,
+  TOKEN_LEFT_SQUARE_PAREN,
+  TOKEN_RIGHT_SQUARE_PAREN,
+  TOKEN_LEFT_CURLY_PAREN,
+  TOKEN_RIGHT_CURLY_PAREN,
+  TOKEN_LEFT_VEC_PAREN,
+  TOKEN_RIGHT_VEC_PAREN
 } isTokenType;
+
+#define TOKEN_LESS TOKEN_LEFT_VEC_PAREN
+#define TOKEN_GREATER TOKEN_RIGHT_VEC_PAREN
 
 typedef struct {
   isTokenType type;
   char text[MAX_NAME];
   int line;
+  int column;
 } Token;
 
 extern Token tokens[MAX_TOKENS];
 extern int tokenCount;
 
-// functions
-void addToken(isTokenType type, const char *text, int line);
+void addToken(isTokenType type, const char *text, int line, int column);
 void lex(const char *source);
 
 #endif
