@@ -1,4 +1,5 @@
 #include "codegen/codegen.h"
+#include "diagnostic.h"
 #include "global.h"
 #include "lex/lex.h"
 #include "parse/parse.h"
@@ -123,6 +124,8 @@ int main(int argc, char **argv) {
   parseFlags(argc, argv);
 
   char *source = readFile(argv[1]);
+  /* Register source before lexing so every phase can print real file context. */
+  diagnosticSetSource(argv[1], source);
 
   progress("Lexing");
   lex(source);

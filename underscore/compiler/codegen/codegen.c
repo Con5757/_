@@ -12,7 +12,7 @@ static int generatedDataTypeCount = 0;
 static Method *activeMethod = NULL;
 static ASTNode *topLevelNodes = NULL;
 
-static void codegenError(const char *code, const char *message, ASTNode *node,
+static _Noreturn void codegenError(const char *code, const char *message, ASTNode *node,
                          const char *label, const char *help) {
   diagnosticError("error", code, message,
                   node != NULL ? node->line : 0,
@@ -276,13 +276,22 @@ static void generateExpression(ASTNode *node, FILE *output) {
     return;
   case AST_LOGICAL_AND: case AST_LOGICAL_OR: case AST_LOGICAL_NOR:
   case AST_LOGICAL_XOR: case AST_LOGICAL_XNOR: case AST_LOGICAL_NAND:
+    if (node->type == AST_LOGICAL_XOR || node->type == AST_LOGICAL_XNOR) {
+      /* `~` is logical XOR: compare truth values, not raw numeric values. */
+      fputs("((!!(", output);
+      generateExpression(node->child, output);
+      fputs(")) ", output);
+      fputs(node->type == AST_LOGICAL_XOR ? "!= " : "== ", output);
+      fputs("(!!(", output);
+      generateExpression(node->right, output);
+      fputs(")))", output);
+      return;
+    }
     fputc('(', output);
-    if (node->type == AST_LOGICAL_NOR || node->type == AST_LOGICAL_NAND ||
-        node->type == AST_LOGICAL_XNOR) fputc('!', output);
+    if (node->type == AST_LOGICAL_NOR || node->type == AST_LOGICAL_NAND) fputc('!', output);
     fputc('(', output);
     generateExpression(node->child, output);
-    const char *logicalOp = node->type == AST_LOGICAL_AND || node->type == AST_LOGICAL_NAND ? "&&" :
-                            node->type == AST_LOGICAL_XOR || node->type == AST_LOGICAL_XNOR ? "!=" : "||";
+    const char *logicalOp = node->type == AST_LOGICAL_AND || node->type == AST_LOGICAL_NAND ? "&&" : "||";
     fprintf(output, " %s ", logicalOp);
     generateExpression(node->right, output);
     fputs("))", output);
@@ -735,6 +744,7 @@ static void generateMethodPrototype(ASTNode *node, FILE *output) {
   for (int i = 0; i < method->paramCount; ++i) {
     if (i > 0) fputs(", ", output);
     Param *param = &method->params[i];
+    if ((param->storageFlags & DECL_FLAG_CONST) != 0) fputs("const ", output);
     fprintf(output, "%s%s %s", cType(param->type),
             (param->storageFlags & DECL_FLAG_DOUBLE_POINTER) ? " **" :
             (param->storageFlags & DECL_FLAG_POINTER) ? " *" : " ", param->name);
@@ -757,6 +767,7 @@ static void generateMethod(ASTNode *node, FILE *output, int emitGlobalInitialize
     for (int i = 0; i < method->paramCount; ++i) {
       if (i > 0) fputs(", ", output);
       Param *param = &method->params[i];
+      if ((param->storageFlags & DECL_FLAG_CONST) != 0) fputs("const ", output);
       fprintf(output, "%s%s %s", cType(param->type),
               (param->storageFlags & DECL_FLAG_DOUBLE_POINTER) ? " **" :
               (param->storageFlags & DECL_FLAG_POINTER) ? " *" : " ", param->name);

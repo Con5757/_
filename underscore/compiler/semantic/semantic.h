@@ -5,7 +5,7 @@
 #include "../parse/parse.h"
 
 int varExists(const char *name);
-void semanticError(const char *message, const char *name);
+_Noreturn void semanticError(const char *message, const char *name);
 void checkProgram(ASTNode *program);
 
 #endif

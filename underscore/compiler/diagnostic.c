@@ -73,19 +73,20 @@ static void printHeaderAndContext(const char *phase, const char *code,
   }
 }
 
-void diagnosticError(const char *phase, const char *code, const char *message,
-                     int line, int column, const char *label,
-                     const char *help) {
+_Noreturn void diagnosticError(const char *phase, const char *code,
+                               const char *message, int line, int column,
+                               const char *label, const char *help) {
   printHeaderAndContext(phase, code, message, line, column, label);
   if (help != NULL && help[0] != '\0')
     fprintf(stderr, "\n help: %s\n", help);
   exit(EXIT_FAILURE);
 }
 
-void diagnosticErrorWithNote(const char *phase, const char *code,
-                             const char *message, int line, int column,
-                             const char *label, const char *help,
-                             const char *note, int noteLine, int noteColumn) {
+_Noreturn void diagnosticErrorWithNote(const char *phase, const char *code,
+                                       const char *message, int line, int column,
+                                       const char *label, const char *help,
+                                       const char *note, int noteLine,
+                                       int noteColumn) {
   printHeaderAndContext(phase, code, message, line, column, label);
   if (note != NULL && note[0] != '\0') {
     fprintf(stderr, "\n note: %s\n", note);

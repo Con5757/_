@@ -11,11 +11,12 @@ int astCount = 0;
 int currentToken = 0;
 
 static int parserFailed = 0;
+static Token emptyToken = {TOKEN_EOF, "", 1, 1};
 
 static Token *peekToken(int offset) {
   int index = currentToken + offset;
   if (tokenCount <= 0) {
-    return NULL;
+    return &emptyToken;
   }
   if (index < 0) {
     index = 0;
@@ -96,7 +97,7 @@ static const char *tokenDisplay(Token *token) {
   return tokenName(token->type);
 }
 
-void parserError(const char *message) {
+_Noreturn void parserError(const char *message) {
   Token *token = current();
   int line = token != NULL ? token->line : 0;
   int column = token != NULL ? token->column : 1;
@@ -594,8 +595,11 @@ ASTNode *parseMethod(void) {
   if (!match(TOKEN_RIGHT_PAREN)) {
     for (;;) {
       Param param;
-      param.type = parseTypeSpec();
       param.storageFlags = 0;
+      while (match(TOKEN_CONST)) {
+        param.storageFlags |= DECL_FLAG_CONST;
+      }
+      param.type = parseTypeSpec();
       (void)match(TOKEN_AT);
       if (match(TOKEN_PTR)) {
         param.storageFlags |= DECL_FLAG_POINTER;
@@ -1362,7 +1366,8 @@ static ASTNode *parseStatementImpl(void) {
     if (current()->type == TOKEN_VARIABLE || current()->type == TOKEN_MAIN ||
         current()->type == TOKEN_IN || current()->type == TOKEN_LEFT_PAREN ||
         current()->type == NOT || current()->type == XOR || current()->type == TOKEN_SUB ||
-        current()->type == TOKEN_AT || current()->type == TOKEN_NUMBER ||
+        current()->type == TOKEN_AT || current()->type == TOKEN_DEREF ||
+        current()->type == TOKEN_DDEREF || current()->type == TOKEN_NUMBER ||
         current()->type == TOKEN_STRING || current()->type == TOKEN_TRUE ||
         current()->type == TOKEN_FALSE) {
       return parseExpressionStatement();

@@ -169,7 +169,7 @@ extern ASTNode astNodes[MAX_AST_NODES];
 ASTNode *newAST(ASTType type);
 Token *current(void);
 int match(isTokenType type);
-void parserError(const char *message);
+_Noreturn void parserError(const char *message);
 Token *expect(isTokenType type);
 
 /* Statements and declarations. */

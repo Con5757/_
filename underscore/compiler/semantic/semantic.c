@@ -76,7 +76,7 @@ static Type typeFromNode(ASTNode *node) {
   return type;
 }
 
-static void semanticErrorAt(const char *code, const char *message,
+static _Noreturn void semanticErrorAt(const char *code, const char *message,
                             ASTNode *node, const char *label, const char *help) {
   diagnosticError("error", code, message,
                   node != NULL ? node->line : 0,
@@ -84,7 +84,7 @@ static void semanticErrorAt(const char *code, const char *message,
                   label, help);
 }
 
-void semanticError(const char *message, const char *name) {
+_Noreturn void semanticError(const char *message, const char *name) {
   char full[384];
   snprintf(full, sizeof(full), "%s `%s`", message != NULL ? message : "semantic error",
            name != NULL ? name : "");
@@ -205,15 +205,70 @@ static int flagsForPointerDepth(int depth) {
 
 static int isConstLValue(ASTNode *node) {
   if (node == NULL) return 0;
+
+  int flags = node->storageFlags;
   if (node->type == AST_VAR) {
     VariableSymbol *symbol = findVariable(node->name);
-    return symbol != NULL && (symbol->flags & DECL_FLAG_CONST) != 0;
+    if (symbol != NULL) flags = symbol->flags;
+  } else if (node->type != AST_INDEX && node->type != AST_UNARY) {
+    return 0;
   }
-  if (node->type == AST_INDEX) {
-    /* Preserve constness through nested indexing, e.g. `rows[0][1]`. */
-    return isConstLValue(node->child);
+
+  /*
+   * `const int ->ptr` means “pointer to const int”, not “const pointer”.
+   * Therefore the pointer variable itself remains assignable, while its
+   * dereferenced scalar (and a const array element) is not. `storageFlags`
+   * on an expression describes the type after indexing/dereferencing.
+   */
+  if ((flags & DECL_FLAG_CONST) == 0 || pointerDepthFromFlags(flags) != 0) {
+    return 0;
   }
-  return 0;
+  if (node->type == AST_UNARY && node->operatorType != TOKEN_DEREF &&
+      node->operatorType != TOKEN_DDEREF) {
+    return 0;
+  }
+  return 1;
+}
+
+/*
+ * DECL_FLAG_CONST qualifies the pointed-to base type for pointers. Dropping
+ * that qualifier is unsafe. Adding it is safe for one pointer level, but not
+ * for double pointers (the C-style `int **` -> `const int **` conversion).
+ */
+static int pointerQualificationCompatible(int targetFlags, int sourceFlags) {
+  int targetDepth = pointerDepthFromFlags(targetFlags);
+  int sourceDepth = pointerDepthFromFlags(sourceFlags);
+  if (targetDepth == 0 || targetDepth != sourceDepth) return 1;
+
+  int targetConst = (targetFlags & DECL_FLAG_CONST) != 0;
+  int sourceConst = (sourceFlags & DECL_FLAG_CONST) != 0;
+  if (sourceConst && !targetConst) return 0;
+  if (!sourceConst && targetConst && targetDepth > 1) return 0;
+  return 1;
+}
+
+static void checkPointerQualification(int targetFlags, int sourceFlags,
+                                      ASTNode *where, const char *context) {
+  if (pointerQualificationCompatible(targetFlags, sourceFlags)) return;
+
+  int targetConst = (targetFlags & DECL_FLAG_CONST) != 0;
+  int sourceConst = (sourceFlags & DECL_FLAG_CONST) != 0;
+  char message[320];
+  if (sourceConst && !targetConst) {
+    snprintf(message, sizeof(message),
+             "%s would discard the `const` qualifier from the pointed-to type",
+             context != NULL ? context : "this pointer conversion");
+    semanticErrorAt("E3068", message, where,
+                    "the source pointer refers to a const-qualified value",
+                    "keep the target pointer const-qualified, or only use a mutable pointer with a mutable value.");
+  }
+
+  snprintf(message, sizeof(message),
+           "%s cannot add `const` through a double pointer safely",
+           context != NULL ? context : "this pointer conversion");
+  semanticErrorAt("E3068", message, where,
+                  "converting `int **` to `const int **` can allow a mutable pointer to escape through the const-qualified type",
+                  "use a matching pointer qualification at both levels, or pass a single pointer to a const-qualified value.");
 }
 
 static int typesCompatible(ValueType expected, ValueType actual) {
@@ -461,7 +516,12 @@ static ValueType checkExpression(ASTNode *expr) {
     expr->valueType = isCharacterIndex ? VALUE_INT : base->valueType;
     expr->declaredType = elementType;
     expr->typeSize = elementStringCapacity;
-    expr->storageFlags = flagsForPointerDepth(remainingPointerDepth);
+    int baseConst = base != NULL ? base->storageFlags & DECL_FLAG_CONST : 0;
+    if (base != NULL && base->type == AST_STRING) {
+      /* String literals are immutable even though C's type system is permissive. */
+      baseConst = DECL_FLAG_CONST;
+    }
+    expr->storageFlags = flagsForPointerDepth(remainingPointerDepth) | baseConst;
     if (!isCharacterIndex && elementType.kind == TYPE_STR && elementStringCapacity > 0) {
       expr->storageFlags |= DECL_FLAG_STRING_BUFFER;
     }
@@ -493,7 +553,8 @@ static ValueType checkExpression(ASTNode *expr) {
       int depth = pointerDepthFromFlags(expr->child->storageFlags) + 1;
       if (depth > 2) semanticErrorAt("E3051", "pointer depth greater than two is not supported", expr, NULL,
                                      "the documented language currently defines `->` and `-->` only.");
-      expr->storageFlags = flagsForPointerDepth(depth);
+      expr->storageFlags = flagsForPointerDepth(depth) |
+                           (expr->child->storageFlags & DECL_FLAG_CONST);
       expr->valueType = left;
       return left;
     }
@@ -506,7 +567,8 @@ static ValueType checkExpression(ASTNode *expr) {
                         required == 2 ? "use `<--value` only with a double pointer declared using `-->`." :
                                         "declare a pointer with `->`, or take a variable's address using `@name`.");
       }
-      expr->storageFlags = flagsForPointerDepth(depth - required);
+      expr->storageFlags = flagsForPointerDepth(depth - required) |
+                           (expr->child->storageFlags & DECL_FLAG_CONST);
       expr->valueType = left;
       return left;
     }
@@ -523,12 +585,12 @@ static ValueType checkExpression(ASTNode *expr) {
                       "only a variable, indexed element, member, or dereferenced pointer can be assigned to",
                       "write an assignment like `total = total + 1`, not `1 + total = 2`.");
     }
+    left = checkExpression(expr->child);
     if (isConstLValue(expr->child)) {
       semanticErrorAt("E3054", "cannot assign to a constant", expr->child,
-                      "this value was declared with `const`",
-                      "remove `const` if the value should change, or assign to a different variable.");
+                      "this value is const-qualified; for pointers, this is the pointed-to value",
+                      "keep the pointed-to value unchanged, or use a mutable pointer only with a mutable value.");
     }
-    left = checkExpression(expr->child);
     right = checkExpression(expr->right);
     int isNullPointerAssignment = expr->right->type == AST_NUM &&
                                   expr->right->valueType == VALUE_INT && expr->right->value == 0;
@@ -537,6 +599,11 @@ static ValueType checkExpression(ASTNode *expr) {
       semanticErrorAt("E3055", "assignment has incompatible pointer levels", expr,
                       "the left and right sides have different pointer depths",
                       "use `@value` to obtain a pointer, `<-value` to dereference one, or assign compatible pointer variables.");
+    }
+    if (pointerDepthFromFlags(expr->child->storageFlags) ==
+        pointerDepthFromFlags(expr->right->storageFlags)) {
+      checkPointerQualification(expr->child->storageFlags, expr->right->storageFlags,
+                                expr->right, "this pointer assignment");
     }
     if (left == VALUE_STR && expr->child != NULL &&
         (expr->child->type == AST_VAR || expr->child->type == AST_INDEX) &&
@@ -572,12 +639,12 @@ static ValueType checkExpression(ASTNode *expr) {
                       "increment and decrement require a modifiable value",
                       "use `count++` or `count--` on a declared numeric variable.");
     }
+    left = checkExpression(expr->child);
     if (isConstLValue(expr->child)) {
       semanticErrorAt("E3054", "cannot modify a constant", expr->child,
-                      "this value was declared with `const`",
-                      "remove `const` if the value should change, or update a different variable.");
+                      "this value is const-qualified; for pointers, this is the pointed-to value",
+                      "keep the pointed-to value unchanged, or use a mutable pointer only with a mutable value.");
     }
-    left = checkExpression(expr->child);
     if (!isNumeric(left)) semanticErrorAt("E3019", "increment/decrement requires a numeric value", expr, NULL, "use `++` or `--` with `int` or `fp`.");
     expr->valueType = left;
     expr->storageFlags = expr->child != NULL ? expr->child->storageFlags : 0;
@@ -630,6 +697,13 @@ static ValueType checkExpression(ASTNode *expr) {
         semanticErrorAt("E3056", message, arg,
                         "the argument's pointer level does not match the parameter",
                         "pass a variable of the expected pointer type, or use `@variable` to take its address.");
+      }
+      if (pointerDepthFromFlags(arg->storageFlags) ==
+          pointerDepthFromFlags(called->params[i].storageFlags)) {
+        char context[160];
+        snprintf(context, sizeof(context), "argument %d to `%s`", i + 1, expr->name);
+        checkPointerQualification(called->params[i].storageFlags, arg->storageFlags,
+                                  arg, context);
       }
       if (!typesCompatible(expected, actual)) {
         char message[320];
@@ -754,6 +828,10 @@ static void checkDeclaration(ASTNode *node, int isGlobal) {
       semanticErrorAt("E3058", "pointer initializer does not have the declared pointer depth", node->child,
                       "the initializer is not a pointer of the expected level",
                       "take an address with `@variable`; for example, use `int value = 20` followed by `int ->ptr = @value`.");
+    }
+    if (actualDepth == expectedDepth) {
+      checkPointerQualification(node->storageFlags, node->child->storageFlags,
+                                node->child, "this pointer initializer");
     }
   } else if (node->child != NULL && node->type != AST_ARRAY_DECL &&
              pointerDepthFromFlags(node->child->storageFlags) > 0) {
