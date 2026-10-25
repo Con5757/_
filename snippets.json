@@ -1,0 +1,401 @@
+{
+  "Assignment — add a value to a variable": {
+    "prefix": "u-add-assign",
+    "body": [
+      "${1:total} += ${2:amount}"
+    ],
+    "description": "Increase a numeric variable by an expression and store the result back in the same variable."
+  },
+  "Type definition — alias a primitive type": {
+    "prefix": "u-alias",
+    "body": [
+      "alias ${1:int} ${2:Count}"
+    ],
+    "description": "Emit a typedef-style alias for a primitive type. The backend supports the alias declaration, but using custom alias names as variable types is not supported by the current parser yet."
+  },
+  "Assignment — assign through an array index": {
+    "prefix": "u-array-assign",
+    "body": [
+      "${1:numbers}[${2:index}] = ${3:value}"
+    ],
+    "description": "Update an existing array element by index. Use an in-range index and a value compatible with the array element type."
+  },
+  "Array — initialize a floating-point array": {
+    "prefix": "u-array-fp",
+    "body": [
+      "fp ${1:measurements}<${2:3}> = [${3:1.5}, ${4:2.5}, ${5:3.5}]"
+    ],
+    "description": "Declare a fixed-count fp array initialized with decimal values."
+  },
+  "Array — read an item by index": {
+    "prefix": "u-array-index",
+    "body": [
+      "${1:numbers}[${2:0}]"
+    ],
+    "description": "Access an array or string item by its square-bracket index. Assign the expression to a variable or pass it to a function as needed."
+  },
+  "Array — initialize a fixed-count integer array": {
+    "prefix": "u-array-int",
+    "body": [
+      "int ${1:numbers}<${2:3}> = [${3:10}, ${4:20}, ${5:30}]"
+    ],
+    "description": "Declare an integer array. The count uses angle brackets; the initializer uses square brackets and comma-separated expressions."
+  },
+  "Array — initialize a string array": {
+    "prefix": "u-array-str",
+    "body": [
+      "str ${1:labels}<${2:2}> = [\"${3:first}\", \"${4:second}\"]"
+    ],
+    "description": "Declare a fixed-count string array. String literals use double quotes; the count is written in angle brackets."
+  },
+  "Loop control — stop the current loop or switch": {
+    "prefix": "u-break",
+    "body": [
+      "break"
+    ],
+    "description": "Exit the nearest enclosing loop or switch. The semantic checker rejects break outside a loop or switch."
+  },
+  "Function call — call a declared function": {
+    "prefix": "u-call-function",
+    "body": [
+      "${1:calculate}(${2:argument})"
+    ],
+    "description": "Call a function declared in the current program. The compiler checks the function name, argument count, and argument types."
+  },
+  "Comment — block": {
+    "prefix": "u-comment-block",
+    "body": [
+      ";-",
+      "${1:Explain this section or temporarily document code.}",
+      "-;"
+    ],
+    "description": "Wrap a multiline comment between ;- and -;. The block comment may span several lines."
+  },
+  "Comment — one line": {
+    "prefix": "u-comment-line",
+    "body": [
+      "; ${1:Explain why this line exists}"
+    ],
+    "description": "Start a single-line comment with a semicolon. The compiler ignores the rest of the line."
+  },
+  "Declaration — constant integer": {
+    "prefix": "u-const-int",
+    "body": [
+      "const int ${1:limit} = ${2:100}"
+    ],
+    "description": "Declare an integer with the const storage modifier. Put the modifier before the type."
+  },
+  "Loop control — continue with the next iteration": {
+    "prefix": "u-cont",
+    "body": [
+      "cont"
+    ],
+    "description": "Skip to the next iteration of the enclosing during or repeat loop. The current keyword is cont, not continue."
+  },
+  "Type definition — data record": {
+    "prefix": "u-data",
+    "body": [
+      "data ${1:Person} {",
+      "\tstr name",
+      "\tint age",
+      "\tfp height",
+      "}"
+    ],
+    "description": "Define a record containing primitive fields. The backend emits a C struct; using a user-defined record name as a variable type is not supported by the current parser yet."
+  },
+  "Pointer — read through a pointer": {
+    "prefix": "u-dereference",
+    "body": [
+      "int ${1:value} = ${2:10}",
+      "int ->${3:valuePtr} = @${1:value}",
+      "int ${4:copiedValue} = <-${3:valuePtr}"
+    ],
+    "description": "Dereference a single pointer with <-. Use the result in an expression, for example int copiedValue = <-valuePtr."
+  },
+  "Pointer — dereference a double pointer": {
+    "prefix": "u-double-dereference",
+    "body": [
+      "int ${1:value} = ${2:10}",
+      "int ->${3:valuePtr} = @${1:value}",
+      "int -->${4:valueDoublePtr} = @${3:valuePtr}",
+      "int ${5:copiedValue} = <--${4:valueDoublePtr}"
+    ],
+    "description": "Dereference a double pointer with <--. Use it as an expression in a declaration, assignment, or function argument."
+  },
+  "Pointer — declare a double pointer": {
+    "prefix": "u-double-pointer",
+    "body": [
+      "int ${1:value} = ${2:10}",
+      "int ->${3:valuePtr} = @${1:value}",
+      "int -->${4:valueDoublePtr} = @${3:valuePtr}"
+    ],
+    "description": "Declare a double pointer using --> beside the variable name. Pointer depth is checked when passing pointer values to functions."
+  },
+  "Loop — repeat while a condition is true": {
+    "prefix": "u-during",
+    "body": [
+      "during (${1:count < 10}) {",
+      "\t${2:count++}",
+      "\t$0",
+      "}"
+    ],
+    "description": "Repeat a block while a parenthesized condition remains true. Update state inside the loop to avoid an unintended endless loop."
+  },
+  "Declaration — fixed-width numeric value": {
+    "prefix": "u-fixed-number",
+    "body": [
+      "${1|int64,int32,int16,int8,fp64,fp32,fp16,fp8|}@${2:value} = ${3:0}"
+    ],
+    "description": "Declare a fixed-width int or fp value. The suffix selects the width and @ introduces the variable name in this syntax."
+  },
+  "Declaration — fixed-width string value": {
+    "prefix": "u-fixed-str",
+    "body": [
+      "${1|str64,str32,str16,str8|}@${2:message} = \"${3:}\""
+    ],
+    "description": "Declare a fixed-width string using the supported str width names. Initialize it with a double-quoted string literal."
+  },
+  "Declaration — floating-point variable": {
+    "prefix": "u-fp",
+    "body": [
+      "fp ${1:ratio} = ${2:0.5}"
+    ],
+    "description": "Declare an fp floating-point variable. Decimal numeric literals are supported by the current lexer."
+  },
+  "Function — return a floating-point result": {
+    "prefix": "u-function-fp",
+    "body": [
+      "fp ${1:average}(${2:fp total}, ${3:int count}) <void> {",
+      "\tretreat ${4:total / count}",
+      "}"
+    ],
+    "description": "Define a function returning fp (floating-point). Use typed parameters and return a compatible numeric expression with retreat."
+  },
+  "Function — return an integer result": {
+    "prefix": "u-function-int",
+    "body": [
+      "int ${1:add}(${2:int left}, ${3:int right}) <void> {",
+      "\tretreat ${4:left + right}",
+      "}"
+    ],
+    "description": "Define an integer-returning function with two typed parameters. retreat must return a value compatible with the declared int return type."
+  },
+  "Function — return a string": {
+    "prefix": "u-function-str",
+    "body": [
+      "str ${1:greeting}(${2:str name}) <void> {",
+      "\tretreat ${3:name}",
+      "}"
+    ],
+    "description": "Define a string-returning function. Avoid returning a local string buffer; the current compiler diagnoses that lifetime issue."
+  },
+  "Function — perform an action without a value": {
+    "prefix": "u-function-void",
+    "body": [
+      "void ${1:printMessage}(${2:str message}) <void> {",
+      "\tstd.out(${3:message})",
+      "\tretreat",
+      "}"
+    ],
+    "description": "Define a void function for an action rather than a returned value. Use bare retreat to leave the function."
+  },
+  "Declaration — global integer": {
+    "prefix": "u-global-int",
+    "body": [
+      "global int ${1:sharedCount} = ${2:0}"
+    ],
+    "description": "Declare an integer with the global storage modifier. The modifier must precede the declaration type."
+  },
+  "Condition — if block": {
+    "prefix": "u-if",
+    "body": [
+      "if (${1:count > 0}) {",
+      "\t${0:std.out(count)}",
+      "}"
+    ],
+    "description": "Run a block only when the parenthesized condition is true. Conditions can use comparisons and supported logical operators."
+  },
+  "Condition — require both comparisons to be true": {
+    "prefix": "u-if-and",
+    "body": [
+      "if (${1:count > 0} && ${2:count < 10}) {",
+      "\t${0:std.out(count)}",
+      "}"
+    ],
+    "description": "Combine two conditions with && (logical AND). The block runs only when both expressions are true."
+  },
+  "Condition — if, elif, and else chain": {
+    "prefix": "u-if-elif-else",
+    "body": [
+      "if (${1:score >= 90}) {",
+      "\t${2:std.out(\"high\")}",
+      "} elif (${3:score >= 60}) {",
+      "\t${4:std.out(\"pass\")}",
+      "} else {",
+      "\t${0:std.out(\"retry\")}",
+      "}"
+    ],
+    "description": "Test several conditions in order. elif is checked only when preceding conditions did not match; else is the fallback."
+  },
+  "Condition — if and else blocks": {
+    "prefix": "u-if-else",
+    "body": [
+      "if (${1:count > 0}) {",
+      "\t${2:std.out(\"positive\")}",
+      "} else {",
+      "\t${0:std.out(\"zero or negative\")}",
+      "}"
+    ],
+    "description": "Choose between two blocks. Both if and else bodies use braces; the if condition is parenthesized."
+  },
+  "Condition — accept either comparison": {
+    "prefix": "u-if-or",
+    "body": [
+      "if (${1:choice == 1} || ${2:choice == 2}) {",
+      "\t${0:std.out(choice)}",
+      "}"
+    ],
+    "description": "Combine conditions with || (logical OR). The block runs when either expression is true."
+  },
+  "Include — standard library marker": {
+    "prefix": "u-include-std",
+    "body": [
+      "?std"
+    ],
+    "description": "Write the standard-library include marker recognized by the parser and backend. Module selection such as with math is not yet connected to runtime mappings, so this does not guarantee module APIs are available."
+  },
+  "Declaration — integer variable": {
+    "prefix": "u-int",
+    "body": [
+      "int ${1:count} = ${2:0}"
+    ],
+    "description": "Declare an integer variable, optionally initialized with an integer expression."
+  },
+  "Program exit — successful termination": {
+    "prefix": "u-kill",
+    "body": [
+      "kill"
+    ],
+    "description": "Terminate the program. The current C backend emits a successful exit status for plain kill."
+  },
+  "Program exit — report failure status": {
+    "prefix": "u-kill-error",
+    "body": [
+      "kill -error"
+    ],
+    "description": "Terminate the program with a failing exit status. The current backend also maps kill -panic to a failing exit status."
+  },
+  "Main function — program entry point": {
+    "prefix": "u-main",
+    "body": [
+      "void main() <void> {",
+      "\t${1:std.out(\"Hello, Underscore!\")}",
+      "\tretreat",
+      "}"
+    ],
+    "description": "Create the program entry point. The function is named main; a bare retreat exits this void main successfully."
+  },
+  "Output — print one value with std.out": {
+    "prefix": "u-output",
+    "body": [
+      "std.out(${1:value})"
+    ],
+    "description": "Print one value-producing expression. The current compiler implements std.out and expects exactly one argument."
+  },
+  "Output — print using namespace syntax": {
+    "prefix": "u-output-namespace",
+    "body": [
+      "std::out(${1:value})"
+    ],
+    "description": "Print one value using the compiler-supported :: namespace-access form. The current backend treats std::out like std.out."
+  },
+  "Output — short out call": {
+    "prefix": "u-output-short",
+    "body": [
+      "out(${1:value})"
+    ],
+    "description": "Use the built-in output call without the std. prefix. It still accepts exactly one value-producing expression."
+  },
+  "Pointer — declare a pointer variable": {
+    "prefix": "u-pointer",
+    "body": [
+      "int ${1:value} = ${2:10}",
+      "int ->${3:valuePtr} = @${1:value}"
+    ],
+    "description": "Declare an int pointer by placing -> beside the variable name. @value expresses the address/reference form supported by the current parser."
+  },
+  "Loop — initialize, test, and update": {
+    "prefix": "u-repeat",
+    "body": [
+      "repeat (int ${1:i} = ${2:0}, ${1:i} < ${3:10}, ${1:i}++) {",
+      "\t${0:std.out(i)}",
+      "}"
+    ],
+    "description": "Create a counted loop with three comma-separated fields: initialization, condition, and update. The initializer should be a supported scalar declaration or assignment."
+  },
+  "Return — leave a void function": {
+    "prefix": "u-retreat",
+    "body": [
+      "retreat"
+    ],
+    "description": "Exit the current void function. In main, a bare retreat returns a successful status."
+  },
+  "Return — return a calculated value": {
+    "prefix": "u-retreat-value",
+    "body": [
+      "retreat ${1:value}"
+    ],
+    "description": "Leave a non-void function and return a value matching its declared return type."
+  },
+  "Type definition — enum values": {
+    "prefix": "u-set",
+    "body": [
+      "set {",
+      "\t${1:RED},",
+      "\t${2:GREEN},",
+      "\t${3:BLUE}",
+      "}"
+    ],
+    "description": "Define named enum constants. The current backend emits an enum declaration; enum values are not yet integrated into full semantic type checking."
+  },
+  "Declaration — static integer": {
+    "prefix": "u-static-int",
+    "body": [
+      "static int ${1:counter} = ${2:0}"
+    ],
+    "description": "Declare a static integer. The modifier appears before the type and is retained in the declaration AST."
+  },
+  "Declaration — string variable": {
+    "prefix": "u-str",
+    "body": [
+      "str ${1:message} = \"${2:Hello}\""
+    ],
+    "description": "Declare a string using double quotes. Supported escape sequences are backslash-n, backslash-r, backslash-t, backslash-0, a doubled backslash, and backslash-double-quote."
+  },
+  "Declaration — sized string buffer": {
+    "prefix": "u-str-buffer",
+    "body": [
+      "str ${1:message}[${2:64}] = \"${3:}\""
+    ],
+    "description": "Declare a writable string buffer with a positive capacity in square brackets. The current compiler rejects a zero capacity."
+  },
+  "Switch — integer cases and default branch": {
+    "prefix": "u-switch",
+    "body": [
+      "switch (${1:choice}) {",
+      "\targ ${2:1}: ",
+      "\t\t${3:std.out(\"first option\")}",
+      "\t\tbreak",
+      "",
+      "\targ ${4:2}: ",
+      "\t\t${5:std.out(\"second option\")}",
+      "\t\tbreak",
+      "",
+      "\tincase: ",
+      "\t\t${0:std.out(\"default option\")}",
+      "\t\tbreak",
+      "}"
+    ],
+    "description": "Branch on an integer expression. Use arg value: for each case and incase: for the optional default branch; break exits the switch."
+  }
+}
