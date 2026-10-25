@@ -16,14 +16,14 @@
       {
         "id": "underscore",
         "aliases": [
-          "uscore",
-          "u-lang",
-          "progU"
+          "ulang",
+          "u"
         ],
         "extensions": [
           "._",
           ".u",
-          ".ulang"
+          ".ulang",
+          ".ufg"
         ],
         "configuration": "./language-configuration.json",
         "icon": {
