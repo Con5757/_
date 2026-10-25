@@ -1,9 +1,4 @@
 #include "lex.h"
-#include "../diagnostic.h"
-
-#include <ctype.h>
-#include <stdio.h>
-#include <string.h>
 
 Token tokens[MAX_TOKENS];
 int tokenCount = 0;

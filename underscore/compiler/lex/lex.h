@@ -1,7 +1,13 @@
 #ifndef LEX_H
 #define LEX_H
 
+#include "../diagnostic/diagnostic.h"
 #include "../global.h"
+
+
+#include <ctype.h>
+#include <stdio.h>
+#include <string.h>
 
 typedef enum {
   TOKEN_EOF,

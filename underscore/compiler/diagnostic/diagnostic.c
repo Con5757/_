@@ -1,9 +1,5 @@
 #include "diagnostic.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 static const char *diagnosticFilename = "<source>";
 static const char *diagnosticSource = NULL;
 

@@ -1,10 +1,4 @@
 #include "parse.h"
-#include "../diagnostic.h"
-
-#include <ctype.h>
-#include <errno.h>
-#include <limits.h>
-#include <stdarg.h>
 
 ASTNode astNodes[MAX_AST_NODES];
 int astCount = 0;

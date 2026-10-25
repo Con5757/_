@@ -1,9 +1,10 @@
 #include "codegen/codegen.h"
-#include "diagnostic.h"
+#include "diagnostic/diagnostic.h"
 #include "global.h"
 #include "lex/lex.h"
 #include "parse/parse.h"
 #include "semantic/semantic.h"
+#include "global.h"
 
 int debugTokens = 0;
 int debugObjs = 0;

@@ -17,19 +17,21 @@ endif
 
 SOURCES := \
 	main.c \
-	diagnostic.c \
+	diagnostic/diagnostic.c \
 	lex/lex.c \
 	parse/parse.c \
 	semantic/semantic.c \
 	codegen/codegen.c
+	imports/imports.c
 
 HEADERS := \
 	global.h \
-	diagnostic.h \
+	diagnostic/diagnostic.h \
 	lex/lex.h \
 	parse/parse.h \
 	semantic/semantic.h \
 	codegen/codegen.h
+	imports/imports.h
 
 .PHONY: all test clean help
 

@@ -1,9 +1,14 @@
 #ifndef PARSE_H
 #define PARSE_H
 
+#include "../diagnostic/diagnostic.h"
 #include "../global.h"
 #include "../lex/lex.h"
 
+#include <ctype.h>
+#include <errno.h>
+#include <limits.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -80,19 +85,9 @@ typedef enum ASTType {
   AST_EXPRESSION_STATEMENT
 } ASTType;
 
-typedef enum ValueType {
-  VALUE_INT,
-  VALUE_FP,
-  VALUE_STR,
-  VALUE_VOID
-} ValueType;
+typedef enum ValueType { VALUE_INT, VALUE_FP, VALUE_STR, VALUE_VOID } ValueType;
 
-typedef enum TypeKind {
-  TYPE_INT,
-  TYPE_FP,
-  TYPE_STR,
-  TYPE_VOID
-} TypeKind;
+typedef enum TypeKind { TYPE_INT, TYPE_FP, TYPE_STR, TYPE_VOID } TypeKind;
 
 typedef struct Type {
   TypeKind kind;
@@ -121,7 +116,7 @@ typedef struct Method {
 } Method;
 
 enum {
-  DECL_FLAG_CONST  = 1 << 0,
+  DECL_FLAG_CONST = 1 << 0,
   DECL_FLAG_STATIC = 1 << 1,
   DECL_FLAG_GLOBAL = 1 << 2,
   DECL_FLAG_PUBLIC = 1 << 3,

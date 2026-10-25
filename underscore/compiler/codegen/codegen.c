@@ -1,12 +1,4 @@
 #include "codegen.h"
-#include "../diagnostic.h"
-
-#include <ctype.h>
-#include <stdint.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 static int generatedDataTypeCount = 0;
 static Method *activeMethod = NULL;
