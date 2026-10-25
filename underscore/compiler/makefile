@@ -8,7 +8,7 @@ CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Werror
 CPPFLAGS ?=
 LDFLAGS ?=
 ifeq ($(OS),Windows_NT)
-PROGRAM ?= compiler.exe
+PROGRAM ?= uc.exe
 PYTHON ?= python
 else
 PROGRAM ?= compiler
