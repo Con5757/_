@@ -1,26 +1,122 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "Underscore Markdown Code Blocks",
-  "scopeName": "markdown.underscore.codeblock",
-  "injectionSelector": "L:text.html.markdown",
+  "name": "Underscore",
+  "scopeName": "source._",
   "patterns": [
-    { "include": "#underscore-codeblock" }
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#function-calls"
+    }
   ],
   "repository": {
-    "underscore-codeblock": {
-      "begin": "^\\s*(`{3,}|~{3,})\\s*(underscore|ulang|u)\\b",
-      "beginCaptures": {
-        "1": { "name": "punctuation.definition.markdown" },
-        "2": { "name": "fenced_code.block.language.markdown" }
-      },
-      "end": "^\\s*(\\1)\\s*$",
-      "endCaptures": {
-        "1": { "name": "punctuation.definition.markdown" }
-      },
-      "name": "markup.fenced_code.block.markdown",
-      "contentName": "meta.embedded.block.underscore source._",
+    "comments": {
       "patterns": [
-        { "include": "source._" }
+        {
+          "name": "comment.block.underscore",
+          "begin": ";-",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.begin.underscore"
+            }
+          },
+          "end": "-;",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.end.underscore"
+            }
+          }
+        },
+        {
+          "name": "comment.line.semicolon.underscore",
+          "match": ";.*$"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.underscore",
+      "begin": "\"",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.begin.underscore"
+        }
+      },
+      "end": "\"",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.string.end.underscore"
+        }
+      },
+      "patterns": [
+        {
+          "name": "constant.character.escape.underscore",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.float.underscore",
+          "match": "\\b[0-9]+\\.[0-9]+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.underscore",
+          "match": "\\b[0-9]+\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.underscore",
+          "match": "\\b(if|elif|else|switch|arg|incase|during|repeat|attempt|break|cont|retreat|kill|main)\\b"
+        },
+        {
+          "name": "keyword.declaration.underscore",
+          "match": "\\b(int|fp|str|void|func|const|static|global|data|set|alias|class|public|private|hidden|vec)\\b"
+        },
+        {
+          "name": "keyword.import.underscore",
+          "match": "\\b(with)\\b|\\?"
+        },
+        {
+          "name": "keyword.operator.underscore",
+          "match": "(==|!=|<=|>=|&&|\\|\\||\\+\\+|--|\\+=|-=|\\*=|/=|%=|->|<-|-->|<--|::|[+*/%=&|^~!<>])"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.underscore",
+          "match": "\\b(true|false)\\b"
+        },
+        {
+          "name": "constant.language.null.underscore",
+          "match": "\\b(null)\\b"
+        }
+      ]
+    },
+    "function-calls": {
+      "patterns": [
+        {
+          "name": "entity.name.function.underscore",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?:(?:\\.|::)[A-Za-z_][A-Za-z0-9_]*)*(?=\\s*\\()"
+        }
       ]
     }
   }
