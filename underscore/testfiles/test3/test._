@@ -1,8 +1,0 @@
-data student {
-    int age
-    str name
-}
-
-student.name = "hello"
-
-out(student.name)
