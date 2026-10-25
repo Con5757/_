@@ -3,24 +3,12 @@
   "name": "Underscore",
   "scopeName": "source._",
   "patterns": [
-    {
-      "include": "#comments"
-    },
-    {
-      "include": "#strings"
-    },
-    {
-      "include": "#numbers"
-    },
-    {
-      "include": "#keywords"
-    },
-    {
-      "include": "#constants"
-    },
-    {
-      "include": "#function-calls"
-    }
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#keywords" },
+    { "include": "#constants" },
+    { "include": "#function-calls" }
   ],
   "repository": {
     "comments": {
@@ -28,21 +16,12 @@
         {
           "name": "comment.block.underscore",
           "begin": ";-",
-          "beginCaptures": {
-            "0": {
-              "name": "punctuation.definition.comment.begin.underscore"
-            }
-          },
-          "end": "-;",
-          "endCaptures": {
-            "0": {
-              "name": "punctuation.definition.comment.end.underscore"
-            }
-          }
+          "end": "-;"
         },
         {
-          "name": "comment.line.double-slash.underscore",
-          "match": "(;).*$"
+          "name": "comment.line.underscore",
+          "begin": ";",
+          "end": "$"
         }
       ]
     },
@@ -50,15 +29,11 @@
       "name": "string.quoted.double.underscore",
       "begin": "\"",
       "beginCaptures": {
-        "0": {
-          "name": "punctuation.definition.string.begin.underscore"
-        }
+        "0": { "name": "punctuation.definition.string.begin.underscore" }
       },
       "end": "\"",
       "endCaptures": {
-        "0": {
-          "name": "punctuation.definition.string.end.underscore"
-        }
+        "0": { "name": "punctuation.definition.string.end.underscore" }
       },
       "patterns": [
         {
