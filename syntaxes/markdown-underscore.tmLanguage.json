@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Underscore Markdown Code Blocks",
+  "scopeName": "markdown.underscore.codeblock",
+  "injectionSelector": "L:text.html.markdown",
+  "patterns": [
+    { "include": "#underscore-codeblock" }
+  ],
+  "repository": {
+    "underscore-codeblock": {
+      "begin": "^\\s*(`{3,}|~{3,})\\s*(underscore|ulang|u)\\b",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.markdown" },
+        "2": { "name": "fenced_code.block.language.markdown" }
+      },
+      "end": "^\\s*(\\1)\\s*$",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.markdown" }
+      },
+      "name": "markup.fenced_code.block.markdown",
+      "contentName": "meta.embedded.block.underscore source._",
+      "patterns": [
+        { "include": "source._" }
+      ]
+    }
+  }
+}

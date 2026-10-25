@@ -1,14 +1,9 @@
 {
   "name": "underscore-extensionpack",
   "displayName": "Underscore Language Extension",
-  "description": "Syntax Highlighting and Autofill for Underscore scripts in VScode",
-  "version": "1.0.3",
+  "description": "Syntax highlighting and snippets for Underscore source files.",
+  "version": "1.0.4",
   "publisher": "con5757",
-  "main": "./extension.js",
-  "activationEvents": [
-    "onLanguage:markdown",
-    "onLanguage:underscore"
-  ],
   "engines": {
     "vscode": "^1.70.0"
   },
@@ -27,14 +22,13 @@
         ],
         "extensions": [
           "._",
-          ".score",
           ".u",
-          ".usc"
+          ".ulang"
         ],
         "configuration": "./language-configuration.json",
         "icon": {
-          "light": "./icon-dark.svg",
-          "dark": "./icon-light.svg"
+          "light": "./icon-light.svg",
+          "dark": "./icon-dark.svg"
         }
       }
     ],
@@ -55,7 +49,6 @@
         }
       }
     ],
-    "markdown.markdownItPlugins": true,
     "snippets": [
       {
         "language": "underscore",

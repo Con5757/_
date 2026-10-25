@@ -1,168 +1,27 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "underscore",
-  "scopeName": "source._",
+  "name": "Underscore Markdown Code Blocks",
+  "scopeName": "markdown.underscore.codeblock",
+  "injectionSelector": "L:text.html.markdown",
   "patterns": [
-    { "include": "#comments" },
-    { "include": "#strings" },
-    { "include": "#keywords" },
-    { "include": "#library-members" },
-    { "include": "#typed-functions" },
-    { "include": "#type-declarations" },
-    { "include": "#operators" },
-    { "include": "#numbers" },
-    { "include": "#functions" }
+    { "include": "#underscore-codeblock" }
   ],
   "repository": {
-        "comment": "Multiline comment",
-        "name": "comment.block.underscore",
-        "begin": ";-",
-        "end": "-;",
-        "beginCaptures": {
-            "0": {
-                "name": "punctuation.definition.comment.begin.underscore"
-            }
-        },
-        "endCaptures": {
-            "0": {
-                "name": "punctuation.definition.comment.end.underscore"
-            }
-        }
-    },
-    "strings": {
+    "underscore-codeblock": {
+      "begin": "^\\s*(`{3,}|~{3,})\\s*(underscore|ulang|u)\\b",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.markdown" },
+        "2": { "name": "fenced_code.block.language.markdown" }
+      },
+      "end": "^\\s*(\\1)\\s*$",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.markdown" }
+      },
+      "name": "markup.fenced_code.block.markdown",
+      "contentName": "meta.embedded.block.underscore source._",
       "patterns": [
-        {
-          "name": "string.quoted.double.underscore",
-          "begin": "\"",
-          "end": "\"",
-          "patterns": [
-            { "name": "constant.character.escape.underscore", "match": "\\\\." }
-          ]
-        },
-        {
-          "name": "string.quoted.single.underscore",
-          "begin": "'",
-          "end": "'",
-          "patterns": [
-            { "name": "constant.character.escape.underscore", "match": "\\\\." }
-          ]
-        }
-      ]
-    },
-    "keywords": {
-      "patterns": [
-        {
-          "name": "keyword.control.underscore",
-          "match": "\\b(if|elif|else|during|repeat|switch|arg|incase|attempt|retreat|end|kill|break|continue|main|as)\\b"
-        },
-        {
-          "name": "invalid.illegal.flag.underscore",
-          "match": "\\?\\b()\\b"
-        },
-        {
-          "comment": "Imports statement with optional alias (e.g., using terminal as term)",
-          "match": "\\b(using)\\s+([a-zA-Z_][a-zA-Z0-9_]*)(?:\\s+(as)\\s+([a-zA-Z_][a-zA-Z0-9_]*))?",
-          "captures": {
-            "1": { "name": "keyword.control.import.underscore" },
-            "2": { "name": "entity.name.type.module.underscore" },
-            "3": { "name": "keyword.control.underscore" },
-            "4": { "name": "entity.name.type.module.underscore" }
-          }
-        },
-        {
-          "name": "entity.name.type.module.underscore",
-          "match": "\\b(terminal|boolean|math|string|file)\\b"
-        },
-        {
-          "comment": "Boolean Library Constants",
-          "name": "support.constant.boolean.underscore",
-          "match": "\\b(true|false|void)\\b"
-        }
-      ]
-    },
-    "library-members": {
-      "patterns": [
-        {
-          "comment": "Default terminal method call",
-          "match": "\\b(io)\\.(out|in|nl)\\b",
-          "captures": {
-            "1": { "name": "entity.name.type.module.underscore" },
-            "2": { "name": "support.function.io.underscore" }
-          }
-        },
-        {
-          "comment": "String functions when called as methods or standalone functions",
-          "name": "support.function.string.underscore",
-          "match": "\\b(length|copy|overwrite|compare|subSearch|slice|sliceArray|join|up|low|trim)\\b(?=\\s*\\()"
-        }
-      ]
-    },
-    "typed-functions": {
-      "patterns": [
-        {
-          "captures": {
-            "1": { "name": "storage.type.symbol.underscore" },
-            "2": { "name": "storage.type.keyword.underscore" },
-            "3": { "name": "entity.name.function.underscore" }
-          },
-          "match": "([int, str, fp, void])\\s*(func)\\s+([a-zA-Z_][a-zA-Z0-9_]*)"
-        }
-      ]
-    },
-    "type-declarations": {
-      "patterns": [
-        {
-          "comment": "Matches fixed-width integers like #8&var, #16&var, #32&var, #64&var",
-          "match": "(#)(8|16|32|64)(&)([a-zA-Z_][a-zA-Z0-9_]*)",
-          "captures": {
-            "1": { "name": "storage.type.symbol.underscore" },
-            "2": { "name": "constant.numeric.bitwidth.underscore" },
-            "3": { "name": "keyword.operator.bitwise.underscore" },
-            "4": { "name": "variable.other.typed.underscore" }
-          }
-        },
-        {
-          "captures": {
-            "1": { "name": "storage.type.symbol.underscore" },
-            "2": { "name": "variable.other.typed.underscore" }
-          },
-          "match": "([#%@$])\\s*([a-zA-Z_][a-zA-Z0-9_]*)"
-        },
-        {
-          "captures": {
-            "1": { "name": "storage.type.symbol.underscore" },
-            "2": { "name": "entity.name.type.constant.underscore" }
-          },
-          "match": "(\\?)\\s*([a-zA-Z_][a-zA-Z0-9_]*)"
-        },
-        {
-          "name": "storage.type.symbol.underscore",
-          "match": "[int, fp, str, void]"
-        }
-      ]
-    },
-    "operators": {
-      "patterns": [
-        {
-          "name": "storage.type.symbol.pointer.underscore",
-          "match": "->>>|->>|->|<<<-|<<-|<-"
-        },
-        {
-          "name": "keyword.operator.logical.underscore",
-          "match": "(?<=\\s)\\.(?=\\s)"
-        }
-      ]
-    },
-    "numbers": {
-      "patterns": [
-        {
-          "name": "keyword.other.boolean.underscore",
-          "match": "\\b[01]\\b"
-        },
-        {
-          "name": "constant.numeric.underscore",
-          "match": "\\b[0-9]+(?:\\.[0-9]+)?\\b"
-        }
+        { "include": "source._" }
       ]
     }
   }
+}
