@@ -17,7 +17,7 @@ fp sqrt(fp x) <void> {
     if (x < 0.0)
         retreat -1.0
     if (x == 0.0 || x == 1.0)
-        retreat x
+        retreat x 
 
     fp guess = 1.0
     if (x > 1.0)
