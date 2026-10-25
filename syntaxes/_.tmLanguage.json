@@ -41,8 +41,8 @@
           }
         },
         {
-          "name": "comment.line.semicolon.underscore",
-          "match": ";.*$"
+          "name": "comment.line.double-slash.underscore",
+          "match": "(;).*$"
         }
       ]
     },
