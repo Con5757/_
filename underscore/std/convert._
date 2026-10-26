@@ -1,0 +1,12 @@
+;- API design only — no callable functions are implemented in this module yet.
+  Proposed functions:
+      convert.toInt(number)
+      convert.toFp(number)
+      convert.parseInt(text)
+      convert.parseFp(text)
+      convert.toString(value)
+      convert.hex(value)
+      convert.bin(value)
+
+  Parsing must distinguish valid zero from invalid input and must define overflow and
+  precision behavior. Allocated string results also need an explicit ownership rule. -;

@@ -1,0 +1,12 @@
+;- API design only — no callable functions are implemented in this module yet.
+  Proposed functions:
+      network.connect(host, port)
+      network.listen(host, port)
+      network.accept(server)
+      network.send(handle, text)
+      network.receive(handle, size)
+      network.close(handle)
+      network.lastError()
+
+  The socket handle type, TLS, DNS, blocking mode, timeout behavior, and platform support
+  need explicit contracts before these operations can be safely enabled. -;

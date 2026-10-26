@@ -41,3 +41,31 @@ fp sqrt(fp x) <void> {
     }
     retreat guess
 }
+
+; Numeric utilities added in the standard-library refresh.
+fp clamp(fp value, fp low, fp high) <void> {
+    if (low > high) {
+        retreat value
+    }
+    if (value < low) {
+        retreat low
+    }
+    if (value > high) {
+        retreat high
+    }
+    retreat value
+}
+
+fp sign(fp value) <void> {
+    if (value < 0.0) {
+        retreat -1.0
+    }
+    if (value > 0.0) {
+        retreat 1.0
+    }
+    retreat 0.0
+}
+
+fp lerp(fp start, fp end, fp amount) <void> {
+    retreat start + (end - start) * amount
+}

@@ -1,0 +1,10 @@
+;- API design only — no callable functions are implemented in this module yet.
+  Proposed functions:
+      regex.compile(pattern, flags)
+      regex.test(handle, text)
+      regex.find(handle, text)
+      regex.replace(handle, text, replacement)
+      regex.free(handle)
+
+  Specify the regex dialect, escaping, Unicode behavior, capture ownership, replacement
+  syntax, and invalid-pattern error reporting before selecting an implementation. -;

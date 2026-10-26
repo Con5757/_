@@ -1,0 +1,13 @@
+;- API design only — no callable functions are implemented in this module yet.
+  Proposed functions:
+      system.exit(code)
+      system.gcode()
+      system.wait(milliseconds)
+      system.readenv(name)
+      system.setenv(name, value)
+      system.curdir()
+      system.chadir(path)
+      system.args()
+
+  Define process exit behavior, argument representation, environment mutation rules, and
+  platform-specific path semantics before enabling these calls. -;

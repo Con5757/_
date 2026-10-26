@@ -27,3 +27,62 @@ str low(str text) <void> {
     }
     retreat text
 }
+
+; Equality and search utilities. These use byte-oriented, NUL-terminated text.
+int equals(str left, str right) <void> {
+    int i = 0
+    during (left[i] != 0 || right[i] != 0) {
+        if (left[i] != right[i]) {
+            retreat 0
+        }
+        i++
+    }
+    retreat 1
+}
+
+int starts_with(str text, str prefix) <void> {
+    int i = 0
+    during (prefix[i] != 0) {
+        if (text[i] == 0 || text[i] != prefix[i]) {
+            retreat 0
+        }
+        i++
+    }
+    retreat 1
+}
+
+int ends_with(str text, str suffix) <void> {
+    int textLength = length(text)
+    int suffixLength = length(suffix)
+    if (suffixLength > textLength) {
+        retreat 0
+    }
+    int offset = textLength - suffixLength
+    int i = 0
+    during (suffix[i] != 0) {
+        if (text[offset + i] != suffix[i]) {
+            retreat 0
+        }
+        i++
+    }
+    retreat 1
+}
+
+
+int contains(str text, str needle) <void> {
+    if (needle[0] == 0) {
+        retreat 1
+    }
+    int i = 0
+    during (text[i] != 0) {
+        int j = 0
+        during (needle[j] != 0 && text[i + j] == needle[j]) {
+            j++
+        }
+        if (needle[j] == 0) {
+            retreat 1
+        }
+        i++
+    }
+    retreat 0
+}

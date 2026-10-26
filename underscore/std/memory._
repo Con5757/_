@@ -1,0 +1,7 @@
+;- Native library design note.
+  Available: memory.escape(pointer), for heap-owned strings and pointer results only.
+  Planned: alloc, zalloc, mresize, sizeof, mcopy, mmove, mset.
+
+  A typed void-pointer representation and ownership rules are required before allocation
+  APIs can be safely exposed in the language. Do not pass stack addresses or literals to
+  memory.escape. -;

@@ -1,12 +1,23 @@
 ?init
+; Standard-library manifest for the current compiler/runtime branch.
+; `?files` lists source modules. Native runtime modules are linked by the compiler patch.
 ?files
     "string._"
     "math._"
+    "memory._"
+    "vector._"
+    "system._"
+    "convert._"
+    "thread._"
+    "sync._"
+    "regex._"
+    "network._"
+    "encoding._"
 
 ?macros
     null
 
-?includes 
+?includes
     null
 
 ?variables
@@ -16,12 +27,125 @@
     null
 
 ?functions
+@io
+    void out(int) <void>
+    void out(fp) <void>
+    void out(str) <void>
+    str in() <void>
+    str nl <void>
+    int strout(str, int) <void>
+    int charin() <void>
+    int errout() <void>
+    int errout(int) <void>
+    int errout(fp) <void>
+    int errout(str) <void>
+    int flush() <void>
+
+@file
+    int open(str, str) <void>
+    int create(str) <void>
+    int close(int) <void>
+    str read(int) <void>
+    int write(int, str) <void>
+    int delete(str) <void>
+    int rename(str, str) <void>
+    str gpath(int) <void>
+    int gsize(int) <void>
+
+@memory
+    void escape(str) <void>
+
 @string
     int length(str) <void>
+    str copy(str) <void>
+    str connect(str, str) <void>
+    str substr(str, int, int) <void>
+    str slice(str, int, int) <void>
+    str replace(str, str, str) <void>
     str up(str) <void>
     str low(str) <void>
+    str trim(str) <void>
+    int equals(str, str) <void>
+    int contains(str, str) <void>
+    int starts_with(str, str) <void>
+    int ends_with(str, str) <void>
 
 @math
+    fp abs(fp) <void>
     fp sqrt(fp) <void>
+    fp min(fp, fp) <void>
+    fp max(fp, fp) <void>
+    fp round(fp) <void>
+    fp rdown(fp) <void>
+    fp rup(fp) <void>
+    fp sin(fp) <void>
+    fp cos(fp) <void>
+    fp tan(fp) <void>
+    fp asin(fp) <void>
+    fp acos(fp) <void>
+    fp atan(fp) <void>
+    fp log(fp) <void>
+    fp logx(fp, fp) <void>
+    fp exp(fp) <void>
+    fp pi() <void>
+    fp clamp(fp, fp, fp) <void>
+    fp sign(fp) <void>
+    fp lerp(fp, fp, fp) <void>
+
+@random
+    void seed(int) <void>
+    int next() <void>
+    int range(int, int) <void>
+    fp unit() <void>
+
+@time
+    int utime() <void>
+    str ctime(int) <void>
+    str utctime(int) <void>
+    int timedif(int, int) <void>
+
+; ------------------------------------------------------------
+; Planned APIs — comments only. These are catalogue entries, not enabled declarations.
+; Remove the comment markers only after implementing and testing each contract.
+; ------------------------------------------------------------
+; @memory (pointer type, ownership, and type-size syntax are pending)
+;    alloc(byteCount)  zalloc(byteCount)  mresize(pointer, byteCount)
+;    sizeof(value/type)  mcopy(dst, src, count)  mmove(dst, src, count)
+;    mset(dst, value, count)
+;
+; @vector (generic element type and ownership rules are pending)
+;    alloc(type, capacity)  push(vector, value)  insert(vector, value, index)
+;    remove(vector, index)  get(vector, index)  set(vector, index, value)
+;    length(vector)  capacity(vector)  clear(vector)  erase(vector)
+;
+; @system (process and environment contracts are pending)
+;    exit(code)  gcode()  wait(milliseconds)  readenv(name)  setenv(name, value)
+;    curdir()  chadir(path)  args()
+;
+; @time (sleep and text-format contracts are pending)
+;    sleep(milliseconds)  format(epoch, formatText)  parsetime(text, formatText)
+;
+; @convert (invalid-input and overflow results are pending)
+;    toInt(value)  toFp(value)  parseInt(text)  parseFp(text)  toString(value)
+;    hex(value)  bin(value)
+;
+; @thread (callable and argument transport contracts are pending)
+;    start(function, argument)  join(handle)  detach(handle)  current()  yield()
+;
+; @sync (ownership, timeout, and cancellation rules are pending)
+;    mutex()  lock(mutex)  unlock(mutex)  destroy(mutex)  condition()
+;    wait(condition, mutex)  signal(condition)  broadcast(condition)
+;
+; @regex (dialect, Unicode, capture, and failure contracts are pending)
+;    compile(pattern, flags)  test(handle, text)  find(handle, text)
+;    replace(handle, text, replacement)  free(handle)
+;
+; @network (socket/TLS, blocking, timeout, and byte-buffer contracts are pending)
+;    connect(host, port)  listen(host, port)  accept(server)  send(handle, text)
+;    receive(handle, size)  close(handle)  lastError()
+;
+; @encoding (binary lengths and Unicode semantics are pending)
+;    utf8Valid(text)  utf8Length(text)  base64Encode(bytes)  base64Decode(text)
+;    hexEncode(bytes)  hexDecode(text)
 
 ?endit

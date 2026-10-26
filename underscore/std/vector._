@@ -1,0 +1,15 @@
+;- API design only — no callable functions are implemented in this module yet.
+  Proposed functions:
+      vector.alloc(type, capacity)
+      vector.push(vector, value)
+      vector.insert(vector, value, index)
+      vector.remove(vector, index)
+      vector.get(vector, index)
+      vector.set(vector, index, value)
+      vector.length(vector)
+      vector.capacity(vector)
+      vector.clear(vector)
+      vector.erase(vector)
+
+  Before implementation, define generic element types, bounds behavior, growth policy,
+  ownership, and whether remove returns the removed value or only a status code. -;

@@ -1,0 +1,13 @@
+;- API design only — no callable functions are implemented in this module yet.
+  Proposed functions:
+      sync.mutex()
+      sync.lock(mutex)
+      sync.unlock(mutex)
+      sync.destroy(mutex)
+      sync.condition()
+      sync.wait(condition, mutex)
+      sync.signal(condition)
+      sync.broadcast(condition)
+
+  Lock ownership, timeout rules, deadlock behavior, and thread-cancellation interaction
+  must be decided before these primitives become part of a stable public API. -;

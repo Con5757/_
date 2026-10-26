@@ -1,0 +1,10 @@
+;- API design only — no callable functions are implemented in this module yet.
+  Proposed functions:
+      thread.start(function, args)
+      thread.join(handle)
+      thread.detach(handle)
+      thread.current()
+      thread.yield()
+
+  Callable values/closures, argument transport, returned results, cancellation, and
+  shutdown behavior must be specified before a portable implementation is possible. -;

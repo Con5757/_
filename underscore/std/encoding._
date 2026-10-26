@@ -1,0 +1,11 @@
+;- API design only — no callable functions are implemented in this module yet.
+  Proposed functions:
+      encoding.utf8Valid(text)
+      encoding.utf8Length(text)
+      encoding.base64Encode(bytes)
+      encoding.base64Decode(text)
+      encoding.hexEncode(bytes)
+      encoding.hexDecode(text)
+
+  The current NUL-terminated string representation cannot store arbitrary binary data
+  with embedded zero bytes. Define a length-bearing byte buffer before adding byte APIs. -;
