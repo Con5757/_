@@ -1,10 +1,11 @@
 # Underscore compiler build.
-# Override defaults from the command line when needed, e.g. `make CC=clang`.
+# Command-line overrides remain supported: make CC=clang CFLAGS="...".
 
 .DEFAULT_GOAL := all
-
 CC = gcc
-CFLAGS ?= -std=c11 -Wall -Wextra -Wpedantic -Werror
+ifeq ($(origin CFLAGS), default)
+CFLAGS = -std=c11 -Wall -Wextra -Wpedantic -Werror
+endif
 CPPFLAGS ?=
 LDFLAGS ?=
 ifeq ($(OS),Windows_NT)
@@ -18,26 +19,31 @@ SOURCES := \
 	diagnostic/diagnostic.c \
 	lex/lex.c \
 	parse/parse.c \
+	parse/ast_dump.c \
 	semantic/semantic.c \
 	codegen/codegen.c \
-	imports/imports.c \
-	runtime/io_file_runtime.fragment.c
+	imports/imports.c
 
 HEADERS := \
 	global.h \
 	diagnostic/diagnostic.h \
 	lex/lex.h \
 	parse/parse.h \
+	parse/ast_dump.h \
 	semantic/semantic.h \
 	codegen/codegen.h \
 	imports/imports.h
 
-.PHONY: all clean help
+.PHONY: all clean help test
 
 all: $(PROGRAM)
 
 $(PROGRAM): $(SOURCES) $(HEADERS)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(SOURCES) $(LDFLAGS) -o $@
+
+# End-to-end regression tests require Python 3 and a C compiler.
+test: $(PROGRAM)
+	python3 tests/run_smoke.py
 
 clean:
 	$(RM) $(PROGRAM) compiler compiler.exe uc.exe
@@ -46,7 +52,6 @@ clean:
 help:
 	@echo "Targets:"
 	@echo "  all    Build the compiler (default)"
+	@echo "  test   Run end-to-end compiler/runtime tests"
 	@echo "  clean  Remove compiler and generated program files"
 	@echo "  help   Show this help"
-	@echo ""
-	@echo "Overrides: make CC=clang, make PROGRAM=mycompiler"

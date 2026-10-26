@@ -1,34 +1,29 @@
-int length(str string) {
+int length(str text) <void> {
     int i = 0
-    int count = 0
-    during string[i] != '\0' {
+    during (text[i] != 0) {
         i++
-        count++
     }
-
-    retreat count
+    retreat i
 }
-str up(str string) {
+
+str up(str text) <void> {
     int i = 0
-    during text[i] != 0 {
-        if text[i] >= 'a' && text[i] <= 'z' {
+    during (text[i] != 0) {
+        if (text[i] >= 97 && text[i] <= 122) {
             text[i] = text[i] - 32
         }
-
         i++
     }
-
-    retreat string
+    retreat text
 }
-str low(str string) {
+
+str low(str text) <void> {
     int i = 0
-    during text[i] != 0 {
-        if text[i] >= 'a' && text[i] <= 'z' {
+    during (text[i] != 0) {
+        if (text[i] >= 65 && text[i] <= 90) {
             text[i] = text[i] + 32
         }
-
         i++
     }
-
-    retreat string
+    retreat text
 }

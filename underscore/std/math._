@@ -1,30 +1,43 @@
 fp abs(fp x) <void> {
-    if (x < 0.0)
+    if (x < 0.0) {
         retreat -x
+    }
     retreat x
 }
+
 fp min(fp a, fp b) <void> {
-    if (a < b)
+    if (a < b) {
         retreat a
+    }
     retreat b
 }
+
 fp max(fp a, fp b) <void> {
-    if (a > b)
+    if (a > b) {
         retreat a
+    }
     retreat b
 }
+
 fp sqrt(fp x) <void> {
-    if (x < 0.0)
+    if (x < 0.0) {
         retreat -1.0
-    if (x == 0.0 || x == 1.0)
-        retreat x 
+    }
+    if (x == 0.0 || x == 1.0) {
+        retreat x
+    }
 
     fp guess = 1.0
-    if (x > 1.0)
+    if (x > 1.0) {
         guess = x
-
-    repeat (int i = 0, i < 1100, i++) {
-        fp next = 0.5 * (guess + x / guess)
-        fp 
     }
+
+    repeat (int i = 0, i < 100, i++) {
+        fp next = 0.5 * (guess + x / guess)
+        if (abs(next - guess) < 0.0000001) {
+            retreat next
+        }
+        guess = next
+    }
+    retreat guess
 }
