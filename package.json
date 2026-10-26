@@ -1,30 +1,21 @@
 {
   "name": "underscore-extensionpack",
   "displayName": "Underscore Language Extension",
-  "description": "Syntax highlighting and snippets for Underscore source files.",
-  "version": "1.0.4",
+  "description": "Syntax highlighting, function hover documentation, and snippets for Underscore source and UFG files.",
+  "version": "1.1.0",
   "publisher": "con5757",
   "engines": {
     "vscode": "^1.70.0"
   },
-  "categories": [
-    "Programming Languages",
-    "Snippets"
-  ],
+  "main": "./extension.js",
+  "activationEvents": ["onLanguage:underscore"],
+  "categories": ["Programming Languages", "Snippets"],
   "contributes": {
     "languages": [
       {
         "id": "underscore",
-        "aliases": [
-          "ulang",
-          "u"
-        ],
-        "extensions": [
-          "._",
-          ".u",
-          ".ulang",
-          ".ufg"
-        ],
+        "aliases": ["Underscore", "ulang", "u"],
+        "extensions": ["._", ".u", ".ufg"],
         "configuration": "./language-configuration.json",
         "icon": {
           "light": "./icon-light.svg",
@@ -41,9 +32,7 @@
       {
         "scopeName": "markdown.underscore.codeblock",
         "path": "./syntaxes/markdown-underscore.tmLanguage.json",
-        "injectTo": [
-          "text.html.markdown"
-        ],
+        "injectTo": ["text.html.markdown"],
         "embeddedLanguages": {
           "meta.embedded.block.underscore": "underscore"
         }

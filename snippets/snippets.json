@@ -193,7 +193,7 @@
     "prefix": "u-function-void",
     "body": [
       "void ${1:printMessage}(${2:str message}) <void> {",
-      "\tstd.out(${3:message})",
+      "\tio.out(${3:message})",
       "\tretreat",
       "}"
     ],
@@ -210,7 +210,7 @@
     "prefix": "u-if",
     "body": [
       "if (${1:count > 0}) {",
-      "\t${0:std.out(count)}",
+      "\t${0:io.out(count)}",
       "}"
     ],
     "description": "Run a block only when the parenthesized condition is true. Conditions can use comparisons and supported logical operators."
@@ -219,7 +219,7 @@
     "prefix": "u-if-and",
     "body": [
       "if (${1:count > 0} && ${2:count < 10}) {",
-      "\t${0:std.out(count)}",
+      "\t${0:io.out(count)}",
       "}"
     ],
     "description": "Combine two conditions with && (logical AND). The block runs only when both expressions are true."
@@ -228,11 +228,11 @@
     "prefix": "u-if-elif-else",
     "body": [
       "if (${1:score >= 90}) {",
-      "\t${2:std.out(\"high\")}",
+      "\t${2:io.out(\"high\")}",
       "} elif (${3:score >= 60}) {",
-      "\t${4:std.out(\"pass\")}",
+      "\t${4:io.out(\"pass\")}",
       "} else {",
-      "\t${0:std.out(\"retry\")}",
+      "\t${0:io.out(\"retry\")}",
       "}"
     ],
     "description": "Test several conditions in order. elif is checked only when preceding conditions did not match; else is the fallback."
@@ -241,9 +241,9 @@
     "prefix": "u-if-else",
     "body": [
       "if (${1:count > 0}) {",
-      "\t${2:std.out(\"positive\")}",
+      "\t${2:io.out(\"positive\")}",
       "} else {",
-      "\t${0:std.out(\"zero or negative\")}",
+      "\t${0:io.out(\"zero or negative\")}",
       "}"
     ],
     "description": "Choose between two blocks. Both if and else bodies use braces; the if condition is parenthesized."
@@ -252,7 +252,7 @@
     "prefix": "u-if-or",
     "body": [
       "if (${1:choice == 1} || ${2:choice == 2}) {",
-      "\t${0:std.out(choice)}",
+      "\t${0:io.out(choice)}",
       "}"
     ],
     "description": "Combine conditions with || (logical OR). The block runs when either expression is true."
@@ -289,32 +289,32 @@
     "prefix": "u-main",
     "body": [
       "void main() <void> {",
-      "\t${1:std.out(\"Hello, Underscore!\")}",
-      "\tretreat",
+      "\t${1:io.out(\"Hello, Underscore!\")}",
+      "\tkill -silent",
       "}"
     ],
     "description": "Create the program entry point. The function is named main; a bare retreat exits this void main successfully."
   },
-  "Output — print one value with std.out": {
+  "Output — print one value with io.out": {
     "prefix": "u-output",
     "body": [
-      "std.out(${1:value})"
+      "io.out(${1:value})"
     ],
-    "description": "Print one value-producing expression. The current compiler implements std.out and expects exactly one argument."
+    "description": "Print one value-producing expression. The current compiler implements io.out and expects exactly one argument."
   },
   "Output — print using namespace syntax": {
     "prefix": "u-output-namespace",
     "body": [
-      "std::out(${1:value})"
+      "io::out(${1:value})"
     ],
-    "description": "Print one value using the compiler-supported :: namespace-access form. The current backend treats std::out like std.out."
+    "description": "Print one value using the compiler-supported :: namespace-access form. The current backend treats io::out like io.out."
   },
   "Output — short out call": {
     "prefix": "u-output-short",
     "body": [
       "out(${1:value})"
     ],
-    "description": "Use the built-in output call without the std. prefix. It still accepts exactly one value-producing expression."
+    "description": "Use the built-in output call without the io. prefix. It still accepts exactly one value-producing expression."
   },
   "Pointer — declare a pointer variable": {
     "prefix": "u-pointer",
@@ -328,7 +328,7 @@
     "prefix": "u-repeat",
     "body": [
       "repeat (int ${1:i} = ${2:0}, ${1:i} < ${3:10}, ${1:i}++) {",
-      "\t${0:std.out(i)}",
+      "\t${0:io.out(i)}",
       "}"
     ],
     "description": "Create a counted loop with three comma-separated fields: initialization, condition, and update. The initializer should be a supported scalar declaration or assignment."
@@ -384,18 +384,46 @@
     "body": [
       "switch (${1:choice}) {",
       "\targ ${2:1}: ",
-      "\t\t${3:std.out(\"first option\")}",
+      "\t\t${3:io.out(\"first option\")}",
       "\t\tbreak",
       "",
       "\targ ${4:2}: ",
-      "\t\t${5:std.out(\"second option\")}",
+      "\t\t${5:io.out(\"second option\")}",
       "\t\tbreak",
       "",
       "\tincase: ",
-      "\t\t${0:std.out(\"default option\")}",
+      "\t\t${0:io.out(\"default option\")}",
       "\t\tbreak",
       "}"
     ],
     "description": "Branch on an integer expression. Use arg value: for each case and incase: for the optional default branch; break exits the switch."
+  },
+  "Create UFG manifest — all sections": {
+    "prefix": "cufg",
+    "body": [
+      "?init",
+      "",
+      "?files",
+      "\t\"${1:module._}\"",
+      "",
+      "?macros",
+      "\tnull",
+      "",
+      "?includes",
+      "\tnull",
+      "",
+      "?variables",
+      "\tnull",
+      "",
+      "?structs",
+      "\tnull",
+      "",
+      "?functions",
+      "@${2:module}",
+      "\t${3:int example(int value)}",
+      "",
+      "?endit"
+    ],
+    "description": "Create a UFG package manifest with init, files, macros, includes, variables, structs, functions, and endit sections. Replace null with indexed declarations as needed."
   }
 }
