@@ -1,0 +1,5 @@
+; Minimal package example for `?manifest logs` and `&logs`.
+void writeLog(str message) <void> {
+    io.out(message)
+    retreat
+}

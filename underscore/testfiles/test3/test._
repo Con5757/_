@@ -1,7 +1,0 @@
-?std
-    with math
-    with io
-
-    int ans = math.sqrt(5)
-
-    io.out(ans)

@@ -1,0 +1,22 @@
+?init
+
+?files
+    "logger._"
+
+?macros
+    null
+
+?includes
+    null
+
+?variables
+    null
+
+?structs
+    null
+
+?functions
+@logger
+    void writeLog(str message) <void>
+
+?endit

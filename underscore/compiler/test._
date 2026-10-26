@@ -1,0 +1,7 @@
+?std
+    with io
+
+void main() <void> {
+    io.out("io fix")
+    kill
+}

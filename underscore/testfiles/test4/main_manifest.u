@@ -1,0 +1,8 @@
+; Run from a compiler build with this directory layout.
+; Both `?manifest logs` and `&logs` should work; keep one line uncommented.
+&logs
+
+void main() <void> {
+    logs.writeLog("The logs package loaded.")
+    kill
+}
