@@ -20,7 +20,7 @@ SOURCES := \
 	parse/parse.c \
 	semantic/semantic.c \
 	codegen/codegen.c \
-	imports/imports.c
+	imports/imports.c \
 	runtime/io_file_runtime.fragment.c
 
 HEADERS := \
