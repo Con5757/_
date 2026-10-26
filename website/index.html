@@ -1,6 +1,148 @@
-<!DOCTYPE html>
-<html>
-    <body>
-        
-    </body>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Underscore is an evolving programming language project focused on readable syntax and explicit operations.">
+  <title>Underscore — a language project</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#top" aria-label="Underscore home">Underscore<span>_</span></a>
+      <nav aria-label="Main navigation">
+        <a href="#language">Language</a>
+        <a href="#syntax">Syntax</a>
+        <a href="#libraries">Libraries</a>
+        <a href="#status">Status</a>
+        <a href="https://github.com/Con5757/_">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <p class="eyebrow">An evolving programming language</p>
+        <h1>Readable syntax.<br><span>Explicit intent.</span></h1>
+        <p class="hero-copy">Underscore is an experimental language project exploring clear, English-oriented syntax, explicit pointer operations, and a small standard library. The current compiler translates Underscore source into C.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="https://github.com/Con5757/_/tree/languages/underscore">Explore the compiler</a>
+          <a class="button secondary" href="https://github.com/Con5757/_/tree/docs/docs">Read the documentation</a>
+        </div>
+        <div class="code-card" aria-label="Underscore code example">
+          <div class="code-heading"><span></span><span></span><span></span><small>main.u</small></div>
+          <pre><code>?std with io, math
+
+int value = 20
+int -&gt;pValue = @value
+
+void main() &lt;void&gt; {
+    io.out(&lt;-pValue)
+    io.out(math.sqrt(81.0))
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="language">
+      <div class="wrap narrow">
+        <p class="eyebrow">01 / The language</p>
+        <h2>A language still taking shape</h2>
+        <p>Underscore is being built incrementally. The project focuses on syntax that makes operations visible at a glance, a compiler pipeline with lexing, parsing, semantic analysis, and code generation, and a standard library that can grow without hiding its behavior.</p>
+        <div class="feature-grid">
+          <article class="feature">
+            <h3>Readable structure</h3>
+            <p>Functions, conditionals, and loops use recognizable keywords and explicit blocks.</p>
+          </article>
+          <article class="feature">
+            <h3>Visible pointers</h3>
+            <p>Pointer declaration and dereferencing use distinct operators instead of an implicit-looking type annotation.</p>
+          </article>
+          <article class="feature">
+            <h3>C as a backend</h3>
+            <p>The current compiler emits C and uses a native runtime for selected standard-library calls.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section tint" id="syntax">
+      <div class="wrap narrow">
+        <p class="eyebrow">02 / Syntax at a glance</p>
+        <h2>Some of the core ideas</h2>
+        <div class="syntax-list">
+          <article>
+            <div class="syntax-title"><code>-&gt;</code><h3>Pointer declaration</h3></div>
+            <p>The arrow belongs next to the variable name to make the pointer relationship visible.</p>
+            <pre><code>int score = 20
+int -&gt;pScore = @score
+io.out(&lt;-pScore)</code></pre>
+          </article>
+          <article>
+            <div class="syntax-title"><code>retreat</code><h3>Return from a function</h3></div>
+            <p>A function declares its result type; <code>retreat</code> returns the result to its caller.</p>
+            <pre><code>int twice(int value) &lt;void&gt; {
+    retreat value * 2
+}</code></pre>
+          </article>
+          <article>
+            <div class="syntax-title"><code>during</code><h3>Condition-based loop</h3></div>
+            <p>Loops and branches use explicit conditions and brace-delimited blocks.</p>
+            <pre><code>int i = 0
+during (i &lt; 3) {
+    io.out(i)
+    i++
+}</code></pre>
+          </article>
+        </div>
+        <p class="section-link"><a href="https://github.com/Con5757/_/blob/docs/docs/syntaxlist._">Full syntax reference →</a></p>
+      </div>
+    </section>
+
+    <section class="section" id="libraries">
+      <div class="wrap narrow">
+        <p class="eyebrow">03 / Standard library</p>
+        <h2>Small, explicit building blocks</h2>
+        <p>The first native-library slice concentrates on everyday tasks. APIs under development are documented separately and are not advertised here as ready-to-use functions.</p>
+        <div class="library-table" role="table" aria-label="Standard library status">
+          <div class="library-row header" role="row"><span role="columnheader">Module</span><span role="columnheader">Purpose</span><span role="columnheader">Status</span></div>
+          <div class="library-row" role="row"><code>io</code><span>Console input/output</span><span class="status ready">Implemented</span></div>
+          <div class="library-row" role="row"><code>file</code><span>Line-oriented text files</span><span class="status ready">Implemented</span></div>
+          <div class="library-row" role="row"><code>string</code><span>Text search and transformation</span><span class="status ready">Implemented</span></div>
+          <div class="library-row" role="row"><code>math</code><span>Numeric and trigonometric helpers</span><span class="status ready">Implemented</span></div>
+          <div class="library-row" role="row"><code>random</code><span>Non-cryptographic pseudo-random values</span><span class="status ready">Implemented</span></div>
+          <div class="library-row" role="row"><code>time</code><span>Epoch time and date text</span><span class="status partial">First slice</span></div>
+          <div class="library-row" role="row"><code>memory</code><span>Release heap-owned values</span><span class="status partial">Limited</span></div>
+          <div class="library-row" role="row"><code>vector, system, convert, thread, sync, regex, network, encoding</code><span>Planned library areas</span><span class="status planned">Design stage</span></div>
+        </div>
+        <p class="section-link"><a href="https://github.com/Con5757/_/blob/docs/docs/libSyntaxList._">Library API catalogue →</a> <span class="muted">·</span> <a href="https://github.com/Con5757/_/blob/docs/docs/API_STATUS.md">Implementation status →</a></p>
+      </div>
+    </section>
+
+    <section class="section tint" id="status">
+      <div class="wrap narrow">
+        <p class="eyebrow">04 / Project status</p>
+        <h2>Early development, documented honestly</h2>
+        <p>The compiler, language syntax, and runtime are evolving together. A token or syntax form being recognized does not mean every backend behavior is complete. The documentation distinguishes working native calls from designs that still need firm contracts.</p>
+        <div class="status-note">
+          <h3>What to expect</h3>
+          <p>Use the compiler branch and its smoke tests to evaluate the current implementation. Use the syntax and library references to see what is supported, what is experimental, and what remains planned.</p>
+        </div>
+        <div class="hero-actions">
+          <a class="button primary" href="https://github.com/Con5757/_/tree/languages/underscore/compiler">Compiler source</a>
+          <a class="button secondary" href="https://github.com/Con5757/_/tree/languages/underscore/std">Standard library files</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <p><strong>Underscore<span>_</span></strong><br><small>An experimental language project.</small></p>
+      <p><a href="https://github.com/Con5757/_">Repository</a> · <a href="https://github.com/Con5757/_/tree/docs/docs">Documentation</a></p>
+    </div>
+  </footer>
+</body>
 </html>
