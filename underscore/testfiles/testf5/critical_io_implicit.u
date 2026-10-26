@@ -1,0 +1,5 @@
+; Regression: io is a native runtime dependency, even without ?std with io.
+void main() <void> {
+    io.out("Hello, Underscore!")
+    kill
+}

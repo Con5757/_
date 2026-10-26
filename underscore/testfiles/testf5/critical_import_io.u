@@ -1,0 +1,13 @@
+; Critical regression: repeated imports must be parsed as one directive.
+; io is a built-in runtime dependency and should not require an explicit import.
+?std
+    with math
+    with io
+
+int ans = math.sqrt(5.0)
+io.out(ans)
+
+void main() <void> {
+    io.out("Hello, Underscore!")
+    kill
+}

@@ -1,4 +1,7 @@
 ; Minimal package example for `?manifest logs` and `&logs`.
+?std
+    with io
+
 void writeLog(str message) <void> {
     io.out(message)
     retreat

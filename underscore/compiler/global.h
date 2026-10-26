@@ -10,7 +10,7 @@ extern int debugObjs;
 extern int debugProgress;
 
 #define MAX_TOKENS 1024
-#define MAX_AST_NODES 1024
+#define MAX_AST_NODES 16384
 #define MAX_NAME 64
 
 #define C_COMPILER "gcc"
