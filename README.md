@@ -1,27 +1,15 @@
-# Docs
+# Underscore documentation
 
-Welcome to the docs branch.
-This branch is a total mess of archived testing files, documentation and other misc concepts.
-Its totally open in accordance with the code of conduct and contributing documents for contribution.
+This branch stores language references, library API descriptions, examples, and development notes.
+The reference pages describe the evolving language; they distinguish implemented compiler/runtime
+features from syntax or library ideas that still need a stable contract.
 
-## What is this branch?
+## Start here
 
-The docs branch is the current storage location of all documentation, files and relivant "logs."
-It contains anything from a simple calculator to outdated compilers or versions of the language.
-A clear notice which should be made clear in this branch and other branches; theres no compiled binaries.
-This is due to the size of compiled binaries and the procedure on how its built that it only runs on your machine.
-Outside of that we encourgage documenation, comments or ideas, though github issues or our websites contributing form.
+- [`docs/syntaxlist._`](docs/syntaxlist._) — grouped syntax and operator reference, with examples.
+- [`docs/libSyntaxList._`](docs/libSyntaxList._) — standard-library API catalogue, ownership notes, and examples.
+- [`docs/API_STATUS.md`](docs/API_STATUS.md) — functions currently implemented versus design-stage proposals.
+- [`docs/filestructure.md`](docs/filestructure.md) — source-file layout, imports, and entry points.
 
-## What's in here?
-
-As mentioned previously 
-
-## Examples & Projects
-
-## Documentation
-
-## Older Files
-
-## Contributing
-
-## Relationship to the Language Branch
+The language and compiler are under active development. A recognized token or parser construct does
+not by itself guarantee complete semantic analysis, generated C, or runtime behavior.

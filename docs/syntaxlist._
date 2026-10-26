@@ -1,153 +1,438 @@
-..arithmatic
-+ - * / %
-++ --
-+= -= *= /= %=
+; UNDERSCORE LANGUAGE SYNTAX REFERENCE
+; Version: documentation refresh / first consolidated reference
+; This document describes the syntax currently visible in the language branch.
+; Syntax recognition does not guarantee that every backend feature is implemented.
 
-..comparison
-> < >= <=
-== !=
+..reading this document
+;- Sections are grouped by purpose. The code snippets are examples, not declarations
+  that every feature is production-ready. Examples assume the current Underscore
+  compiler syntax and the language branch's C-transpilation backend.
 
-..logical
-|| ..or
-&& ..and 
-~ ..xor
+  Example 1 — arithmetic and a named result:
+      int total = 12 + 8
+      io.out(total)
 
-! ..not
-!| ..nor
-!& ..nand
-!~ ..xnor
+  Example 2 — explicit program entry point:
+      void main() <void> {
+          io.out("Hello, Underscore")
+      }
+-;
 
-..bitwise
-| & ^
-<< >>
-~?  
+..comments
+; starts a line comment. ;- ... -; is a block comment. Comments are ignored by the lexer.
+;- The line-comment form is useful for a brief explanation. The block-comment form
+  keeps a longer note, rationale, or example together.
 
-..assignment
-=
-+= -= *= /= %=
-&= |= ^=
+  Example 1 — line comment:
+      int score = 10 ; initial score
 
-..grouping
-( )
-[ ]
-{ }
-< >
+  Example 2 — a multi-line note using line comments:
+      ; The `twice` helper returns its input multiplied by two.
+      ; Keep longer explanations near the code they describe.
+      int twice(int value) <void> {
+          retreat value * 2
+      }
+-;
 
-..types (all sizes are in bytes)
-int name
-str name[size]
-fp name[size]
-void name
+..source files and program entry
+A source file uses the .u extension by convention; reusable Underscore modules use ._.
+If a main function exists, it is the program entry point. Otherwise, top-level executable
+statements are run in source order by the current compiler backend.
 
-..array
-int name<2> = [2, 15]
-str name[5]<2> = ["Hello", "under"] ..fp works the same way
+;- `void main() <void>` is the documented entry-point form. `retreat` returns from a
+  function. Use `kill` to end program execution; do not rely on it as a substitute for
+  proper resource cleanup in code that opens files or owns memory.
 
-..vector (dynam-array)
-vec
+  Example 1 — main.u:
+      void main() <void> {
+          io.out("Started")
+      }
 
-..access
-.
-:: ..namespaces
+  Example 2 — top-level execution without main:
+      io.out("First")
+      io.out("Second")
+-;
+
+..arithmetic operators
++ - * / % perform addition, subtraction, multiplication, division, and remainder.
+++ and -- increment or decrement a numeric l-value. Compound assignments update a value.
+
+;- Arithmetic uses the usual precedence: multiplication/division/remainder before
+  addition/subtraction. Remainder and bitwise operators require integer operands.
+
+  Example 1 — expression precedence:
+      int result = 2 + 3 * 4
+
+  Example 2 — update and compound assignment:
+      int count = 3
+      count++
+      count *= 2
+-;
+
+..comparison operators
+> < >= <= compare numeric values. == and != test equality and inequality. The result is
+an integer-like boolean value usable by conditional and loop statements.
+
+;- Comparison operators produce a condition; they do not assign a value.
+
+  Example 1 — boundary check:
+      if (age >= 18) {
+          io.out("Adult")
+      }
+
+  Example 2 — inequality:
+      if (left != right) {
+          io.out("Values differ")
+      }
+-;
+
+..logical operators
+&& and || are logical AND and OR. ! is logical NOT. ~ is logical XOR in the current
+compiler. !| is NOR, !& is NAND, and !~ is XNOR.
+
+;- Logical operators combine truth-like numeric conditions. Use parentheses when a
+  condition contains several operators and the intended grouping should be obvious.
+
+  Example 1 — conjunction:
+      if (loggedIn && hasAccess) {
+          io.out("Welcome")
+      }
+
+  Example 2 — negation and disjunction:
+      if (!paused || forceRun) {
+          io.out("Continue")
+      }
+-;
+
+..bitwise operators
+|, &, and ^ are bitwise OR, AND, and XOR. << and >> shift integer bits. `~` is the
+unary bitwise complement; `~?` is recognized by the current lexer but has no agreed
+semantics and should be treated as reserved/experimental.
+
+;- Bitwise operations work on integer values, not floating-point values. The result of
+  shifting by a negative or excessively large count is not a portable operation.
+
+  Example 1 — combine flags:
+      int flags = 4 | 1
+
+  Example 2 — inspect a bit:
+      int enabled = (flags & 1) != 0
+-;
+
+..assignment operators
+= assigns a value. +=, -=, *=, /=, %=, &=, |=, and ^= combine an operation with assignment.
+
+;- The left side must be a writable variable, index, member, or dereferenced pointer.
+  Constants cannot be assigned after initialization.
+
+  Example 1 — direct assignment:
+      int attempts = 0
+      attempts = 1
+
+  Example 2 — compound update:
+      int mask = 3
+      mask &= 1
+-;
+
+..grouping and indexing
+( ) group expressions and call arguments. [ ] index arrays and strings. { } delimit blocks.
+< > appear in fixed-size array declarations and function flags as well as comparisons;
+context determines their role.
+
+;- Keep statement boundaries clear: statements normally occupy separate lines. Function
+  calls use parentheses and comma-separated arguments.
+
+  Example 1 — grouped calculation:
+      int value = (2 + 3) * 4
+
+  Example 2 — array declaration and access:
+      int values<3> = [2, 15, 9]
+      io.out(values[1])
+-;
+
+..primitive types
+int is an integer; fp is a floating-point number; str is string text; void is a function
+return type, not a valid variable type. The default widths depend on the backend.
+
+;- A str declaration without pointer markers is a writable buffer in the current C
+  backend. Size it when the maximum text length is known. Do not pass a string literal
+  to a function that modifies its argument in place.
+
+  Example 1 — typed values:
+      int count = 12
+      fp ratio = 0.75
+      str title[24] = "Chapter One"
+
+  Example 2 — a function with a return value:
+      int add(int left, int right) <void> {
+          retreat left + right
+      }
+-;
+
+..fixed-width types
+int8, int16, int32, int64, fp8, fp16, fp32, fp64, str8, str16, str32, and str64 express
+an explicit bit/width suffix. The declarative `@` form is supported by the parser for
+fixed-width declarations; it is not the same operation as address-of in an expression.
+
+;- Fixed widths are useful for serialized data and interfaces with explicit numeric
+  ranges. Some narrow floating-point and string widths depend on backend support.
+
+  Example 1 — fixed-width integer:
+      int32@packetCount = 100
+
+  Example 2 — fixed-width floating point:
+      fp64@precision = 0.000001
+-;
+
+..arrays and string buffers
+`int values<3> = [2, 15, 9]` declares a fixed-size array. A `str` array can specify both
+per-row string capacity with `[N]` and row count with `<N>`. Initializers must not exceed
+the declared element count or string capacity.
+
+;- Use arrays when the size is known. Dynamic vectors are a distinct concept and should
+  not be assumed to work merely because `vec` is tokenized.
+
+  Example 1 — integer array:
+      int days<3> = [1, 2, 3]
+
+  Example 2 — fixed-capacity string rows:
+      str names[12]<2> = ["Ada", "Lin"]
+-;
+
+..vectors
+`vec` denotes a dynamic-vector concept. Its syntax is recognized, but allocation,
+resizing, generic element typing, and complete runtime behavior are not yet guaranteed
+by the current C backend. Prefer fixed-size arrays for portable working code.
+
+;- A vector needs a defined element type, capacity policy, ownership model, and bounds
+  behavior before it should be relied on in production code.
+
+  Example 1 — fixed-size alternative for scores:
+      int scores<3> = [10, 20, 30]
+
+  Example 2 — fixed-size alternative for text entries:
+      str labels[16]<2> = ["north", "south"]
+-;
+
+..member access and namespaces
+`.` is the documented namespace/member separator. `::` is an alternate namespace-access
+token. Runtime libraries are written with qualified names such as `io.out(value)`.
+General data/class member access remains backend-dependent.
+
+;- A library prefix identifies the group that owns an operation. Import only the modules
+  used by a source file when the project's importer supports that module form.
+
+  Example 1 — output from the I/O library:
+      io.out("Ready")
+
+  Example 2 — mathematical call:
+      fp distance = math.sqrt(25.0)
+-;
 
 ..pointers
--> ..ptr reference pointer
-<- ..deptr dereference pointer
---> ..dptr or double pointer
-<-- ..ddeptr or double dereference pointer
+`->` declares a pointer next to a variable name. `@value` takes an address. `<-pointer`
+dereferences a single pointer. `-->` declares a double pointer and `<--value` dereferences
+two levels. Pointer depth is currently limited to two levels.
 
-@ ..the at symbol is used in some contexts for its literal meaning of 'at'
+;- The arrow in a declaration marks the variable's storage relationship; the pointer
+  type is not written as a separate type name. Keep address and dereference operations
+  visually explicit.
 
-..its a pointer variable not a pointer type. the arrow goes next to the variable name for best practice
-int ->num2 = 20
-std.out(@num2)
-std.out(<-num2)
+  Example 1 — address and single dereference:
+      int score = 20
+      int ->pScore = @score
+      io.out(<-pScore)
 
-..fixed types
-..int
-int64@name
-int32@name
-int16@name
-int8@name
+  Example 2 — double-pointer shape:
+      int value = 7
+      int ->first = @value
+      int -->second = @first
+      io.out(<--second)
+-;
 
-..fp
-fp64@name
-fp32@name
-fp16@name
-fp8@name
+..storage modifiers
+`const` prevents reassignment, `static` requests static storage/local persistence, and
+`global` marks a declaration as global. The current backend supports only the storage
+forms explicitly accepted by its semantic checks.
 
-..str
-str64@name
-str32@name
-str16@name
-str8@name
+;- `const` requires an initializer. A static local with a runtime initializer may be
+  rejected because it needs one-time initialization semantics.
 
-..storage class specifiers
-const
-static
-global 
+  Example 1 — constant:
+      const int limit = 100
 
-..classes
-class
-public
-private
-hidden ..all vars are until specified global
+  Example 2 — static local:
+      int counter() <static,inline> {
+          static int calls = 0
+          calls++
+          retreat calls
+      }
+-;
 
-..
-data {} ..struct, name also isnt needed, but if you want to you can
-set {} ..enum
-alias  ..typedef 
+..functions and function flags
+A function is declared with a return type, name, parameters, optional flag list, and block.
+`retreat value` returns a value; bare `retreat` returns from a void function. The current
+master patch supports the `<void>` marker plus `static` and `inline` flags.
 
-..conditional
-if 
-elif
-else
+;- Put helper functions before main for readability. Flags follow the parameter list;
+  the supported spelling is comma-separated inside angle brackets.
 
-switch
-arg
-break 
-incase
+  Example 1 — value-returning function:
+      int twice(int value) <void> {
+          retreat value * 2
+      }
 
-..switch structure
-switch variable {
-	arg instance:
-		break
+  Example 2 — static inline helper:
+      int clampSmall(int value) <static,inline> {
+          if (value < 0) { retreat 0 }
+          if (value > 10) { retreat 10 }
+          retreat value
+      }
+-;
 
-	incase:
-		break
-}
-cont ..skip current iteration and continue
+..entry point
+`void main() <void> { ... }` is the explicit entry-point form used by the compiler
+examples. A file named `main.u` is a naming convention rather than a special syntax rule.
 
-..error checking
-attempt
-incase ..same incase as count/switch statements
+;- Keep main focused on program setup and orchestration. Put reusable behavior into
+  named functions or libraries.
+
+  Example 1 — explicit entry point:
+      void main() <void> {
+          io.out("Hello")
+      }
+
+  Example 2 — call a helper:
+      int square(int n) <void> { retreat n * n }
+      void main() <void> { io.out(square(9)) }
+-;
+
+..conditionals
+`if`, `elif`, and `else` select blocks based on a condition. Conditions are normally
+written inside parentheses; blocks use braces.
+
+;- Use braces consistently, including for short branches. It makes statement scope
+  and later edits easier to reason about.
+
+  Example 1 — single branch:
+      if (temperature > 30) {
+          io.out("Hot")
+      }
+
+  Example 2 — multiple branches:
+      if (score >= 90) { io.out("A") }
+      elif (score >= 70) { io.out("Pass") }
+      else { io.out("Retry") }
+-;
+
+..switch statements
+`switch value { arg value: ... incase: ... }` matches `arg` cases and uses `incase` as
+the default branch. `break` exits a case/switch; switch expressions currently require
+an integer-like value in the C backend.
+
+;- Keep each case visually separated. Use one default (`incase`) branch at most.
+
+  Example 1 — numbered cases:
+      switch (choice) {
+          arg 1:
+              io.out("One")
+              break
+          arg 2:
+              io.out("Two")
+              break
+      }
+
+  Example 2 — default case:
+      switch (mode) {
+          arg 0:
+              io.out("Off")
+              break
+          incase:
+              io.out("Unknown")
+              break
+      }
+-;
 
 ..loops
-during (conditional) {}
-repeat (init, condition, i++) {}
+`during (condition) { ... }` repeats while the condition is true. `repeat (init, condition,
+update) { ... }` is a counted loop. `cont` skips to the next iteration and `break` exits a loop.
 
-..function keywords
-retreat
-main
-kill
-(params)
-<func flags>
+;- Ensure each loop can terminate. Loop-control statements are valid only inside the
+  corresponding loop/switch contexts.
 
-..main structure
-void main() <void> {
-    kill
-}
+  Example 1 — condition loop:
+      int index = 0
+      during (index < 3) {
+          io.out(index)
+          index++
+      }
 
-..vector params/func flags
-!..
-go to document: docs/functions/vectorparams.md
-..!
+  Example 2 — counted loop:
+      repeat (int i = 0, i < 5, i++) {
+          io.out(i)
+      }
+-;
 
-..kill flags
-!..
-go to document: docs/functions/killflags.md
-..!
+..error handling
+`attempt { ... } incase { ... }` expresses a proposed recovery pattern. The current parser
+recognizes it, but the existing C backend does not yet define full exception/error runtime
+semantics. Do not rely on it for production error recovery.
 
-..includes
-?std ..lib name, '?' roughly means find
-	with memory ..lib file
+;- Until error propagation, failure values, cleanup behavior, and nesting rules are defined,
+  use explicit return codes and conditionals around fallible operations.
+
+  Example 1 — explicit result check:
+      int handle = file.open("notes.txt", "r")
+      if (handle < 0) {
+          io.errout("Could not open file")
+      }
+
+  Example 2 — reject invalid input:
+      if (amount < 0) {
+          io.errout("Amount must be non-negative")
+          retreat
+      }
+-;
+
+..program termination and kill flags
+`kill` exits the program. The recognized flags include `-silent`, `-success`, `-cleanup`,
+`-error`, and `-panic`; the actual exit/cleanup behavior is backend-specific, and cleanup
+must not be assumed unless it is explicitly implemented.
+
+;- Prefer explicit returns from functions and reserve program termination for top-level
+  control. Close open files and release owned allocations before exiting.
+
+  Example 1 — successful termination:
+      kill -success
+
+  Example 2 — error termination after a check:
+      if (handle < 0) {
+          io.errout("Open failed")
+          kill -error
+      }
+-;
+
+..imports
+`?std with io, math` selects standard-library modules. `?with "helpers._"` is the direct
+quoted-file form supported by the current master patch. Imports belong at the top level.
+
+;- Prefer explicit imports. Keep each module focused and avoid circular imports.
+
+  Example 1 — import a standard module:
+      ?std with io, math
+      void main() <void> {
+          io.out(math.sqrt(81.0))
+      }
+
+  Example 2 — import a helper file:
+      ?with "helpers._"
+      void main() <void> {
+          io.out(greeting())
+      }
+-;
+
+..current implementation boundary
+The language is actively evolving and transpiles to C in the current compiler branch.
+The syntax list is a language reference, not a guarantee that every recognized token has
+a complete parser, semantic checker, C backend, or runtime implementation. Consult
+`libSyntaxList._` and `API_STATUS.md` for library contracts and implementation status.

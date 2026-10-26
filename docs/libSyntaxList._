@@ -1,121 +1,432 @@
-;below is how you include files
-?std ;library name
-    with memory ;individual books
-    with io
-    with file
-    with string
-    with math
-    with vector
-    with system
-    with time
-    with random
-    with convert
-    with thread
-    with sync
-    with regex
-    with network
-    with encoding
+; UNDERSCORE STANDARD LIBRARY REFERENCE
+; Canonical API catalogue for the first consolidated library iteration.
+; Include syntax: ?std with <module>
+; Examples are illustrative. Availability labels are defined in API_STATUS.md.
 
-;memory
-memory.alloc() ;allocate
-memory.zalloc() ;zero allocation
-memory.mresize() ;resize allocation
-memory.escape() ;frees memory
-memory.sizeof() ;size of type/int
-memory.mcopy() ;memcpy
-memory.mmove() ;ptr::copy()
-memory.mset() ;memset
+;============================================================
+; IMPORTS AND API STATUS
+;============================================================
+;- Import only modules used by a source file. The compiler master patch supplies native
+  implementations for io, file, math, and the core string helpers. The source modules
+  math._ and string._ contain the language-level implementations that accompany them.
+  Other modules below are API designs, not a promise of a ready native runtime: their
+  platform, ownership, error, or threading contracts must be finalized first.
 
-;io
-io.out() ;printf(), print(), println!()
-io.in() ;getline(), input()
-io.nl() || "\n" ;newline
-io.strout(str, index) ;sends out the single char at the index
-io.charin() ;reads the first character entered to the terminal similar to a scanf()
-io.errout() ;eprintln!()
-io.flush() ;flush()
+  Example 1 — import math:
+      ?std with io, math
+      void main() <void> { io.out(math.sqrt(49.0)) }
 
-;file
-file.open(file, mode) ;doesnt create if it cant find, fopen(), File::open()
-file.create(name) ;fopen(str name, "w")
-file.close(file)
-file.read(file)
-file.write(file, contents)
-file.delete(file)
-file.rename(file, newName)
-file.gpath(file)
-file.gsize(file)
+  Example 2 — import file support:
+      ?std with file, io
+      void main() <void> { io.out(file.gsize(file.open("data.txt", "r"))) }
+-;
 
-;string
-string.length(str) ;gets the length, len()
-string.copy(str) ;copy()
-string.connect(str, str)
-string.substr(str, str)
-string.slice(str, index, index)
-string.replace()
-string.up()
-string.low()
-string.trim()
+;============================================================
+; memory — allocation and raw memory operations
+;============================================================
+; memory.alloc(byteCount)     allocate uninitialized storage
+; memory.zalloc(byteCount)    allocate zero-filled storage
+; memory.mresize(pointer,n)   resize an allocation
+; memory.escape(ownedText)    release heap-owned text (native release function implemented)
+; memory.sizeof(value/type)   obtain a byte size; type-form grammar is pending
+; memory.mcopy(dst,src,n)     copy non-overlapping bytes
+; memory.mmove(dst,src,n)     move bytes; overlap is allowed
+; memory.mset(dst,value,n)    fill bytes with a byte value
+;- Raw-memory APIs require a pointer and ownership model. In this iteration, only release is
+  available, and only for storage known to be heap-owned. Never pass a string literal, ordinary
+  local string buffer, const value, or scalar. Allocator functions below are design targets.
 
-;math
-math.abs()
-math.sqrt()
-math.min(int || fp, int || fp)
-math.max(int || fp, int || fp)
-math.round(fp) ;nearest
-math.rdown(fp)
-math.rup(fp)
-math.sin()
-math.tan()
-math.cos()
-math.asin()
-math.atan()
-math.acos()
-math.log()
-math.logx(int || fp, base)
-math.exp()
-math.pi()
+  Example 1 — a planned allocation lifecycle (not currently runnable):
+      ; int ->buffer = memory.alloc(64)
+      ; use buffer only after a typed pointer is established
+      ; memory.escape(buffer)
 
-;vector, allows some keywords but mainly the vec || vec2-3 keywords
-vec <type>name ;init
+  Example 2 — release an allocated string (available):
+      ?std with memory, string
+      void main() <void> {
+          memory.escape(string.copy("temporary text"))
+      }
+-;
 
-vector.alloc(vector)
-vector.endin(vector)
-vector.endout(vector)
-vector.insert(vector, contents, index)
-vector.remove(vector, index)
-vector.length(vector)
-vector.erase(vector)
+;============================================================
+; io — terminal and stream input/output
+;============================================================
+; io.out(value)              write a value followed by a newline
+; io.in()                    read one line; returned buffer is runtime-owned
+; io.nl / io.nl()            newline text
+; io.strout(text,index)      write one character without a newline
+; io.charin()                read the first character of a line, or -1 at EOF
+; io.errout()                write a newline to stderr
+; io.errout(value)           write a value to stderr with a newline
+; io.flush()                 flush stdout
+;- `io.in()` returns a reusable runtime-owned buffer. Copy it if the value must survive
+  a later input call. Output helpers accept supported scalar/pointer types as documented
+  by the runtime contract; use `io.errout` for diagnostic messages. These examples are compact snippets; import each module you use in a complete source file.
 
-;system
-system.exit()
-system.gcode()
-system.wait()
-system.readenv()
-system.setenv()
-system.curdir()
-system.chadir()
-system.args()
+  Example 1 — print a result:
+      ?std with io
+      void main() <void> {
+          int total = 20 + 22
+          io.out(total)
+      }
 
-;time
-time.utime() ;unix time
-time.ctime() ;current time
-time.utctime()
-time.sleep()
-time.format()
-time.parsetime()
-time.timedif(timeformat, timeformat) ;depends on the api, built in one will come later
+  Example 2 — read and echo a line:
+      ?std with io
+      void main() <void> {
+          str answer[128] = io.in()
+          io.out(answer)
+      }
+-;
 
-;random
+;============================================================
+; file — text file handles
+;============================================================
+; file.open(path,mode)       open an existing file, or return -1
+; file.create(path)          create/truncate and open a file
+; file.close(handle)         close a valid handle
+; file.read(handle)          read the next line; NULL at EOF/error
+; file.write(handle,text)    write text without adding a newline
+; file.delete(path)          remove a path
+; file.rename(path,newPath)  rename a path
+; file.gpath(handle)         get the path stored for a handle
+; file.gsize(handle)         get byte size while preserving stream position
+;- Handles are integer-like values. Check an open result before reading/writing and
+  close each successful handle. `read` is line-oriented, not a binary-file API.
 
-;convert
+  Example 1 — inspect an existing file:
+      ?std with file, io
+      void main() <void> {
+          int input = file.open("notes.txt", "r")
+          if (input >= 0) {
+              io.out(file.gsize(input))
+              file.close(input)
+          }
+      }
 
-;thread
+  Example 2 — create and write a file:
+      ?std with file
+      void main() <void> {
+          int output = file.create("result.txt")
+          if (output >= 0) {
+              file.write(output, "Complete")
+              file.close(output)
+          }
+      }
+-;
 
-;sync
+;============================================================
+; string — text inspection and transformation
+;============================================================
+; string.length(text)                 byte length excluding the NUL terminator
+; string.copy(text)                   allocate an owned copy
+; string.connect(left,right)          allocate a concatenated string
+; string.substr(text,start,length)    allocate a substring of `length` bytes
+; string.slice(text,start,end)        allocate [start,end), end-exclusive
+; string.replace(text,find,replace)   replace all non-overlapping matches in a new string
+; string.up(text)                     uppercase ASCII letters in place
+; string.low(text)                    lowercase ASCII letters in place
+; string.trim(text)                   trim surrounding ASCII/C-locale whitespace in place
+; string.equals(left,right)           return 1 if equal, otherwise 0
+; string.contains(text,needle)        return 1 if needle occurs, otherwise 0
+; string.starts_with(text,prefix)     return 1 if prefix matches the start
+; string.ends_with(text,suffix)       return 1 if suffix matches the end
+;- `copy`, `connect`, `substr`, `slice`, and `replace` allocate owned strings. Release these
+  results with `memory.escape` when finished. `up`, `low`, and `trim` mutate the provided
+  buffer; do not pass string literals or const-qualified values.
 
-;regex
+  Example 1 — inspect and compare:
+      ?std with io, string
+      void main() <void> {
+          int size = string.length("Underscore")
+          int same = string.equals("yes", "yes")
+          io.out(size)
+          io.out(same)
+      }
 
-;encoding
+  Example 2 — mutate a writable buffer:
+      ?std with io, string
+      void main() <void> {
+          str title[32] = "  Hello  "
+          string.trim(title)
+          string.up(title)
+          io.out(title)
+      }
+-;
 
-;network
+;============================================================
+; math — numeric functions
+;============================================================
+; math.abs(value)             absolute value
+; math.sqrt(value)            square root; negative-input result follows API status
+; math.min(left,right)        lower of two values
+; math.max(left,right)        higher of two values
+; math.round(value)           nearest integer-valued floating result
+; math.rdown(value)           floor, toward negative infinity
+; math.rup(value)             ceiling, toward positive infinity
+; math.sin(value)             sine (radians)
+; math.cos(value)             cosine (radians)
+; math.tan(value)             tangent (radians)
+; math.asin(value)            inverse sine (radians)
+; math.acos(value)            inverse cosine (radians)
+; math.atan(value)            inverse tangent (radians)
+; math.log(value)             natural logarithm
+; math.logx(value,base)       logarithm in a specified base
+; math.exp(value)             e raised to value
+; math.pi()                   π as a floating-point value
+; math.clamp(value,low,high)  clamp to a closed interval; if low > high, return value
+; math.sign(value)            -1, 0, or 1 by sign (new source helper)
+; math.lerp(start,end,t)      linear interpolation; t is not clamped (new source helper)
+;- Trigonometric inputs are radians. Domain errors follow the selected runtime's
+  documented result convention; the current native math runtime uses the C math library.
+
+  Example 1 — square root and rounding:
+      ?std with io, math
+      void main() <void> {
+          fp radius = math.sqrt(81.0)
+          fp rounded = math.round(4.6)
+          io.out(radius)
+          io.out(rounded)
+      }
+
+  Example 2 — clamp and interpolate:
+      ?std with io, math
+      void main() <void> {
+          fp safe = math.clamp(14.0, 0.0, 10.0)
+          fp middle = math.lerp(0.0, 100.0, 0.5)
+          io.out(safe)
+          io.out(middle)
+      }
+-;
+
+;============================================================
+; vector — dynamic collections (API design)
+;============================================================
+; vector.alloc(type,capacity)       create an empty typed vector
+; vector.push(vector,value)         append a value
+; vector.insert(vector,value,index) insert at an index
+; vector.remove(vector,index)       remove and return an element
+; vector.get(vector,index)           retrieve an element
+; vector.set(vector,index,value)     replace an element
+; vector.length(vector)              number of stored elements
+; vector.capacity(vector)            allocated element capacity
+; vector.clear(vector)               remove all elements, retain allocation
+; vector.erase(vector)               release vector storage
+; vector.endin/vector.endout         legacy names; semantics should be retired/clarified
+;- Vectors need an element-type representation, bounds policy, and ownership model.
+  Fixed-size arrays are the supported alternative until the vector runtime is complete.
+
+  Example 1 — a fixed-size collection today:
+      int values<3> = [3, 6, 9]
+      io.out(values[0])
+
+  Example 2 — intended dynamic API (not yet runnable):
+      ; vector items = vector.alloc(int, 4)
+      ; vector.push(items, 12)
+      ; vector.erase(items)
+-;
+
+;============================================================
+; system — process and environment services (API design)
+;============================================================
+; system.exit(code)           terminate with an explicit status code
+; system.gcode()              retrieve the most recently available status code
+; system.wait(milliseconds)  wait for a duration
+; system.readenv(name)        read an environment variable
+; system.setenv(name,value)   set an environment variable for this process
+; system.curdir()             get current working directory
+; system.chadir(path)         change current working directory
+; system.args()               retrieve process arguments
+;- Exact argument-array representation, environment mutation portability, and process
+  lifetime semantics must be decided before this group is exposed as a stable runtime.
+
+  Example 1 — intended environment lookup (not yet runnable):
+      ; str mode[32] = system.readenv("APP_MODE")
+      ; io.out(mode)
+
+  Example 2 — intended exit status (not yet runnable):
+      ; system.exit(0)
+-;
+
+;============================================================
+; time — clocks and timestamp conversions
+;============================================================
+; time.utime()                       Unix epoch seconds (native implementation)
+; time.ctime(epochSeconds)            local date/time text, shared buffer + newline
+; time.utctime(epochSeconds)          UTC date/time text, shared buffer + newline
+; time.timedif(left,right)            `left - right`, in seconds
+; time.sleep(milliseconds)            planned delay function
+; time.format(epochSeconds,format)    planned timestamp formatter
+; time.parsetime(text,format)         planned timestamp parser
+;- Clock precision, timezone handling, daylight-saving behavior, and date-format
+  conventions must be fixed before the remaining conversion functions are enabled.
+  The first implementation returns static C-library buffers from ctime/utctime; copy
+  the text if it must survive a later time conversion. Those strings include a newline.
+
+  Example 1 — current epoch time:
+      ?std with time, io
+      void main() <void> {
+          int now = time.utime()
+          io.out(now)
+      }
+
+  Example 2 — timestamp difference:
+      ?std with time, io
+      void main() <void> {
+          int difference = time.timedif(1000, 875)
+          io.out(difference)
+      }
+-;
+
+;============================================================
+; random — pseudo-random numbers
+;============================================================
+; random.seed(value)            initialize the pseudo-random generator
+; random.next()                 next non-negative random integer
+; random.range(min,max)         integer in inclusive interval [min,max]
+; random.unit()                 floating-point value in [0,1)
+;- This first native version uses the C library pseudo-random generator. `seed` makes
+  runs reproducible on a given C library/runtime, but not necessarily across platforms.
+  `range` is inclusive and may have modulo bias; invalid bounds or intervals wider than RAND_MAX + 1 return -1. Do not
+  use these functions for cryptographic keys or secrets.
+
+  Example 1 — seed and sample:
+      ?std with random, io
+      void main() <void> {
+          random.seed(1234)
+          io.out(random.next())
+      }
+
+  Example 2 — inclusive bounded result:
+      ?std with random, io
+      void main() <void> {
+          int die = random.range(1, 6)
+          io.out(die)
+      }
+-;
+
+;============================================================
+; convert — explicit conversion helpers (API design)
+;============================================================
+; convert.toInt(number)           numeric value converted to integer by truncation
+; convert.toFp(number)            numeric value converted to floating point
+; convert.parseInt(text)          parse base-10 integer text; error contract pending
+; convert.parseFp(text)           parse floating-point text; error contract pending
+; convert.toString(value)         allocate text representation; ownership contract pending
+; convert.hex(value)              format an integer as hexadecimal text
+; convert.bin(value)              format an integer as binary text
+;- Parsing needs an unambiguous invalid-input and overflow result. Numeric narrowing
+  also needs a specified rounding and overflow policy.
+
+  Example 1 — intended numeric conversion (not yet runnable):
+      ; fp ratio = convert.toFp(3)
+      ; io.out(ratio)
+
+  Example 2 — intended text parsing (not yet runnable):
+      ; int count = convert.parseInt("42")
+      ; io.out(count)
+-;
+
+;============================================================
+; thread — concurrent work (API design)
+;============================================================
+; thread.start(function,args)  start work on a new thread
+; thread.join(handle)          wait for thread completion
+; thread.detach(handle)        relinquish join ownership
+; thread.current()             identify the current thread
+; thread.yield()               yield execution to another thread
+;- The language has no finalized callable-value/closure, argument-packing, or thread
+  ownership model. These signatures are design targets, not working functions.
+
+  Example 1 — intended start/join lifecycle (not yet runnable):
+      ; int worker = thread.start(doWork, 1)
+      ; thread.join(worker)
+
+  Example 2 — intended cooperative yield (not yet runnable):
+      ; thread.yield()
+-;
+
+;============================================================
+; sync — synchronization primitives (API design)
+;============================================================
+; sync.mutex()                 create a mutex
+; sync.lock(mutex)             acquire a mutex
+; sync.unlock(mutex)           release a mutex
+; sync.destroy(mutex)          release mutex resources
+; sync.condition()             create a condition variable
+; sync.wait(condition,mutex)   atomically wait and release/reacquire mutex
+; sync.signal(condition)       wake one waiter
+; sync.broadcast(condition)    wake all waiters
+;- Lock ownership, deadlock behavior, timeout rules, and interaction with thread
+  cancellation need a defined contract before these functions can be safely exposed.
+
+  Example 1 — intended critical section (not yet runnable):
+      ; sync.lock(lock)
+      ; sharedCount++
+      ; sync.unlock(lock)
+
+  Example 2 — intended notification (not yet runnable):
+      ; sync.signal(ready)
+-;
+
+;============================================================
+; regex — pattern matching (API design)
+;============================================================
+; regex.compile(pattern,flags)    compile a pattern into a reusable handle
+; regex.test(handle,text)          return whether the text matches
+; regex.find(handle,text)          return match start and length
+; regex.replace(handle,text,value) return replaced text
+; regex.free(handle)               release a compiled pattern
+;- The implementation must select a regex dialect and document escaping, Unicode,
+  capture-group ownership, invalid-pattern errors, and replacement syntax.
+
+  Example 1 — intended match check (not yet runnable):
+      ; int matched = regex.test(pattern, "item-42")
+      ; io.out(matched)
+
+  Example 2 — intended replacement (not yet runnable):
+      ; str cleaned[128] = regex.replace(pattern, input, "_")
+      ; io.out(cleaned)
+-;
+
+;============================================================
+; network — sockets and endpoint operations (API design)
+;============================================================
+; network.connect(host,port)    open a client connection
+; network.listen(host,port)     bind/listen and return a server handle
+; network.accept(server)        accept an incoming connection
+; network.send(handle,text)     send bytes/text
+; network.receive(handle,size)  receive bounded data
+; network.close(handle)         close a connection/listener
+; network.lastError()            retrieve a descriptive error/result
+;- Socket handle types, blocking/non-blocking behavior, timeouts, DNS, TLS, and
+  platform compatibility must be chosen before these APIs become supported.
+
+  Example 1 — intended client flow (not yet runnable):
+      ; int connection = network.connect("example.test", 443)
+      ; network.close(connection)
+
+  Example 2 — intended server flow (not yet runnable):
+      ; int server = network.listen("127.0.0.1", 9000)
+      ; network.close(server)
+-;
+
+;============================================================
+; encoding — text and byte encodings (API design)
+;============================================================
+; encoding.utf8Valid(text)          validate UTF-8 input
+; encoding.utf8Length(text)         count Unicode scalar values in valid UTF-8
+; encoding.base64Encode(bytes)      encode bytes as Base64 text
+; encoding.base64Decode(text)      decode Base64 text into owned bytes
+; encoding.hexEncode(bytes)         encode bytes as hexadecimal text
+; encoding.hexDecode(text)          decode hexadecimal text into owned bytes
+;- Text strings are NUL-terminated in the current C backend, so arbitrary binary data
+  needs a length-bearing representation. Unicode character count differs from byte length.
+
+  Example 1 — intended UTF-8 validation (not yet runnable):
+      ; int valid = encoding.utf8Valid("café")
+      ; io.out(valid)
+
+  Example 2 — intended hexadecimal encoding (not yet runnable):
+      ; str encoded[64] = encoding.hexEncode(data)
+      ; io.out(encoded)
+-;
