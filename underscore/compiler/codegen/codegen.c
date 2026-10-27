@@ -12,6 +12,13 @@ static _Noreturn void codegenError(const char *code, const char *message, ASTNod
                   label, help);
 }
 
+static void emitCName(FILE *output, const char *name) {
+  for (const char *p = name != NULL ? name : ""; *p != '\0'; ++p) {
+    if (*p == '.' || *p == ':') fputc('_', output);
+    else fputc((unsigned char)*p, output);
+  }
+}
+
 static Type nodeType(ASTNode *node) {
   Type type;
   type.kind = TYPE_VOID;
@@ -219,6 +226,31 @@ static void generateExpression(ASTNode *node, FILE *output) {
     fprintf(output, "%s)", node->op[0] != '\0' ? node->op : "++");
     return;
   case AST_CALL:
+    if (strcmp(node->name, "io.out") == 0) {
+      ASTNode *arg = node->child;
+      if (arg == NULL || arg->next != NULL) {
+        codegenError("E4002", "io.out expects exactly one argument", node, NULL,
+                     "write `io.out(value)` with one value.");
+      }
+      if (arg->valueType == VALUE_STR) {
+        fputs("uc_io_out_str((const char *)", output);
+        generateExpression(arg, output);
+        fputs(")", output);
+      } else if (arg->valueType == VALUE_FP) {
+        fputs("uc_io_out_fp((double)", output);
+        generateExpression(arg, output);
+        fputs(")", output);
+      } else {
+        fputs("uc_io_out_int((long long)", output);
+        generateExpression(arg, output);
+        fputs(")", output);
+      }
+      return;
+    }
+    if (strcmp(node->name, "io.in") == 0) {
+      fputs("uc_io_in()", output);
+      return;
+    }
     if (strcmp(node->name, "std.out") == 0 || strcmp(node->name, "std::out") == 0 ||
         strcmp(node->name, "out") == 0) {
       if (node->child == NULL || node->child->next != NULL) {
@@ -228,7 +260,8 @@ static void generateExpression(ASTNode *node, FILE *output) {
       emitOutputCall(node->child, output);
       return;
     }
-    fprintf(output, "%s(", node->name);
+    emitCName(output, node->name);
+    fputc('(', output);
     for (ASTNode *arg = node->child; arg != NULL; arg = arg->next) {
       generateExpression(arg, output);
       if (arg->next != NULL) fputs(", ", output);
@@ -731,7 +764,9 @@ static void generateStatementList(ASTNode *node, FILE *output, int depth) {
 static void generateMethodPrototype(ASTNode *node, FILE *output) {
   Method *method = node->method;
   if (method == NULL || method->isMain) return;
-  fprintf(output, "%s %s(", cType(method->returnType), method->name);
+  fprintf(output, "%s ", cType(method->returnType));
+  emitCName(output, method->name);
+  fputc('(', output);
   if (method->paramCount == 0) fputs("void", output);
   for (int i = 0; i < method->paramCount; ++i) {
     if (i > 0) fputs(", ", output);
@@ -754,7 +789,9 @@ static void generateMethod(ASTNode *node, FILE *output, int emitGlobalInitialize
   }
   if (method->isMain) fputs("int main(void)\n", output);
   else {
-    fprintf(output, "%s %s(", cType(method->returnType), method->name);
+    fprintf(output, "%s ", cType(method->returnType));
+    emitCName(output, method->name);
+    fputc('(', output);
     if (method->paramCount == 0) fputs("void", output);
     for (int i = 0; i < method->paramCount; ++i) {
       if (i > 0) fputs(", ", output);
@@ -825,6 +862,11 @@ void generateC(ASTNode *program, FILE *output) {
   }
 
   fputs("#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n\n", output);
+  fputs("static int uc_io_out_int(long long value) { return printf(\"%lld\\n\", value); }\n", output);
+  fputs("static int uc_io_out_fp(double value) { return printf(\"%.9g\\n\", value); }\n", output);
+  fputs("static int uc_io_out_str(const char *value) { return printf(\"%s\\n\", value != NULL ? value : \"(null)\"); }\n", output);
+  fputs("static char uc_io_input_buffer[4096];\n", output);
+  fputs("static char *uc_io_in(void) { size_t n; if (fgets(uc_io_input_buffer, (int)sizeof(uc_io_input_buffer), stdin) == NULL) { uc_io_input_buffer[0] = '\\0'; return uc_io_input_buffer; } n = strlen(uc_io_input_buffer); while (n && (uc_io_input_buffer[n-1] == '\\n' || uc_io_input_buffer[n-1] == '\\r')) uc_io_input_buffer[--n] = '\\0'; return uc_io_input_buffer; }\n\n", output);
 
   /* Type definitions must precede function prototypes and global declarations. */
   for (ASTNode *node = program->child; node != NULL; node = node->next) {

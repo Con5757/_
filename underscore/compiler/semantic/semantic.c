@@ -480,6 +480,7 @@ static ValueType checkExpression(ASTNode *expr) {
                       "use an integer index, for example `numbers[0]`; "
                       "floating-point indexes are not allowed.");
     }
+    
 
     long long constantIndex = 0;
     int hasConstantIndex = constantIntegerValue(expr->right, &constantIndex);
@@ -775,6 +776,41 @@ static ValueType checkExpression(ASTNode *expr) {
     expr->storageFlags = expr->child != NULL ? expr->child->storageFlags : 0;
     return left;
   case AST_CALL: {
+    /*
+     * Native IO operations are compiler runtime operations. They must be
+     * recognized before findFunction(), so they work without an explicit
+     * `?std with io` import.
+     */
+    if (strcmp(expr->name, "io.in") == 0) {
+      if (expr->child != NULL) {
+        semanticErrorAt("E3020", "io.in expects no arguments", expr, NULL,
+                        "call `io.in()` without arguments.");
+      }
+
+      expr->valueType = VALUE_STR;
+      return VALUE_STR;
+    }
+
+    if (strcmp(expr->name, "io.out") == 0) {
+      if (expr->child == NULL || expr->child->next != NULL) {
+        semanticErrorAt("E3020", "io.out expects exactly one argument", expr,
+                        NULL, "call `io.out(value)` with one value.");
+      }
+
+      ValueType outputType = checkExpression(expr->child);
+
+      if (outputType == VALUE_VOID) {
+        semanticErrorAt("E3021", "cannot output a value of type `void`", expr,
+                        NULL, "pass an expression that produces a value.");
+      }
+
+      expr->valueType = VALUE_VOID;
+      return VALUE_VOID;
+    }
+
+    /*
+     * Preserve the existing unsupported-input behavior for legacy names.
+     */
     if (strcmp(expr->name, "std.in") == 0 ||
         strcmp(expr->name, "std::in") == 0 || strcmp(expr->name, "in") == 0) {
       semanticErrorAt(
@@ -784,92 +820,122 @@ static ValueType checkExpression(ASTNode *expr) {
           "use a function with a defined input implementation, or add the "
           "`std.in` runtime contract before calling it.");
     }
+
+    /*
+     * Keep existing out / std.out behavior unchanged.
+     */
     if (strcmp(expr->name, "std.out") == 0 ||
         strcmp(expr->name, "std::out") == 0 || strcmp(expr->name, "out") == 0) {
       if (expr->child == NULL)
         semanticErrorAt("E3020", "`std.out` expects one argument", expr, NULL,
                         "for example, write `std.out(42)`.");
+
       if (expr->child->next != NULL)
         semanticErrorAt("E3020", "`std.out` expects exactly one argument", expr,
                         NULL,
                         "combine values into one expression, or call `std.out` "
                         "more than once.");
+
       left = checkExpression(expr->child);
+
       if (left == VALUE_VOID)
         semanticErrorAt("E3021", "cannot output a value of type `void`", expr,
                         NULL,
                         "output a value-producing expression instead of a void "
                         "function call.");
+
       expr->valueType = VALUE_VOID;
       return VALUE_VOID;
     }
+
     ASTNode *functionNode = findFunction(expr->name);
+
     if (functionNode == NULL) {
       char message[320];
       snprintf(message, sizeof(message), "cannot find function `%s`",
                expr->name);
+
       semanticErrorAt("E3022", message, expr,
                       "no function with this name is declared",
                       "check the function name, or declare it with a signature "
-                      "such as `int add(int a, int b) { ... }`.");
+                      "such as `int add(int a, int b) { ... }.");
     }
+
     Method *called = functionNode->method;
     int arguments = 0;
+
     for (ASTNode *arg = expr->child; arg != NULL; arg = arg->next)
       arguments++;
+
     if (arguments != called->paramCount) {
       char message[320];
+
       snprintf(message, sizeof(message),
                "function `%s` takes %d argument%s but %d %s supplied",
                expr->name, called->paramCount,
                called->paramCount == 1 ? "" : "s", arguments,
                arguments == 1 ? "was" : "were");
+
       semanticErrorAt("E3023", message, expr,
                       "the call does not match the function signature",
                       "pass exactly the number of arguments listed in the "
                       "function definition.");
     }
+
     ASTNode *arg = expr->child;
+
     for (int i = 0; i < called->paramCount; ++i, arg = arg->next) {
       ValueType actual = checkExpression(arg);
       ValueType expected = valueTypeFromType(called->params[i].type);
+
       int isNullPointerArgument = arg->type == AST_NUM &&
                                   arg->valueType == VALUE_INT &&
                                   arg->value == 0;
+
       if (pointerDepthFromFlags(arg->storageFlags) !=
               pointerDepthFromFlags(called->params[i].storageFlags) &&
           !(pointerDepthFromFlags(called->params[i].storageFlags) > 0 &&
             isNullPointerArgument)) {
         char message[320];
+
         snprintf(message, sizeof(message),
                  "argument %d of `%s` has the wrong pointer depth", i + 1,
                  expr->name);
+
         semanticErrorAt(
             "E3056", message, arg,
             "the argument's pointer level does not match the parameter",
             "pass a variable of the expected pointer type, or use `@variable` "
             "to take its address.");
       }
+
       if (pointerDepthFromFlags(arg->storageFlags) ==
           pointerDepthFromFlags(called->params[i].storageFlags)) {
         char context[160];
+
         snprintf(context, sizeof(context), "argument %d to `%s`", i + 1,
                  expr->name);
+
         checkPointerQualification(called->params[i].storageFlags,
                                   arg->storageFlags, arg, context);
       }
+
       if (!typesCompatible(expected, actual)) {
         char message[320];
+
         snprintf(message, sizeof(message),
                  "argument %d of `%s` expects `%s`, but got `%s`", i + 1,
                  expr->name, valueTypeName(expected), valueTypeName(actual));
+
         semanticErrorAt("E3024", message, arg,
                         "this argument has the wrong type",
                         "pass a value matching the parameter type shown in the "
                         "function declaration.");
       }
+
       checkIntegerRange(called->params[i].type, arg);
     }
+
     expr->valueType = valueTypeFromType(called->returnType);
     return expr->valueType;
   }

@@ -1274,14 +1274,37 @@ static ASTNode *parseInclude(void) {
   ASTNode *node = newAST(AST_INCLUDE);
   Token *library = expectIdentifier();
   copyText(node->name, library->text);
-  int afterLibrary = currentToken;
-  skipNewlines();
-  if (match(TOKEN_WITH)) {
-    Token *modifier = expectIdentifier();
-    copyText(node->flags, modifier->text);
-  } else {
-    currentToken = afterLibrary;
+
+  ASTNode *first = NULL;
+  ASTNode *last = NULL;
+
+  if (strcmp(node->name, "manifest") == 0) {
+    Token *folder = expectIdentifier();
+    ASTNode *item = newAST(AST_VAR);
+    copyText(item->name, folder->text);
+    appendNode(&first, &last, item);
+    node->child = first;
+    return node;
   }
+
+  for (;;) {
+    int beforeNewlines = currentToken;
+    skipNewlines();
+    if (!match(TOKEN_WITH)) {
+      currentToken = beforeNewlines;
+      break;
+    }
+    for (;;) {
+      Token *module = expectIdentifier();
+      ASTNode *item = newAST(AST_VAR);
+      copyText(item->name, module->text);
+      appendNode(&first, &last, item);
+      if (!match(TOKEN_COMMA))
+        break;
+    }
+  }
+
+  node->child = first;
   return node;
 }
 
@@ -1353,6 +1376,16 @@ static ASTNode *parseStatementImpl(void) {
     if (match(TOKEN_EQUAL)) node->child = parseAssignment();
     return node;
   }
+  case TOKEN_BIT_AND: {
+    currentToken++; /* `&` at statement start means a manifest package. */
+    Token *folder = expectIdentifier();
+    ASTNode *node = newAST(AST_INCLUDE);
+    ASTNode *item = newAST(AST_VAR);
+    copyText(node->name, "manifest");
+    copyText(item->name, folder->text);
+    node->child = item;
+    return node;
+  }
   default:
     if (current()->type == TOKEN_VARIABLE && peekToken(1)->type == TOKEN_VARIABLE) {
       parserError("user-defined types are not supported as declaration types yet");
@@ -1373,7 +1406,6 @@ static ASTNode *parseStatementImpl(void) {
 
 ASTNode *parseProgram(void) {
   currentToken = 0;
-  astCount = 0;
   parserFailed = 0;
 
   ASTNode *program = newAST(AST_PROGRAM);

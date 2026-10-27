@@ -1,10 +1,12 @@
 #include "codegen/codegen.h"
+#include "config/manifest.h"
 #include "diagnostic/diagnostic.h"
 #include "global.h"
+#include "imports/imports.h"
 #include "lex/lex.h"
 #include "parse/parse.h"
 #include "semantic/semantic.h"
-#include "global.h"
+
 
 int debugTokens = 0;
 int debugObjs = 0;
@@ -71,15 +73,13 @@ void clearProgress(void) {
   printf("\r%*s\r", 80, "");
   fflush(stdout);
 }
+
 void printTokens(void) {
   for (int i = 0; i < tokenCount; i++) {
-    printf(
-        "TOKEN: %-15d TEXT: %s\n",
-        tokens[i].type,
-        tokens[i].text
-    );
+    printf("TOKEN: %-15d TEXT: %s\n", tokens[i].type, tokens[i].text);
   }
 }
+
 void printHelp(void) {
   printf("Usage: compiler <source file> [flags]\n\n");
 
@@ -88,7 +88,11 @@ void printHelp(void) {
   printf("  -objs         Print generated C\n");
   printf("  -progress     Show compiler progress\n");
   printf("  -help         Show this help\n");
+  printf("  -cufg         Create a UFG manifest beside the source file\n");
+  printf(
+      "  -cufg--p PATH Create a UFG manifest inside an existing directory\n");
 }
+
 void parseFlags(int argc, char **argv) {
   for (int i = 2; i < argc; i++) {
 
@@ -122,10 +126,30 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  /* Handle manifest creation before parseFlags(). */
+  for (int i = 2; i < argc; ++i) {
+    if (strcmp(argv[i], "-cufg") == 0) {
+      return manifestCreate(argv[1], NULL, 0);
+    }
+
+    if (strcmp(argv[i], "-cufg--p") == 0) {
+      if (i + 1 >= argc) {
+        fprintf(
+            stderr,
+            "usage: compiler <source file> -cufg--p <existing-directory>\n");
+        return 2;
+      }
+
+      return manifestCreate(argv[1], argv[i + 1], 1);
+    }
+  }
+
   parseFlags(argc, argv);
 
   char *source = readFile(argv[1]);
-  /* Register source before lexing so every phase can print real file context. */
+
+  /* Register source before lexing so every phase can print real file context.
+   */
   diagnosticSetSource(argv[1], source);
 
   progress("Lexing");
@@ -140,6 +164,10 @@ int main(int argc, char **argv) {
   progress("Parsing");
   currentToken = 0;
   ASTNode *program = parseProgram();
+
+  /* Expand imports before semantic analysis so imported functions are
+   * registered. */
+  program = expandImports(program, argv[1], argv[0]);
 
   progress("Semantic analysis");
   checkProgram(program);

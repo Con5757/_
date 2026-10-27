@@ -22,7 +22,8 @@ SOURCES := \
 	parse/ast_dump.c \
 	semantic/semantic.c \
 	codegen/codegen.c \
-	imports/imports.c
+	imports/imports.c \
+	config/manifest.c
 
 HEADERS := \
 	global.h \
@@ -32,7 +33,8 @@ HEADERS := \
 	parse/ast_dump.h \
 	semantic/semantic.h \
 	codegen/codegen.h \
-	imports/imports.h
+	imports/imports.h \
+	config/manifest.h
 
 .PHONY: all clean help test
 
