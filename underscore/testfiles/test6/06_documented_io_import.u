@@ -1,0 +1,7 @@
+?std 
+    with io, math
+
+void main() <void> {
+    fp root = math.sqrt(49.0)
+    io.out(root)
+}

@@ -1,0 +1,25 @@
+?std
+    with math
+    with string
+
+void main() <void> {
+    fp root = math.sqrt(81.0)
+    fp bounded = math.clamp(12.0, 0.0, 10.0)
+    fp midpoint = math.lerp(0.0, 100.0, 0.5)
+
+    str title[32] = "Underscore"
+    int length = string.length(title)
+    int begins = string.starts_with(title, "Under")
+    string.up(title)
+    int contains = string.contains(title, "SCORE")
+    int equal = string.equals(title, "UNDERSCORE")
+
+    io.out(root)
+    io.out(bounded)
+    io.out(midpoint)
+    io.out(length)
+    io.out(begins)
+    io.out(contains)
+    io.out(equal)
+    io.out(title)
+}

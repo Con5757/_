@@ -1,0 +1,25 @@
+;?std
+;   with io
+
+void main() <void> {
+    int values<3> = [2, 15, 9]
+    int first = values[0]
+    int middle = values[1]
+    int last = values[2]
+    str title[24] = "Chapter One"
+
+    io.out(first)
+    io.out(middle)
+    io.out(last)
+    io.out(title)
+
+    int score = 20
+    int ->pScore = @score
+    int observed = <-pScore
+    io.out(observed)
+
+    int ->firstPointer = @score
+    int -->secondPointer = @firstPointer
+    int observedTwice = <--secondPointer
+    io.out(observedTwice)
+}

@@ -1,0 +1,67 @@
+;?std
+;   with io
+
+int add(int left, int right) <void> {
+    retreat left + right
+}
+
+int clampSmall(int value) <void> {
+    if (value < 0) {
+        retreat 0
+    }
+    if (value > 10) {
+        retreat 10
+    }
+    retreat value
+}
+
+void main() <void> {
+    int left = 7
+    int right = 5
+    int sum = add(left, right)
+    fp ratio = 0.75
+    str label[32] = "core smoke test"
+    const int limit = 12
+
+    sum += 1
+    sum -= 1
+    sum *= 2
+    sum /= 2
+    sum %= 13
+
+    io.out(sum)
+    io.out(ratio)
+    io.out(label)
+
+    if (sum == limit && !false) {
+        io.out("if branch")
+    } elif (sum > limit) {
+        io.out("elif branch")
+    } else {
+        io.out("else branch")
+    }
+
+    int count = 0
+    during (count < 3) {
+        count++
+        if (count == 2) {
+            cont
+        }
+        io.out(count)
+    }
+
+    repeat (int i = 0, i < 3, i++) {
+        io.out(i)
+    }
+
+    switch (count) {
+        arg 3:
+            io.out("switch case")
+            break
+        incase:
+            io.out("default case")
+            break
+    }
+
+    io.out(clampSmall(14))
+}

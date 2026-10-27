@@ -1,0 +1,23 @@
+?init
+
+?files
+    "logger._"
+
+?macros
+    null
+
+?includes
+    null
+
+?variables
+    null
+
+?structs
+    null
+
+?functions
+@logger
+    int addValues(int left, int right) <void>
+    void writeLog(str message) <void>
+
+?endit

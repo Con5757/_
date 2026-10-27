@@ -1,0 +1,8 @@
+int addValues(int left, int right) <void> {
+    retreat left + right
+}
+
+void writeLog(str message) <void> {
+    io.out(message)
+    retreat
+}

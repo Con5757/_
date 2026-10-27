@@ -1,0 +1,8 @@
+?std with math, string
+
+void main() <void> {
+    fp root = math.sqrt(25.0)
+    int titleLength = string.length("combined import")
+    io.out(root)
+    io.out(titleLength)
+}

@@ -1,0 +1,7 @@
+&logs
+
+void main() <void> {
+    logs.writeLog("manifest shorthand loaded")
+    int result = logs.addValues(19, 23)
+    io.out(result)
+}
