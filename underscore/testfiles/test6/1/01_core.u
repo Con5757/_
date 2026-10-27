@@ -1,5 +1,5 @@
-;?std
-;   with io
+?std
+   with io
 
 int add(int left, int right) <void> {
     retreat left + right
