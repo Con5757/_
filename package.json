@@ -30,8 +30,8 @@
           ".ufg"
         ],
         "icon": {
-          "light": "./icon-dark.svg",
-          "dark": "./icon-light.svg"
+          "light": "./icon-light.svg",
+          "dark": "./icon-dark.svg"
         },
         "configuration": "./language-configuration.json"
       }
