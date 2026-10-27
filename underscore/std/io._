@@ -1,0 +1,21 @@
+; Underscore standard I/O module contract.
+;
+; The source-level `io.out(value)` and `io.in()` names are native intrinsics in
+; the current C backend. `io.out` dispatches by the argument's inferred type to
+; uc_io_out_int, uc_io_out_fp, or uc_io_out_str; `io.in` uses uc_io_in. Their
+; public signatures are listed in std.ufg under @io.
+;
+; This file intentionally contains no duplicate function bodies: the language
+; branch does not yet provide ordinary overload resolution for three functions
+; named `out` with int/fp/str parameters. The native implementation is in the
+; compiler's generated-C runtime path, not a Python shim.
+;
+; Supported spellings currently emitted by codegen:
+;   io.out(integerOrBoolean)
+;   io.out(floatingPointValue)
+;   io.out(stringValue)
+;   io.in()
+;
+; Additional operations listed in std.ufg (errout, flush, strout, charin, nl)
+; require their corresponding codegen cases to be enabled before use. The richer
+; compiler/runtime fragment is `underscore/compiler/runtime/io.fragment.c`.
