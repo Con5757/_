@@ -29,6 +29,10 @@
           ".u",
           ".ufg"
         ],
+        "icon": {
+          "light": "./icon-dark.svg",
+          "dark": "./icon-light.svg"
+        },
         "configuration": "./language-configuration.json"
       }
     ],
