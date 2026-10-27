@@ -1,26 +1,35 @@
 {
   "name": "underscore-extensionpack",
   "displayName": "Underscore Language Extension",
-  "description": "Syntax highlighting, function hover documentation, and snippets for Underscore source and UFG files.",
-  "version": "1.1.0",
+  "description": "Syntax highlighting, hover documentation, snippets, and compiler-backed live diagnostics for Underscore and UFG files.",
+  "version": "1.2.0",
   "publisher": "con5757",
   "engines": {
     "vscode": "^1.70.0"
   },
   "main": "./extension.js",
-  "activationEvents": ["onLanguage:underscore"],
-  "categories": ["Programming Languages", "Snippets"],
+  "activationEvents": [
+    "onLanguage:underscore"
+  ],
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
   "contributes": {
     "languages": [
       {
         "id": "underscore",
-        "aliases": ["Underscore", "ulang", "u"],
-        "extensions": ["._", ".u", ".ufg"],
-        "configuration": "./language-configuration.json",
-        "icon": {
-          "light": "./icon-light.svg",
-          "dark": "./icon-dark.svg"
-        }
+        "aliases": [
+          "Underscore",
+          "ulang",
+          "u"
+        ],
+        "extensions": [
+          "._",
+          ".u",
+          ".ufg"
+        ],
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
@@ -32,7 +41,9 @@
       {
         "scopeName": "markdown.underscore.codeblock",
         "path": "./syntaxes/markdown-underscore.tmLanguage.json",
-        "injectTo": ["text.html.markdown"],
+        "injectTo": [
+          "text.html.markdown"
+        ],
         "embeddedLanguages": {
           "meta.embedded.block.underscore": "underscore"
         }
@@ -42,7 +53,43 @@
       {
         "language": "underscore",
         "path": "./snippets/snippets.json"
+      },
+      {
+        "language": "underscore",
+        "path": "./snippets/fixed-width-snippets.json"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Underscore",
+      "properties": {
+        "underscore.compilerPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the built Underscore compiler executable. Required for compiler-backed live diagnostics when the compiler cannot be discovered inside the workspace."
+        },
+        "underscore.standardLibraryPath": {
+          "type": "string",
+          "default": "",
+          "description": "Directory containing standard-library modules such as io._ and math._. Passed to the compiler through UNDERSCORE_STDLIB."
+        },
+        "underscore.enableLiveDiagnostics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run the Underscore compiler in check-only mode while editing and report diagnostics in the Problems panel."
+        },
+        "underscore.enableInlineErrorLens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a compact inline message after lines with compiler errors or warnings."
+        },
+        "underscore.diagnosticDelayMs": {
+          "type": "number",
+          "default": 500,
+          "minimum": 150,
+          "maximum": 2500,
+          "description": "Debounce delay before checking a document after an edit, in milliseconds."
+        }
+      }
+    }
   }
 }

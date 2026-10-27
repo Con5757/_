@@ -425,5 +425,35 @@
       "?endit"
     ],
     "description": "Create a UFG package manifest with init, files, macros, includes, variables, structs, functions, and endit sections. Replace null with indexed declarations as needed."
+  },
+  "Fixed-width integer — int32": {
+    "prefix": ["u-int32", "u-fixed-int32"],
+    "body": ["int32@${1:count} = ${2:0}", "$0"],
+    "description": "Declare a 32-bit signed integer using the supported type@name syntax."
+  },
+  "Fixed-width integer — choose width": {
+    "prefix": "u-fixed-int",
+    "body": ["${1|int8,int16,int32,int64|}@${2:value} = ${3:0}", "$0"],
+    "description": "Declare an explicitly sized integer. Select the width, then the variable name."
+  },
+  "Fixed-width floating point — fp32": {
+    "prefix": ["u-fp32", "u-fixed-fp32"],
+    "body": ["fp32@${1:ratio} = ${2:0.5}", "$0"],
+    "description": "Declare a 32-bit floating-point value using the supported type@name syntax."
+  },
+  "Fixed-width floating point — fp64": {
+    "prefix": ["u-fp64", "u-fixed-fp64"],
+    "body": ["fp64@${1:precision} = ${2:0.000001}", "$0"],
+    "description": "Declare a 64-bit floating-point value using the supported type@name syntax."
+  },
+  "Fixed-width floating point — choose width": {
+    "prefix": "u-fixed-fp",
+    "body": ["${1|fp8,fp16,fp32,fp64|}@${2:value} = ${3:0.0}", "$0"],
+    "description": "Insert a fixed-width floating-point declaration. fp16 and fp8 may depend on the backend's numeric representation support."
+  },
+  "Fixed-width string — choose width": {
+    "prefix": "u-fixed-str-width",
+    "body": ["${1|str8,str16,str32,str64|}@${2:text} = \"${3:}\"", "$0"],
+    "description": "Declare an explicitly sized string type. Check the backend's string-width behavior before relying on a narrow width."
   }
 }
