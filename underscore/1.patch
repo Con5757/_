@@ -1,0 +1,397 @@
+From 1000000000000000000000000000000000000001 Mon Sep 17 00:00:00 2001
+Subject: [PATCH] Repair native I/O semantic and code-generation pipeline
+
+Wire the documented io calls through semantic analysis and codegen, keep io.nl
+as a real value, support io:: aliases and pointer output, and clarify the io module contract.
+
+diff --git a/underscore/compiler/codegen/codegen.h b/underscore/compiler/codegen/codegen.h
+--- a/underscore/compiler/codegen/codegen.h
++++ b/underscore/compiler/codegen/codegen.h
+@@ -16,1 +16,1 @@
+-void compileProgram(ASTNode *program, const char *sourceFile);
++void compileProgram(ASTNode *program, const char *sourceFile, const char *compilerPath);
+
+diff --git a/underscore/compiler/codegen/codegen.c b/underscore/compiler/codegen/codegen.c
+--- a/underscore/compiler/codegen/codegen.c
++++ b/underscore/compiler/codegen/codegen.c
+@@ -203,20 +203,18 @@
+ static void emitOutputCall(ASTNode *argument, FILE *output) {
+-  const char *format = "%lld\\n";
+   ValueType type = argument != NULL ? argument->valueType : VALUE_VOID;
+   int pointer = argument != NULL &&
+                 ((argument->storageFlags &
+                   (DECL_FLAG_POINTER | DECL_FLAG_DOUBLE_POINTER)) != 0);
+   if (pointer)
+-    format = "%p\\n";
++    fputs("uc_io_out_ptr((const void *)", output);
+   else if (type == VALUE_STR)
+-    format = "%s\\n";
++    fputs("uc_io_out_str((const char *)", output);
+-  else if (type == VALUE_FP)
++  else if (type == VALUE_FP && argument->declaredType.width >= 64)
++    fputs("uc_io_out_fp64((double)", output);
++  else if (type == VALUE_FP)
+-    format = "%.9g\\n";
+-  fprintf(output, "printf(\\"%s\\", ", format);
+-  if (pointer)
+-    fputs("(void *)", output);
+-  else if (type != VALUE_STR && type != VALUE_FP)
+-    fputs("(long long)", output);
++    fputs("uc_io_out_fp((double)", output);
++  else
++    fputs("uc_io_out_int((long long)", output);
+   generateExpression(argument, output);
+   fputc(')', output);
+ }
+@@ -252,8 +248,17 @@
+   case AST_MEMBER:
+-    generateExpression(node->child, output);
+-    fprintf(output, ".%s", node->name);
++  case AST_NAMESPACE_ACCESS: {
++    if (node->child != NULL && node->child->type == AST_VAR &&
++        strcmp(node->child->name, "io") == 0 &&
++        strcmp(node->name, "nl") == 0) {
++      fputs("io_nl", output);
++      return;
++    }
++    if (node->type == AST_MEMBER) {
++      generateExpression(node->child, output);
++      fprintf(output, ".%s", node->name);
++    } else {
++      generateExpression(node->child, output);
++      fprintf(output, "_%s", node->name);
++    }
+     return;
+-  case AST_NAMESPACE_ACCESS:
+-    generateExpression(node->child, output);
+-    fprintf(output, "_%s", node->name);
+-    return;
++  }
+@@ -333,39 +338,88 @@
+-  case AST_CALL:
+-    if (strcmp(node->name, "io.out") == 0) {
++  case AST_CALL: {
++    const char *name = node->name;
++    int isIoOut = strcmp(name, "io.out") == 0 || strcmp(name, "io::out") == 0;
++    int isIoIn = strcmp(name, "io.in") == 0 || strcmp(name, "io::in") == 0;
++    int isIoErrout = strcmp(name, "io.errout") == 0 || strcmp(name, "io::errout") == 0;
++    int isIoFlush = strcmp(name, "io.flush") == 0 || strcmp(name, "io::flush") == 0;
++    int isIoStrout = strcmp(name, "io.strout") == 0 || strcmp(name, "io::strout") == 0;
++    int isIoCharin = strcmp(name, "io.charin") == 0 || strcmp(name, "io::charin") == 0;
++
++    if (isIoOut) {
+       ASTNode *arg = node->child;
+       if (arg == NULL || arg->next != NULL) {
+         codegenError("E4002", "io.out expects exactly one argument", node, NULL,
+                      "write `io.out(value)` with one value.");
+       }
+-      if (arg->valueType == VALUE_STR) {
+-        fputs("uc_io_out_str((const char *)", output);
++      emitOutputCall(arg, output);
++      return;
++    }
++    if (isIoIn) {
++      fputs("uc_io_in()", output);
++      return;
++    }
++    if (isIoErrout) {
++      ASTNode *arg = node->child;
++      if (arg == NULL) {
++        fputs("uc_io_errout_newline()", output);
++      } else if (arg->next != NULL) {
++        codegenError("E4002", "io.errout accepts zero or one argument", node, NULL,
++                     "write `io.errout()` or `io.errout(value)`.");
++      } else if ((arg->storageFlags & (DECL_FLAG_POINTER | DECL_FLAG_DOUBLE_POINTER)) != 0) {
++        fputs("uc_io_errout_ptr((const void *)", output);
+         generateExpression(arg, output);
+-        fputs(")", output);
++        fputc(')', output);
++      } else if (arg->valueType == VALUE_STR) {
++        fputs("uc_io_errout_str((const char *)", output);
++        generateExpression(arg, output);
++        fputc(')', output);
+-      } else if (arg->valueType == VALUE_FP) {
++      } else if (arg->valueType == VALUE_FP &&
++                 arg->declaredType.width >= 64) {
++        fputs("uc_io_errout_fp64((double)", output);
++        generateExpression(arg, output);
++        fputc(')', output);
++      } else if (arg->valueType == VALUE_FP) {
++        fputs("uc_io_errout_fp((double)", output);
+         generateExpression(arg, output);
+-        fputs(")", output);
++        fputc(')', output);
+       } else {
+-        fputs("uc_io_out_int((long long)", output);
++        fputs("uc_io_errout_int((long long)", output);
+         generateExpression(arg, output);
+-        fputs(")", output);
++        fputc(')', output);
+       }
+       return;
+     }
+-    if (strcmp(node->name, "io.in") == 0) {
+-      fputs("uc_io_in()", output);
++    if (isIoFlush) {
++      fputs("uc_io_flush()", output);
+       return;
+     }
+-    if (strcmp(node->name, "std.out") == 0 ||
+-        strcmp(node->name, "std::out") == 0 || strcmp(node->name, "out") == 0) {
++    if (isIoStrout) {
++      ASTNode *textArg = node->child;
++      ASTNode *indexArg = textArg != NULL ? textArg->next : NULL;
++      if (textArg == NULL || indexArg == NULL || indexArg->next != NULL) {
++        codegenError("E4002", "io.strout expects exactly two arguments", node, NULL,
++                     "write `io.strout(text, index)`.");
++      }
++      fputs("uc_io_strout((const char *)", output);
++      generateExpression(textArg, output);
++      fputs(", (long long)", output);
++      generateExpression(indexArg, output);
++      fputc(')', output);
++      return;
++    }
++    if (isIoCharin) {
++      fputs("uc_io_charin()", output);
++      return;
++    }
++    if (strcmp(name, "std.out") == 0 || strcmp(name, "std::out") == 0 ||
++        strcmp(name, "out") == 0) {
+       if (node->child == NULL || node->child->next != NULL) {
+-        codegenError(
+-            "E4002", "`std.out` expects exactly one argument", node, NULL,
+-            "write `std.out(value)` with one value-producing expression.");
++        codegenError("E4002", "`std.out` expects exactly one argument", node, NULL,
++                     "write `std.out(value)` with one value-producing expression.");
+       }
+       emitOutputCall(node->child, output);
+       return;
+     }
+-    emitCName(output, node->name);
++    emitCName(output, name);
+     fputc('(', output);
+     for (ASTNode *arg = node->child; arg != NULL; arg = arg->next) {
+       generateExpression(arg, output);
+@@ -375,4 +423,5 @@
+     }
+     fputc(')', output);
+     return;
++  }
+   case AST_EQUAL:
+
+diff --git a/underscore/compiler/main.c b/underscore/compiler/main.c
+--- a/underscore/compiler/main.c
++++ b/underscore/compiler/main.c
+@@ -159,1 +159,1 @@
+-  compileProgram(program, argv[1]);
++  compileProgram(program, argv[1], argv[0]);
+
+diff --git a/underscore/compiler/imports/imports.c b/underscore/compiler/imports/imports.c
+--- a/underscore/compiler/imports/imports.c
++++ b/underscore/compiler/imports/imports.c
+@@ -187,8 +187,13 @@
+ static int isBuiltinCall(const char *name) {
++  if (name == NULL) return 0;
+   return strcmp(name, "out") == 0 || strcmp(name, "std.out") == 0 ||
+          strcmp(name, "std::out") == 0 || strcmp(name, "in") == 0 ||
+          strcmp(name, "std.in") == 0 || strcmp(name, "io.out") == 0 ||
+-         strcmp(name, "io.in") == 0 || strcmp(name, "io.errout") == 0 ||
+-         strcmp(name, "io.flush") == 0 || strcmp(name, "io.strout") == 0 ||
+-         strcmp(name, "io.charin") == 0 || strcmp(name, "io.nl") == 0;
++         strcmp(name, "io::out") == 0 || strcmp(name, "io.in") == 0 ||
++         strcmp(name, "io::in") == 0 || strcmp(name, "io.errout") == 0 ||
++         strcmp(name, "io::errout") == 0 || strcmp(name, "io.flush") == 0 ||
++         strcmp(name, "io::flush") == 0 || strcmp(name, "io.strout") == 0 ||
++         strcmp(name, "io::strout") == 0 || strcmp(name, "io.charin") == 0 ||
++         strcmp(name, "io::charin") == 0 || strcmp(name, "io.nl") == 0 ||
++         strcmp(name, "io::nl") == 0;
+ }
+
+diff --git a/underscore/compiler/runtime/io.fragment.c b/underscore/compiler/runtime/io.fragment.c
+--- a/underscore/compiler/runtime/io.fragment.c
++++ b/underscore/compiler/runtime/io.fragment.c
+@@ -66,3 +66,8 @@
+ static int uc_io_out_fp(double value) {
+     return fprintf(stdout, "%.9g\n", value);
+ }
++
++static int uc_io_out_fp64(double value) {
++    return fprintf(stdout, "%.17g\n", value);
++}
++
+@@ -104,3 +104,8 @@
+ static int uc_io_errout_fp(double value) {
+     return fprintf(stderr, "%.9g\n", value);
+ }
++
++static int uc_io_errout_fp64(double value) {
++    return fprintf(stderr, "%.17g\n", value);
++}
++
+@@ -108,3 +116,7 @@
+ static int uc_io_errout_str(const char *value) {
+     return fprintf(stderr, "%s\n", value != NULL ? value : "(null)");
+ }
++
++static int uc_io_errout_ptr(const void *value) {
++    return fprintf(stderr, "%p\n", value);
++}
+
+diff --git a/underscore/compiler/semantic/semantic.c b/underscore/compiler/semantic/semantic.c
+--- a/underscore/compiler/semantic/semantic.c
++++ b/underscore/compiler/semantic/semantic.c
+@@ -463,12 +463,14 @@
+   case AST_MEMBER:
+   case AST_NAMESPACE_ACCESS: {
+-    /* Access chains are valid only as part of a recognized callable for now. */
+-    char message[320];
+-    snprintf(message, sizeof(message),
+-             "member access on this value is not supported yet");
+-    semanticErrorAt("E3010", message, expr,
+-                    "this member expression is not a standalone value",
+-                    "for standard output, use `std.out(value)`; general "
+-                    "struct/class member access needs type definitions first.");
++    if (expr->child != NULL && expr->child->type == AST_VAR &&
++        strcmp(expr->child->name, "io") == 0 && strcmp(expr->name, "nl") == 0) {
++      expr->valueType = VALUE_STR;
++      expr->declaredType.kind = TYPE_STR;
++      expr->declaredType.width = 0;
++      return VALUE_STR;
++    }
++    semanticErrorAt("E3010", "member access on this value is not supported yet",
++                    expr, "this member expression is not a standalone value",
++                    "the current module value is `io.nl`; general struct/class access needs type definitions first.");
+     return VALUE_VOID;
+   }
+@@ -784,40 +786,74 @@
+-    if (strcmp(expr->name, "io.in") == 0) {
++    if (strcmp(expr->name, "io.in") == 0 || strcmp(expr->name, "io::in") == 0) {
+       if (expr->child != NULL) {
+         semanticErrorAt("E3020", "io.in expects no arguments", expr, NULL,
+                         "call `io.in()` without arguments.");
+       }
+-
+       expr->valueType = VALUE_STR;
+       return VALUE_STR;
+     }
+ 
+-    if (strcmp(expr->name, "io.out") == 0) {
++    if (strcmp(expr->name, "io.out") == 0 || strcmp(expr->name, "io::out") == 0) {
+       if (expr->child == NULL || expr->child->next != NULL) {
+         semanticErrorAt("E3020", "io.out expects exactly one argument", expr,
+                         NULL, "call `io.out(value)` with one value.");
+       }
+-
+       ValueType outputType = checkExpression(expr->child);
+-
+       if (outputType == VALUE_VOID) {
+         semanticErrorAt("E3021", "cannot output a value of type `void`", expr,
+                         NULL, "pass an expression that produces a value.");
+       }
+-
+       expr->valueType = VALUE_VOID;
+       return VALUE_VOID;
+     }
+ 
+-    /* `io.in()` is emitted as the native `uc_io_in()` runtime helper by the
+-     * C backend. Give it a string result here as well, so semantic analysis
+-     * agrees with the code generator instead of reporting an unknown symbol. */
+-    if (strcmp(expr->name, "io.in") == 0) {
++    if (strcmp(expr->name, "io.errout") == 0 || strcmp(expr->name, "io::errout") == 0) {
++      if (expr->child != NULL && expr->child->next != NULL) {
++        semanticErrorAt("E3020", "io.errout accepts zero or one argument", expr, NULL,
++                        "call `io.errout()` or `io.errout(value)`.");
++      }
++      if (expr->child != NULL && checkExpression(expr->child) == VALUE_VOID) {
++        semanticErrorAt("E3021", "cannot output a value of type `void`", expr, NULL,
++                        "pass an expression that produces a value.");
++      }
++      expr->valueType = VALUE_INT;
++      return VALUE_INT;
++    }
++
++    if (strcmp(expr->name, "io.flush") == 0 || strcmp(expr->name, "io::flush") == 0) {
+       if (expr->child != NULL) {
+-        semanticErrorAt("E3079", "io.in expects no arguments", expr, NULL,
+-                        "call `io.in()` without parameters.");
++        semanticErrorAt("E3020", "io.flush expects no arguments", expr, NULL,
++                        "call `io.flush()` without arguments.");
+       }
+-      expr->valueType = VALUE_STR;
+-      return VALUE_STR;
++      expr->valueType = VALUE_INT;
++      return VALUE_INT;
++    }
++
++    if (strcmp(expr->name, "io.strout") == 0 || strcmp(expr->name, "io::strout") == 0) {
++      ASTNode *textArg = expr->child;
++      ASTNode *indexArg = textArg != NULL ? textArg->next : NULL;
++      if (textArg == NULL || indexArg == NULL || indexArg->next != NULL) {
++        semanticErrorAt("E3020", "io.strout expects exactly two arguments", expr, NULL,
++                        "call `io.strout(text, index)`. ");
++      }
++      if (checkExpression(textArg) != VALUE_STR) {
++        semanticErrorAt("E3024", "io.strout expects a string as its first argument",
++                        textArg, NULL, "pass a string and an integer index.");
++      }
++      if (checkExpression(indexArg) != VALUE_INT) {
++        semanticErrorAt("E3024", "io.strout expects an integer index", indexArg, NULL,
++                        "pass an integer index into the string.");
++      }
++      expr->valueType = VALUE_INT;
++      return VALUE_INT;
++    }
++
++    if (strcmp(expr->name, "io.charin") == 0 || strcmp(expr->name, "io::charin") == 0) {
++      if (expr->child != NULL) {
++        semanticErrorAt("E3020", "io.charin expects no arguments", expr, NULL,
++                        "call `io.charin()` without arguments.");
++      }
++      expr->valueType = VALUE_INT;
++      return VALUE_INT;
+     }
+ 
+     /*
+
+diff --git a/underscore/std/io._ b/underscore/std/io._
+--- a/underscore/std/io._
++++ b/underscore/std/io._
+@@ -1,21 +1,19 @@
+ ; Underscore standard I/O module contract.
+ ;
+-; The source-level `io.out(value)` and `io.in()` names are native intrinsics in
+-; the current C backend. `io.out` dispatches by the argument's inferred type to
+-; uc_io_out_int, uc_io_out_fp, or uc_io_out_str; `io.in` uses uc_io_in. Their
+-; public signatures are listed in std.ufg under @io.
++; Console I/O is provided by the compiler's native runtime. This module is
++; deliberately documentation rather than duplicate functions because the
++; current ordinary-function model does not support overloaded io.out signatures.
+ ;
+-; This file intentionally contains no duplicate function bodies: the language
+-; branch does not yet provide ordinary overload resolution for three functions
+-; named `out` with int/fp/str parameters. The native implementation is in the
+-; compiler's generated-C runtime path, not a Python shim.
++; Supported calls:
++;   io.out(value) / io::out(value)   write int, fp, str, bool, or pointer
++;   io.in() / io::in()               read one line into a runtime-owned buffer
++;   io.nl                            newline string constant
++;   io.strout(text, index)           write one byte without a newline
++;   io.charin()                      read first byte of next line, or -1 at EOF
++;   io.errout()                      write a newline to stderr
++;   io.errout(value)                 write a typed value to stderr
++;   io.flush()                       flush stdout
+ ;
+-; Supported spellings currently emitted by codegen:
+-;   io.out(integerOrBoolean)
+-;   io.out(floatingPointValue)
+-;   io.out(stringValue)
+-;   io.in()
+-;
+-; Additional operations listed in std.ufg (errout, flush, strout, charin, nl)
+-; require their corresponding codegen cases to be enabled before use. The richer
+-; compiler/runtime fragment is `underscore/compiler/runtime/io.fragment.c`.
++; io.in() returns a shared 4096-byte buffer overwritten by the next io.in() call.
++; io.charin() consumes the rest of the input line after the first byte. These
++; interfaces are line-oriented and are not binary-safe.
+

@@ -1,0 +1,61 @@
+From 0000000000000000000000000000000000000008 Mon Sep 17 00:00:00 2001
+Subject: [PATCH] Preserve numeric widths through expressions
+
+Target: languages at 5dd99950f4a55e4784447848d4594ba26dba1e39
+Apply after 0007-private-runtime-boundary.patch.
+
+diff --git a/underscore/compiler/semantic/semantic.c b/underscore/compiler/semantic/semantic.c
+--- a/underscore/compiler/semantic/semantic.c
++++ b/underscore/compiler/semantic/semantic.c
+@@ -610,4 +610,6 @@
+       expr->valueType = VALUE_INT;
++      expr->declaredType.kind = TYPE_INT;
++      expr->declaredType.width = 32;
+       return VALUE_INT;
+     }
+     if (expr->operatorType == TOKEN_SUB) {
+@@ -622,4 +625,5 @@
+       expr->valueType = left;
++      expr->declaredType = expr->child->declaredType;
+       return left;
+     }
+     if (expr->operatorType == XOR) {
+@@ -632,3 +636,5 @@
+       expr->valueType = VALUE_INT;
++      expr->declaredType = expr->child->declaredType;
++      expr->declaredType.kind = TYPE_INT;
+       return VALUE_INT;
+     }
+@@ -672,4 +677,5 @@
+     }
+     expr->valueType = left;
++    expr->declaredType = expr->child->declaredType;
+     return left;
+   case AST_ASSIGN:
+@@ -721,4 +727,5 @@
+     expr->valueType = left;
+     expr->storageFlags = expr->child != NULL ? expr->child->storageFlags : 0;
++    expr->declaredType = expr->child->declaredType;
+     return left;
+   case AST_UPDATE:
+@@ -740,3 +747,4 @@
+     expr->valueType = left;
+     expr->storageFlags = expr->child != NULL ? expr->child->storageFlags : 0;
++    expr->declaredType = expr->child->declaredType;
+     return left;
+@@ -1010,4 +1018,15 @@
+     }
+     expr->valueType =
+         (left == VALUE_FP || right == VALUE_FP) ? VALUE_FP : VALUE_INT;
++    TypeKind resultKind = expr->valueType == VALUE_FP ? TYPE_FP : TYPE_INT;
++    int leftWidth = expr->child != NULL &&
++                            expr->child->declaredType.kind == resultKind &&
++                            expr->child->declaredType.width > 0
++                        ? expr->child->declaredType.width : 32;
++    int rightWidth = expr->right != NULL &&
++                             expr->right->declaredType.kind == resultKind &&
++                             expr->right->declaredType.width > 0
++                         ? expr->right->declaredType.width : 32;
++    expr->declaredType.kind = resultKind;
++    expr->declaredType.width = leftWidth > rightWidth ? leftWidth : rightWidth;
+     return expr->valueType;

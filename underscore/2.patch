@@ -1,0 +1,128 @@
+From 1000000000000000000000000000000000000002 Mon Sep 17 00:00:00 2001
+Subject: [PATCH] Link the native runtime fragments reliably on the formatted branch
+
+Use the latest codegen formatting as the patch base; include the runtime fragments,
+resolve their directory from the compiler location or UNDERSCORE_RUNTIME, and link libm.
+
+diff --git a/underscore/compiler/codegen/codegen.c b/underscore/compiler/codegen/codegen.c
+--- a/underscore/compiler/codegen/codegen.c
++++ b/underscore/compiler/codegen/codegen.c
+@@ -1203,19 +1203,7 @@
+         "<stdlib.h>\n#include <string.h>\n\n",
+         output);
+-  fputs("static int uc_io_out_int(long long value) { return "
+-        "printf(\"%lld\\n\", value); }\n",
++  fputs("#include \"io.fragment.c\"\n#include \"file.fragment.c\"\n#include "
++        "\"math.fragment.c\"\n#include \"memory.fragment.c\"\n#include "
++        "\"random.fragment.c\"\n#include \"string.fragment.c\"\n#include "
++        "\"time.fragment.c\"\n\n",
+         output);
+-  fputs("static int uc_io_out_fp(double value) { return printf(\"%.9g\\n\", "
+-        "value); }\n",
+-        output);
+-  fputs("static int uc_io_out_str(const char *value) { return "
+-        "printf(\"%s\\n\", value != NULL ? value : \"(null)\"); }\n",
+-        output);
+-  fputs("static char uc_io_input_buffer[4096];\n", output);
+-  fputs("static char *uc_io_in(void) { size_t n; if (fgets(uc_io_input_buffer, "
+-        "(int)sizeof(uc_io_input_buffer), stdin) == NULL) { "
+-        "uc_io_input_buffer[0] = '\\0'; return uc_io_input_buffer; } n = "
+-        "strlen(uc_io_input_buffer); while (n && (uc_io_input_buffer[n-1] == "
+-        "'\\n' || uc_io_input_buffer[n-1] == '\\r')) uc_io_input_buffer[--n] = "
+-        "'\\0'; return uc_io_input_buffer; }\n\n",
+-        output);
+@@ -1276,4 +1276,75 @@
++#define RUNTIME_PATH_CAPACITY (MAX_NAME * 16)
++
++static int runtimeDirectoryHasFragments(const char *directory) {
++  char path[RUNTIME_PATH_CAPACITY];
++  int written = snprintf(path, sizeof(path), "%s/io.fragment.c",
++                         directory != NULL ? directory : "");
++  if (written < 0 || (size_t)written >= sizeof(path)) return 0;
++  FILE *file = fopen(path, "rb");
++  if (file == NULL) return 0;
++  fclose(file);
++  return 1;
++}
++
++static void runtimeDirectoryFromExecutable(const char *path,
++                                           char output[RUNTIME_PATH_CAPACITY]) {
++  const char *slash = strrchr(path != NULL ? path : "", '/');
++  const char *backslash = strrchr(path != NULL ? path : "", '\\');
++  if (backslash != NULL && (slash == NULL || backslash > slash)) slash = backslash;
++  if (slash == NULL) {
++    snprintf(output, RUNTIME_PATH_CAPACITY, ".");
++    return;
++  }
++  size_t length = (size_t)(slash - path);
++  if (length == 0) length = 1;
++  if (length >= RUNTIME_PATH_CAPACITY) {
++    codegenError("E4023", "compiler executable path is too long", NULL, NULL,
++                 "launch the compiler from a shorter path or set UNDERSCORE_RUNTIME.");
++  }
++  memcpy(output, path, length);
++  output[length] = '\0';
++}
++
++static int findRuntimeDirectory(char output[RUNTIME_PATH_CAPACITY],
++                                const char *compilerPath) {
++  const char *override = getenv("UNDERSCORE_RUNTIME");
++  char executableDirectory[RUNTIME_PATH_CAPACITY];
++  char candidate[RUNTIME_PATH_CAPACITY];
++  const char *suffixes[] = {"runtime", "../runtime", "underscore/compiler/runtime", NULL};
++
++  if (override != NULL && override[0] != '\0') {
++    if (runtimeDirectoryHasFragments(override)) {
++      snprintf(output, RUNTIME_PATH_CAPACITY, "%s", override);
++      return 1;
++    }
++    codegenError("E4023", "UNDERSCORE_RUNTIME does not contain io.fragment.c",
++                 NULL, override,
++                 "set UNDERSCORE_RUNTIME to the compiler runtime-fragment directory.");
++  }
++
++  runtimeDirectoryFromExecutable(compilerPath, executableDirectory);
++  for (int i = 0; suffixes[i] != NULL; ++i) {
++    int written = snprintf(candidate, sizeof(candidate), "%s/%s",
++                           executableDirectory, suffixes[i]);
++    if (written >= 0 && (size_t)written < sizeof(candidate) &&
++        runtimeDirectoryHasFragments(candidate)) {
++      snprintf(output, RUNTIME_PATH_CAPACITY, "%s", candidate);
++      return 1;
++    }
++  }
++
++  if (runtimeDirectoryHasFragments("runtime")) {
++    snprintf(output, RUNTIME_PATH_CAPACITY, "runtime");
++    return 1;
++  }
++  if (runtimeDirectoryHasFragments("underscore/compiler/runtime")) {
++    snprintf(output, RUNTIME_PATH_CAPACITY, "underscore/compiler/runtime");
++    return 1;
++  }
++  return 0;
++}
++
+ void compileProgram(ASTNode *program, const char *sourceFile,
+                     const char *compilerPath) {
+   char baseName[MAX_NAME * 8];
+   char cFile[MAX_NAME * 8 + 24];
+@@ -1394,8 +1394,14 @@
+   char command[4096];
++  char runtimeDirectory[RUNTIME_PATH_CAPACITY];
++  if (!findRuntimeDirectory(runtimeDirectory, compilerPath)) {
++    codegenError("E4023", "could not locate the compiler runtime fragments", NULL,
++                 "the compiler expects runtime/*.fragment.c beside the compiler",
++                 "set UNDERSCORE_RUNTIME to the directory containing io.fragment.c, file.fragment.c, math.fragment.c, memory.fragment.c, random.fragment.c, string.fragment.c, and time.fragment.c.");
++  }
+ #ifdef _WIN32
+-  snprintf(command, sizeof(command), "%s \"%s\" -o \"%s\"", C_COMPILER, cFile,
+-           exeFile);
++  snprintf(command, sizeof(command), "%s \"%s\" -I \"%s\" -lm -o \"%s\"",
++           C_COMPILER, cFile, runtimeDirectory, exeFile);
+ #else
+-  snprintf(command, sizeof(command), "%s \"%s\" -o \"%s\"", C_COMPILER, cFile,
+-           exeFile);
++  snprintf(command, sizeof(command), "%s \"%s\" -I \"%s\" -lm -o \"%s\"",
++           C_COMPILER, cFile, runtimeDirectory, exeFile);
+ #endif

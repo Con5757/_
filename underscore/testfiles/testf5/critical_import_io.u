@@ -4,7 +4,7 @@
     with math
     with io
 
-int ans = math.sqrt(5.0)
+fp ans = math.sqrt(5.0)
 io.out(ans)
 
 void main() <void> {

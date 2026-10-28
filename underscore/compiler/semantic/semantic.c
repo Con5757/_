@@ -616,6 +616,8 @@ static ValueType checkExpression(ASTNode *expr) {
                         "use `!condition` where `condition` is an integer-like "
                         "truth value.");
       expr->valueType = VALUE_INT;
+      expr->declaredType.kind = TYPE_INT;
+      expr->declaredType.width = 32;
       return VALUE_INT;
     }
     if (expr->operatorType == TOKEN_SUB) {
@@ -623,6 +625,7 @@ static ValueType checkExpression(ASTNode *expr) {
         semanticErrorAt("E3014", "unary minus requires a numeric expression",
                         expr, NULL, "apply `-` to an `int` or `fp` value.");
       expr->valueType = left;
+      expr->declaredType = expr->child->declaredType;
       return left;
     }
     if (expr->operatorType == XOR) {
@@ -633,6 +636,8 @@ static ValueType checkExpression(ASTNode *expr) {
                         "apply unary `~` to an `int`; floating-point values do "
                         "not support bitwise complement.");
       expr->valueType = VALUE_INT;
+      expr->declaredType = expr->child->declaredType;
+      expr->declaredType.kind = TYPE_INT;
       return VALUE_INT;
     }
     if (expr->operatorType == TOKEN_AT) {
@@ -682,6 +687,7 @@ static ValueType checkExpression(ASTNode *expr) {
           "pointer, and `<--value` for a double pointer.");
     }
     expr->valueType = left;
+    expr->declaredType = expr->child->declaredType;
     return left;
   case AST_ASSIGN:
     if (!isLValue(expr->child)) {
@@ -753,6 +759,7 @@ static ValueType checkExpression(ASTNode *expr) {
     }
     expr->valueType = left;
     expr->storageFlags = expr->child != NULL ? expr->child->storageFlags : 0;
+    expr->declaredType = expr->child->declaredType;
     return left;
   case AST_UPDATE:
     if (!isLValue(expr->child)) {
@@ -774,6 +781,7 @@ static ValueType checkExpression(ASTNode *expr) {
                       expr, NULL, "use `++` or `--` with `int` or `fp`.");
     expr->valueType = left;
     expr->storageFlags = expr->child != NULL ? expr->child->storageFlags : 0;
+    expr->declaredType = expr->child->declaredType;
     return left;
   case AST_CALL: {
     /*
@@ -997,6 +1005,17 @@ static ValueType checkExpression(ASTNode *expr) {
     }
     expr->valueType =
         (left == VALUE_FP || right == VALUE_FP) ? VALUE_FP : VALUE_INT;
+    TypeKind resultKind = expr->valueType == VALUE_FP ? TYPE_FP : TYPE_INT;
+    int leftWidth = expr->child != NULL &&
+                            expr->child->declaredType.kind == resultKind &&
+                            expr->child->declaredType.width > 0
+                        ? expr->child->declaredType.width : 32;
+    int rightWidth = expr->right != NULL &&
+                             expr->right->declaredType.kind == resultKind &&
+                             expr->right->declaredType.width > 0
+                         ? expr->right->declaredType.width : 32;
+    expr->declaredType.kind = resultKind;
+    expr->declaredType.width = leftWidth > rightWidth ? leftWidth : rightWidth;
     return expr->valueType;
   case AST_LOGICAL_NOT:
   case AST_LOGICAL_AND:

@@ -1,0 +1,242 @@
+From b27c0b3b4e53f567a9edbfed2d4d6b5700060006 Mon Sep 17 00:00:00 2001
+Subject: [PATCH] Bind existing math, file, random and time runtime fragments
+
+Target: languages at 5dd99950f4a55e4784447848d4594ba26dba1e39
+Apply after 0005-auto-inference.patch.
+
+diff --git a/underscore/compiler/imports/imports.c b/underscore/compiler/imports/imports.c
+--- a/underscore/compiler/imports/imports.c
++++ b/underscore/compiler/imports/imports.c
+@@ -187,6 +187,9 @@
+   if (name == NULL) return 0;
+   if (strncmp(name, "__io_", 5) == 0 ||
+       strncmp(name, "__math_", 7) == 0 ||
++      strncmp(name, "__file_", 7) == 0 ||
++      strncmp(name, "__random_", 9) == 0 ||
++      strncmp(name, "__time_", 7) == 0 ||
+       strncmp(name, "__string_", 9) == 0 ||
+       strcmp(name, "__memory_escape") == 0) return 1;
+   return strcmp(name, "out") == 0 || strcmp(name, "std.out") == 0 ||
+diff --git a/underscore/compiler/semantic/semantic.c b/underscore/compiler/semantic/semantic.c
+--- a/underscore/compiler/semantic/semantic.c
++++ b/underscore/compiler/semantic/semantic.c
+@@ -409,5 +409,88 @@
+ static ValueType checkExpression(ASTNode *expr);
+ static void checkStatement(ASTNode *node);
+ static void checkStatementList(ASTNode *node);
++
++typedef struct NativeSignature {
++  const char *name;
++  ValueType result;
++  int count;
++  ValueType first;
++  ValueType second;
++} NativeSignature;
++
++static int checkNativeMathFileRandomTime(ASTNode *expr) {
++  static const NativeSignature signatures[] = {
++      {"__math_abs", VALUE_FP, 1, VALUE_FP, VALUE_VOID},
++      {"__math_sqrt", VALUE_FP, 1, VALUE_FP, VALUE_VOID},
++      {"__math_min", VALUE_FP, 2, VALUE_FP, VALUE_FP},
++      {"__math_max", VALUE_FP, 2, VALUE_FP, VALUE_FP},
++      {"__math_round", VALUE_FP, 1, VALUE_FP, VALUE_VOID},
++      {"__math_rdown", VALUE_FP, 1, VALUE_FP, VALUE_VOID},
++      {"__math_rup", VALUE_FP, 1, VALUE_FP, VALUE_VOID},
++      {"__math_sin", VALUE_FP, 1, VALUE_FP, VALUE_VOID},
++      {"__math_cos", VALUE_FP, 1, VALUE_FP, VALUE_VOID},
++      {"__math_tan", VALUE_FP, 1, VALUE_FP, VALUE_VOID},
++      {"__math_asin", VALUE_FP, 1, VALUE_FP, VALUE_VOID},
++      {"__math_acos", VALUE_FP, 1, VALUE_FP, VALUE_VOID},
++      {"__math_atan", VALUE_FP, 1, VALUE_FP, VALUE_VOID},
++      {"__math_log", VALUE_FP, 1, VALUE_FP, VALUE_VOID},
++      {"__math_logx", VALUE_FP, 2, VALUE_FP, VALUE_FP},
++      {"__math_exp", VALUE_FP, 1, VALUE_FP, VALUE_VOID},
++      {"__math_pi", VALUE_FP, 0, VALUE_VOID, VALUE_VOID},
++      {"__file_open", VALUE_INT, 2, VALUE_STR, VALUE_STR},
++      {"__file_create", VALUE_INT, 1, VALUE_STR, VALUE_VOID},
++      {"__file_close", VALUE_INT, 1, VALUE_INT, VALUE_VOID},
++      {"__file_read", VALUE_STR, 1, VALUE_INT, VALUE_VOID},
++      {"__file_write", VALUE_INT, 2, VALUE_INT, VALUE_STR},
++      {"__file_delete", VALUE_INT, 1, VALUE_STR, VALUE_VOID},
++      {"__file_rename", VALUE_INT, 2, VALUE_STR, VALUE_STR},
++      {"__file_gpath", VALUE_STR, 1, VALUE_INT, VALUE_VOID},
++      {"__file_gsize", VALUE_INT, 1, VALUE_INT, VALUE_VOID},
++      {"__random_seed", VALUE_VOID, 1, VALUE_INT, VALUE_VOID},
++      {"__random_next", VALUE_INT, 0, VALUE_VOID, VALUE_VOID},
++      {"__random_range", VALUE_INT, 2, VALUE_INT, VALUE_INT},
++      {"__random_unit", VALUE_FP, 0, VALUE_VOID, VALUE_VOID},
++      {"__time_utime", VALUE_INT, 0, VALUE_VOID, VALUE_VOID},
++      {"__time_ctime", VALUE_STR, 1, VALUE_INT, VALUE_VOID},
++      {"__time_utctime", VALUE_STR, 1, VALUE_INT, VALUE_VOID},
++      {"__time_timedif", VALUE_INT, 2, VALUE_INT, VALUE_INT},
++  };
++  if (expr == NULL || expr->type != AST_CALL) return 0;
++  const NativeSignature *signature = NULL;
++  for (size_t i = 0; i < sizeof(signatures) / sizeof(signatures[0]); ++i) {
++    if (strcmp(expr->name, signatures[i].name) == 0) {
++      signature = &signatures[i];
++      break;
++    }
++  }
++  if (signature == NULL) return 0;
++
++  ASTNode *args[2] = {expr->child, expr->child != NULL ? expr->child->next : NULL};
++  int actualCount = 0;
++  for (ASTNode *arg = expr->child; arg != NULL; arg = arg->next) ++actualCount;
++  if (actualCount != signature->count) {
++    char message[320];
++    snprintf(message, sizeof(message), "`%s` expects %d argument%s, but got %d",
++             expr->name, signature->count, signature->count == 1 ? "" : "s",
++             actualCount);
++    semanticErrorAt("E3082", message, expr, "native standard-library signature mismatch",
++                    "check the wrapper declaration and pass the documented number of arguments.");
++  }
++  ValueType expected[2] = {signature->first, signature->second};
++  for (int i = 0; i < signature->count; ++i) {
++    ValueType actual = checkExpression(args[i]);
++    if (actual != expected[i] &&
++        !(expected[i] == VALUE_FP && actual == VALUE_INT)) {
++      char message[320];
++      snprintf(message, sizeof(message),
++               "argument %d to `%s` must be `%s`, not `%s`", i + 1,
++               expr->name, valueTypeName(expected[i]), valueTypeName(actual));
++      semanticErrorAt("E3082", message, args[i], "native standard-library type mismatch",
++                      "pass an argument matching the function signature; integer values may widen to fp.");
++    }
++  }
++  expr->valueType = signature->result;
++  return 1;
++}
+ 
+ static ASTNode *resolveFunctionOverload(ASTNode *call, int *ambiguous) {
+@@ -856,7 +939,8 @@
+       expr->valueType = VALUE_VOID;
+       return VALUE_VOID;
+     }
+ 
++    if (checkNativeMathFileRandomTime(expr)) return expr->valueType;
+     /*
+      * Native IO operations are compiler runtime operations. They must be
+      * recognized before findFunction(), so they work without an explicit
+diff --git a/underscore/compiler/codegen/codegen.c b/underscore/compiler/codegen/codegen.c
+--- a/underscore/compiler/codegen/codegen.c
++++ b/underscore/compiler/codegen/codegen.c
+@@ -45,3 +45,37 @@
+       {"__string_trim", "uc_string_trim"},
+-      {"__memory_escape", "uc_memory_escape"}
++      {"__memory_escape", "uc_memory_escape"},
++      {"__math_abs", "uc_math_abs"},
++      {"__math_sqrt", "uc_math_sqrt"},
++      {"__math_min", "uc_math_min"},
++      {"__math_max", "uc_math_max"},
++      {"__math_round", "uc_math_round"},
++      {"__math_rdown", "uc_math_rdown"},
++      {"__math_rup", "uc_math_rup"},
++      {"__math_sin", "uc_math_sin"},
++      {"__math_cos", "uc_math_cos"},
++      {"__math_tan", "uc_math_tan"},
++      {"__math_asin", "uc_math_asin"},
++      {"__math_acos", "uc_math_acos"},
++      {"__math_atan", "uc_math_atan"},
++      {"__math_log", "uc_math_log"},
++      {"__math_logx", "uc_math_logx"},
++      {"__math_exp", "uc_math_exp"},
++      {"__math_pi", "uc_math_pi"},
++      {"__file_open", "uc_file_open"},
++      {"__file_create", "uc_file_create"},
++      {"__file_close", "uc_file_close"},
++      {"__file_read", "uc_file_read"},
++      {"__file_write", "uc_file_write"},
++      {"__file_delete", "uc_file_delete"},
++      {"__file_rename", "uc_file_rename"},
++      {"__file_gpath", "uc_file_gpath"},
++      {"__file_gsize", "uc_file_gsize"},
++      {"__random_seed", "uc_random_seed"},
++      {"__random_next", "uc_random_next"},
++      {"__random_range", "uc_random_range"},
++      {"__random_unit", "uc_random_unit"},
++      {"__time_utime", "uc_time_utime"},
++      {"__time_ctime", "uc_time_ctime"},
++      {"__time_utctime", "uc_time_utctime"},
++      {"__time_timedif", "uc_time_timedif"},
+   };
+diff --git a/underscore/std/file._ b/underscore/std/file._
+new file mode 100644
+--- /dev/null
++++ b/underscore/std/file._
+@@ -0,0 +1,35 @@
++int open(str path, str mode) <void> {
++    retreat __file_open(path, mode)
++}
++
++int create(str path) <void> {
++    retreat __file_create(path)
++}
++
++int close(int handle) <void> {
++    retreat __file_close(handle)
++}
++
++str read(int handle) <void> {
++    retreat __file_read(handle)
++}
++
++int write(int handle, str contents) <void> {
++    retreat __file_write(handle, contents)
++}
++
++int delete(str path) <void> {
++    retreat __file_delete(path)
++}
++
++int rename(str path, str newPath) <void> {
++    retreat __file_rename(path, newPath)
++}
++
++str gpath(int handle) <void> {
++    retreat __file_gpath(handle)
++}
++
++int64 gsize(int handle) <void> {
++    retreat __file_gsize(handle)
++}
+diff --git a/underscore/std/random._ b/underscore/std/random._
+new file mode 100644
+--- /dev/null
++++ b/underscore/std/random._
+@@ -0,0 +1,15 @@
++void seed(int64 value) <void> {
++    __random_seed(value)
++}
++
++int next() <void> {
++    retreat __random_next()
++}
++
++int64 range(int64 minimum, int64 maximum) <void> {
++    retreat __random_range(minimum, maximum)
++}
++
++fp unit() <void> {
++    retreat __random_unit()
++}
+diff --git a/underscore/std/time._ b/underscore/std/time._
+new file mode 100644
+--- /dev/null
++++ b/underscore/std/time._
+@@ -0,0 +1,15 @@
++int64 utime() <void> {
++    retreat __time_utime()
++}
++
++str ctime(int64 epochSeconds) <void> {
++    retreat __time_ctime(epochSeconds)
++}
++
++str utctime(int64 epochSeconds) <void> {
++    retreat __time_utctime(epochSeconds)
++}
++
++int64 timedif(int64 left, int64 right) <void> {
++    retreat __time_timedif(left, right)
++}
