@@ -57,6 +57,32 @@ static int pointerDepth(int flags) {
   return 0;
 }
 
+static int methodHasFlag(const Method *method, const char *wanted) {
+  char copy[MAX_NAME];
+  if (method == NULL || wanted == NULL || method->flags[0] == '\0') return 0;
+  snprintf(copy, sizeof(copy), "%s", method->flags);
+  char *cursor = strtok(copy, ",");
+  while (cursor != NULL) {
+    while (*cursor == ' ' || *cursor == '\t') cursor++;
+    size_t length = strlen(cursor);
+    while (length > 0 && (cursor[length - 1] == ' ' || cursor[length - 1] == '\t')) {
+      cursor[--length] = '\0';
+    }
+    if (strcmp(cursor, wanted) == 0) return 1;
+    cursor = strtok(NULL, ",");
+  }
+  return 0;
+}
+
+/* `inline` is emitted with internal linkage in this single-translation-unit
+ * backend, avoiding C11's external-inline linkage surprises. */
+static void emitFunctionFlags(FILE *output, const Method *method) {
+  int isStatic = methodHasFlag(method, "static");
+  int isInline = methodHasFlag(method, "inline");
+  if (isStatic || isInline) fputs("static ", output);
+  if (isInline) fputs("inline ", output);
+}
+
 static int isSimpleStaticExpression(ASTNode *node) {
   if (node == NULL) return 1;
   switch (node->type) {
@@ -764,6 +790,7 @@ static void generateStatementList(ASTNode *node, FILE *output, int depth) {
 static void generateMethodPrototype(ASTNode *node, FILE *output) {
   Method *method = node->method;
   if (method == NULL || method->isMain) return;
+  emitFunctionFlags(output, method);
   fprintf(output, "%s ", cType(method->returnType));
   emitCName(output, method->name);
   fputc('(', output);
@@ -789,6 +816,7 @@ static void generateMethod(ASTNode *node, FILE *output, int emitGlobalInitialize
   }
   if (method->isMain) fputs("int main(void)\n", output);
   else {
+    emitFunctionFlags(output, method);
     fprintf(output, "%s ", cType(method->returnType));
     emitCName(output, method->name);
     fputc('(', output);

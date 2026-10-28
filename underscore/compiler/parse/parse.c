@@ -1275,24 +1275,33 @@ static ASTNode *parseInclude(void) {
   Token *library = expectIdentifier();
   copyText(node->name, library->text);
 
+  /* Package manifests use the documented '&folder' shorthand. */
+  if (strcmp(node->name, "manifest") == 0) {
+    diagnosticError("error", "E2004",
+                    "`?manifest` is not supported; use `&folder` to load a package manifest",
+                    library->line, library->column,
+                    "this import form is intentionally rejected",
+                    "use `&logs` to load `logs/logs.ufg` from the source directory.");
+  }
+
   ASTNode *first = NULL;
   ASTNode *last = NULL;
 
-  if (strcmp(node->name, "manifest") == 0) {
-    Token *folder = expectIdentifier();
-    ASTNode *item = newAST(AST_VAR);
-    copyText(item->name, folder->text);
-    appendNode(&first, &last, item);
-    node->child = first;
-    return node;
-  }
-
   for (;;) {
     int beforeNewlines = currentToken;
+    int previousLine = currentToken > 0 ? tokens[currentToken - 1].line : 0;
     skipNewlines();
     if (!match(TOKEN_WITH)) {
       currentToken = beforeNewlines;
       break;
+    }
+    Token *withToken = &tokens[currentToken - 1];
+    if (withToken->line <= previousLine) {
+      diagnosticError("error", "E2005",
+                      "`with` must start on its own line after the library root or previous module list",
+                      withToken->line, withToken->column,
+                      "the import root and each `with` clause must use separate lines",
+                      "write `?std` on one line, then `with io, math` on the next line.");
     }
     for (;;) {
       Token *module = expectIdentifier();

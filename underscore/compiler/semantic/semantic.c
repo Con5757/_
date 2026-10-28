@@ -808,6 +808,18 @@ static ValueType checkExpression(ASTNode *expr) {
       return VALUE_VOID;
     }
 
+    /* `io.in()` is emitted as the native `uc_io_in()` runtime helper by the
+     * C backend. Give it a string result here as well, so semantic analysis
+     * agrees with the code generator instead of reporting an unknown symbol. */
+    if (strcmp(expr->name, "io.in") == 0) {
+      if (expr->child != NULL) {
+        semanticErrorAt("E3079", "io.in expects no arguments", expr, NULL,
+                        "call `io.in()` without parameters.");
+      }
+      expr->valueType = VALUE_STR;
+      return VALUE_STR;
+    }
+
     /*
      * Preserve the existing unsupported-input behavior for legacy names.
      */
@@ -1217,20 +1229,51 @@ static int statementAlwaysReturns(ASTNode *node) {
   return 0;
 }
 
+static int methodFlagsSupported(const char *flags, int isMain) {
+  char copy[MAX_NAME];
+  int sawVoid = 0;
+  int sawStatic = 0;
+  int sawInline = 0;
+  if (flags == NULL || flags[0] == '\0') return 1;
+  size_t flagCount = strlen(flags);
+  if (flags[0] == ',' || flags[flagCount - 1] == ',' || strstr(flags, ",,") != NULL) return 0;
+  snprintf(copy, sizeof(copy), "%s", flags);
+  char *cursor = strtok(copy, ",");
+  while (cursor != NULL) {
+    while (*cursor == ' ' || *cursor == '\t') cursor++;
+    size_t length = strlen(cursor);
+    while (length > 0 && (cursor[length - 1] == ' ' || cursor[length - 1] == '\t')) {
+      cursor[--length] = '\0';
+    }
+    if (strcmp(cursor, "void") == 0) {
+      if (sawVoid) return 0;
+      sawVoid = 1;
+    } else if (strcmp(cursor, "static") == 0) {
+      if (sawStatic || isMain) return 0;
+      sawStatic = 1;
+    } else if (strcmp(cursor, "inline") == 0) {
+      if (sawInline || isMain) return 0;
+      sawInline = 1;
+    } else {
+      return 0;
+    }
+    cursor = strtok(NULL, ",");
+  }
+  return 1;
+}
+
 static void checkMethod(ASTNode *node) {
   Method *method = node->method;
   if (method == NULL)
     return;
-  if (method->flags[0] != '\0' && strcmp(method->flags, "void") != 0) {
+  if (!methodFlagsSupported(method->flags, method->isMain)) {
     char message[320];
     snprintf(message, sizeof(message),
-             "function flags `<%s>` are parsed but not implemented by the "
-             "current backend",
+             "function flags `<%s>` contain an unsupported or duplicate flag",
              method->flags);
     semanticErrorAt("E3063", message, node,
-                    "the compiler would otherwise silently ignore these flags",
-                    "use `<void>` for the current calling convention, or "
-                    "implement the requested flag in code generation/runtime.");
+                    "the compiler refuses to silently ignore function flags",
+                    "the currently supported flags are `void`, `static`, and `inline`; write them as a comma-separated list, for example `<static,inline>`. `main` must not use `static` or `inline` because it needs external C linkage.");
   }
   Method *previousMethod = activeMethod;
   activeMethod = method;

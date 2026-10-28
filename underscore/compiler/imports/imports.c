@@ -115,6 +115,17 @@ static int resolveModulePath(char output[IMPORT_PATH_SIZE], const char *root,
    * `std` is special: prefer the standard library beside the compiler,
    * then support the source-tree layouts used while developing it.
    */
+  /*
+   * An explicit override makes installed compiler packages independent of
+   * the caller's working directory. It must name the directory containing
+   * module files such as io._ and math._.
+   */
+  const char *stdlibOverride = getenv("UNDERSCORE_STDLIB");
+  if (stdlibOverride != NULL && stdlibOverride[0] != '\0' &&
+      makeModulePath(output, stdlibOverride, ".", module)) {
+    return 1;
+  }
+
   if (makeModulePath(output, executableDirectory, "../std", module))
     return 1;
   if (makeModulePath(output, executableDirectory, "std", module))

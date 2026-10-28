@@ -2,6 +2,7 @@
 ; Standard-library manifest for the current compiler/runtime branch.
 ; `?files` lists source modules. Native runtime modules are linked by the compiler patch.
 ?files
+    "io._"
     "string._"
     "math._"
     "memory._"
