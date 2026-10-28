@@ -57,10 +57,6 @@
       {
         "language": "underscore",
         "path": "./snippets/snippets.json"
-      },
-      {
-        "language": "underscore",
-        "path": "./snippets/fixed-width-snippets.json"
       }
     ],
     "configuration": {

@@ -1,0 +1,12 @@
+--- a/package.json
++++ b/package.json
+@@ -45,9 +45,5 @@
+       {
+         "language": "underscore",
+         "path": "./snippets/snippets.json"
+-      },
+-      {
+-        "language": "underscore",
+-        "path": "./snippets/fixed-width-snippets.json"
+       }
+     ],
