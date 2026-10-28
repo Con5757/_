@@ -1,0 +1,8 @@
+--- a/syntaxes/_.tmLanguage.json
++++ b/syntaxes/_.tmLanguage.json
+@@ -44,3 +44,3 @@
+-        { "name": "keyword.declaration.underscore", "match": "\\b(int|fp|str|void|func|const|static|global|data|set|alias|class|public|private|hidden|vec)\\b" },
++        { "name": "keyword.declaration.underscore", "match": "(?:\\b(int|fp|str|void|func|const|static|global|data|set|alias|class|public|private|hidden|vec)\\b|@)" },
+         { "name": "keyword.import.underscore", "match": "\\b(with)\\b|\\?" },
+-        { "name": "keyword.operator.underscore", "match": "(@|==|!=|<=|>=|&&|\\|\\||\\+\\+|--|\\+=|-=|\\*=|/=|%=|->|<-|-->|<--|::|[+*/%=&|^~!<>])" }
++        { "name": "keyword.operator.underscore", "match": "(==|!=|<=|>=|&&|\\|\\||\\+\\+|--|\\+=|-=|\\*=|/=|%=|->|<-|-->|<--|::|[+*/%=&|^~!<>])" }

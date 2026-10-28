@@ -107,8 +107,8 @@
     "prefix": "u-dereference",
     "body": [
       "int ${1:value} = ${2:10}",
-      "int ->${3:valuePtr} = @${1:value}",
-      "int ${4:copiedValue} = <-${3:valuePtr}"
+      "int ->${3:valuePtr} = @$1",
+      "int ${4:copiedValue} = <-$3"
     ],
     "description": "Dereference a single pointer with <-. Use the result in an expression, for example int copiedValue = <-valuePtr."
   },
@@ -116,9 +116,9 @@
     "prefix": "u-double-dereference",
     "body": [
       "int ${1:value} = ${2:10}",
-      "int ->${3:valuePtr} = @${1:value}",
-      "int -->${4:valueDoublePtr} = @${3:valuePtr}",
-      "int ${5:copiedValue} = <--${4:valueDoublePtr}"
+      "int ->${3:valuePtr} = @$1",
+      "int -->${4:valueDoublePtr} = @$3",
+      "int ${5:copiedValue} = <--$4"
     ],
     "description": "Dereference a double pointer with <--. Use it as an expression in a declaration, assignment, or function argument."
   },
@@ -126,8 +126,8 @@
     "prefix": "u-double-pointer",
     "body": [
       "int ${1:value} = ${2:10}",
-      "int ->${3:valuePtr} = @${1:value}",
-      "int -->${4:valueDoublePtr} = @${3:valuePtr}"
+      "int ->${3:valuePtr} = @$1",
+      "int -->${4:valueDoublePtr} = @$3"
     ],
     "description": "Declare a double pointer using --> beside the variable name. Pointer depth is checked when passing pointer values to functions."
   },
@@ -320,14 +320,14 @@
     "prefix": "u-pointer",
     "body": [
       "int ${1:value} = ${2:10}",
-      "int ->${3:valuePtr} = @${1:value}"
+      "int ->${3:valuePtr} = @$1"
     ],
     "description": "Declare an int pointer by placing -> beside the variable name. @value expresses the address/reference form supported by the current parser."
   },
   "Loop — initialize, test, and update": {
     "prefix": "u-repeat",
     "body": [
-      "repeat (int ${1:i} = ${2:0}, ${1:i} < ${3:10}, ${1:i}++) {",
+      "repeat (int ${1:i} = ${2:0}, $1 < ${3:10}, $1++) {",
       "\t${0:io.out(i)}",
       "}"
     ],

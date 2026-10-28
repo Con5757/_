@@ -358,19 +358,31 @@ function refreshDecorations() {
   }
 
   for (const [line, lineDiagnostics] of diagnosticsByLine) {
-    lineDiagnostics.sort((left, right) => left.range.start.character - right.range.start.character);
+    const severityRank = diagnostic => diagnostic.severity === vscode.DiagnosticSeverity.Warning ? 1 : 0;
+    lineDiagnostics.sort((left, right) =>
+      severityRank(left) - severityRank(right) || left.range.start.character - right.range.start.character);
     const end = editor.document.lineAt(line).text.length;
     const range = new vscode.Range(line, end, line, end);
-    const messages = lineDiagnostics.map(diagnostic => {
+    const uniqueDiagnostics = [];
+    const seenDiagnostics = new Set();
+    for (const diagnostic of lineDiagnostics) {
       const severity = diagnostic.severity === vscode.DiagnosticSeverity.Warning ? 'warning' : 'error';
       const rawCode = diagnostic.code;
-      const code = rawCode && typeof rawCode === 'object' && rawCode.value
-        ? String(rawCode.value) : (rawCode === undefined || rawCode === null ? '' : String(rawCode));
+      const code = rawCode && typeof rawCode === 'object'
+        ? (rawCode.value === undefined || rawCode.value === null ? '' : String(rawCode.value))
+        : (rawCode === undefined || rawCode === null ? '' : String(rawCode));
       const message = String(diagnostic.message).replace(/\s+/g, ' ').trim();
-      return `${severity}${code ? ` [${code}]` : ''}: ${message}`;
+      const column = diagnostic.range.start.character + 1;
+      const identity = `${severity}\u0000${code}\u0000${column}\u0000${message}`;
+      if (seenDiagnostics.has(identity)) continue;
+      seenDiagnostics.add(identity);
+      uniqueDiagnostics.push({ severity, code, message, column });
+    }
+    const visibleMessages = uniqueDiagnostics.slice(0, 2).map(({ severity, code, message }) => {
+      const shortMessage = message.length > 60 ? `${message.slice(0, 57)}...` : message;
+      return `${severity}${code ? ` [${code}]` : ''}: ${shortMessage}`;
     });
-    const visibleMessages = messages.slice(0, 2);
-    if (messages.length > 2) visibleMessages.push(`+${messages.length - 2} more`);
+    if (uniqueDiagnostics.length > 2) visibleMessages.push(`+${uniqueDiagnostics.length - 2} more`);
     let inlineMessage = `  ⟵ ${visibleMessages.join(' · ')}`;
     if (inlineMessage.length > 180) inlineMessage = `${inlineMessage.slice(0, 177)}...`;
     const decoration = {
@@ -378,11 +390,12 @@ function refreshDecorations() {
       renderOptions: {
         after: { contentText: inlineMessage, margin: '0 0 0 1.2em' }
       },
-      hoverMessage: messages.join('\n')
+      hoverMessage: uniqueDiagnostics.map(({ severity, code, message, column }) =>
+        `${severity}${code ? ` [${code}]` : ''} (column ${column}): ${message}`).join('\n')
     };
     // Emit one decoration per line. Separate error and warning decorations at the
     // same position overlap, so error styling wins when a line has mixed severities.
-    if (lineDiagnostics.some(diagnostic => diagnostic.severity !== vscode.DiagnosticSeverity.Warning)) {
+    if (uniqueDiagnostics.some(diagnostic => diagnostic.severity !== 'warning')) {
       errors.push(decoration);
     } else {
       warnings.push(decoration);
