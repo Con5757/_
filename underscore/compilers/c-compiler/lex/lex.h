@@ -4,7 +4,6 @@
 #include "../diagnostic/diagnostic.h"
 #include "../global.h"
 
-
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>

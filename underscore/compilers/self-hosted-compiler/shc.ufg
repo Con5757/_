@@ -1,0 +1,20 @@
+?init
+?files
+    "main._"
+
+?macros
+    null
+
+?includes
+    with 
+
+?variables
+    null
+
+?structs
+    null
+
+?functions
+
+
+?endit
