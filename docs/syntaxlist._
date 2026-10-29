@@ -183,3 +183,16 @@
 ; `attempt/incase`, classes, and dynamic vectors are not complete C-backend features.
 ; Native I/O is implemented in the C code-generation/runtime path. The functions
 ; advertised in std.ufg should be checked against the runtime/codegen before use.
+
+..16. level
+
+; in this is handled with x.y and with pointers its x->b
+; since underscore takes both of those away we need to find new ways to represent levels of reference
+
+; normal levels
+
+a.b
+
+; pointers
+
+a~>b
