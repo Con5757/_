@@ -4,7 +4,6 @@
 #include "../lex/lex.h"
 #include "../parse/parse.h"
 
-#include <ctype.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
