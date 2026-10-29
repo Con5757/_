@@ -19,3 +19,10 @@
 ; Additional operations listed in std.ufg (errout, flush, strout, charin, nl)
 ; require their corresponding codegen cases to be enabled before use. The richer
 ; compiler/runtime fragment is `underscore/compiler/runtime/io.fragment.c`.
+
+void out() <void> {
+    __io_outCall()
+}
+str in() <void> {
+    __io_inCall()
+}
