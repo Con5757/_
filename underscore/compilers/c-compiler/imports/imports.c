@@ -4,7 +4,7 @@
 #define MAX_IMPORTED_FILES 256
 #define MAX_IMPORT_DEPTH 128
 
-    typedef struct ImportedFile {
+typedef struct ImportedFile {
   char path[IMPORT_PATH_SIZE];
   int state; /* 1 = loading; 2 = fully expanded */
 } ImportedFile;

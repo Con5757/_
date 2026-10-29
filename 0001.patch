@@ -1,0 +1,501 @@
+diff --git a/underscore/compilers/c-compiler/parse/parse.c b/underscore/compilers/c-compiler/parse/parse.c
+--- a/underscore/compilers/c-compiler/parse/parse.c
++++ b/underscore/compilers/c-compiler/parse/parse.c
+@@ -833,8 +833,25 @@ static ASTNode *parseUnary(void) {
+     return node;
+   }
+ 
++  /* Prefix `&name` explicitly refers to a UFG-exported global. The importer
++     rewrites it to the global's unique generated name before semantic checks.
++     Binary `left & right` is still handled by parseBitwiseAnd(). */
++  if (current()->type == TOKEN_BIT_AND) {
++    Token *op = current();
++    currentToken++;
++    Token *name = expectIdentifier();
++    if (strlen(name->text) + 2 > MAX_NAME) {
++      parserError("UFG global name is too long");
++    }
++    ASTNode *node = newAST(AST_VAR);
++    node->line = op->line;
++    node->column = op->column;
++    snprintf(node->name, sizeof(node->name), "&%s", name->text);
++    return node;
++  }
++
+   isTokenType type = current()->type;
+   if (type == NOT || type == XOR || type == TOKEN_SUB || type == TOKEN_PTR ||
+       type == TOKEN_DEREF || type == TOKEN_DPTR || type == TOKEN_DDEREF ||
+       type == TOKEN_AT) {
+     Token *op = current();
+diff --git a/underscore/compilers/c-compiler/imports/imports.c b/underscore/compilers/c-compiler/imports/imports.c
+--- a/underscore/compilers/c-compiler/imports/imports.c
++++ b/underscore/compilers/c-compiler/imports/imports.c
+@@ -1,13 +1,27 @@
+ #include "imports.h"
+ 
++#include <ctype.h>
++
+ #define IMPORT_PATH_SIZE (MAX_NAME * 16)
+ #define MAX_IMPORTED_FILES 256
+ #define MAX_IMPORT_DEPTH 128
++#define MAX_UFG_GLOBALS 1024
++#define MAX_LOADED_MANIFESTS 256
++#define MAX_UFG_CODE_SIZE (256u * 1024u)
+ 
+-    typedef struct ImportedFile {
++typedef struct ImportedFile {
+   char path[IMPORT_PATH_SIZE];
+   int state; /* 1 = loading; 2 = fully expanded */
+ } ImportedFile;
+ 
++typedef struct UfgGlobal {
++  char sourceName[MAX_NAME];
++  char generatedName[MAX_NAME];
++} UfgGlobal;
++
+ static ImportedFile importedFiles[MAX_IMPORTED_FILES];
+ static int importedFileCount = 0;
++static UfgGlobal ufgGlobals[MAX_UFG_GLOBALS];
++static int ufgGlobalCount = 0;
++static char loadedManifests[MAX_LOADED_MANIFESTS][IMPORT_PATH_SIZE];
++static int loadedManifestCount = 0;
+@@ -177,96 +191,348 @@ static ASTNode *expandProgram(ASTNode *program, const char *projectDirectory,
+ static void loadModule(const char *root, const char *module,
+                        const char *namespaceName, const char *projectDirectory,
+                        const char *executableDirectory, ASTNode **first,
+                        ASTNode **last, int depth);
++
++static int sectionMatches(const char *line, const char *section) {
++  size_t length = strlen(section);
++  if (strncmp(line, section, length) != 0) return 0;
++  return line[length] == '\0' || line[length] == '\r' ||
++         line[length] == '\n' || line[length] == ' ' ||
++         line[length] == '\t';
++}
++
++static int isAtMarker(const char *line) {
++  const char *cursor;
++  if (line == NULL || line[0] != '@' || line[1] == '\0') return 0;
++  cursor = line + 1;
++  if (*cursor == '&') {
++    ++cursor;
++  } else if (isalpha((unsigned char)*cursor) || *cursor == '_') {
++    while (isalnum((unsigned char)*cursor) || *cursor == '_') ++cursor;
++  } else {
++    return 0;
++  }
++  while (*cursor == ' ' || *cursor == '\t') ++cursor;
++  return *cursor == '\0' || *cursor == '\r' || *cursor == '\n' ||
++         *cursor == ';';
++}
++
++static void updateBraceDepth(int *depth, const char *line) {
++  int inString = 0;
++  int escaped = 0;
++  for (const char *cursor = line; *cursor != '\0'; ++cursor) {
++    if (!inString && *cursor == ';') break;
++    if (inString) {
++      if (escaped) escaped = 0;
++      else if (*cursor == '\\') escaped = 1;
++      else if (*cursor == '"') inString = 0;
++      continue;
++    }
++    if (*cursor == '"') inString = 1;
++    else if (*cursor == '{') ++*depth;
++    else if (*cursor == '}' && *depth > 0) --*depth;
++  }
++}
++
++static void appendUfgSourceLine(char *buffer, size_t *used, const char *line,
++                                int *braceDepth, const char *manifestPath) {
++  size_t length = strlen(line);
++  if (*used + length + 1 > MAX_UFG_CODE_SIZE) {
++    importError("UFG code in `%s` exceeds the %u-byte section limit",
++                manifestPath, (unsigned int)MAX_UFG_CODE_SIZE);
++  }
++  memcpy(buffer + *used, line, length);
++  *used += length;
++  buffer[*used] = '\0';
++  updateBraceDepth(braceDepth, line);
++}
++
++static int isDeclarationNode(ASTNode *node) {
++  return node != NULL &&
++         (node->type == AST_INT_DECL || node->type == AST_FP_DECL ||
++          node->type == AST_STR_DECL || node->type == AST_DECL ||
++          node->type == AST_ARRAY_DECL || node->type == AST_VEC_DECL);
++}
++
++static unsigned long hashUfgPath(const char *text) {
++  unsigned long hash = 2166136261u;
++  for (const unsigned char *cursor = (const unsigned char *)text;
++       *cursor != '\0'; ++cursor) {
++    hash = (hash ^ *cursor) * 16777619u;
++  }
++  return hash & 0xffffffffUL;
++}
++
++static void registerUfgGlobal(const char *sourceName,
++                              const char *generatedName) {
++  for (int i = 0; i < ufgGlobalCount; ++i) {
++    if (strcmp(ufgGlobals[i].sourceName, sourceName) == 0 &&
++        strcmp(ufgGlobals[i].generatedName, generatedName) == 0) {
++      return;
++    }
++  }
++  if (ufgGlobalCount >= MAX_UFG_GLOBALS) {
++    importError("too many UFG global variables (limit %d)", MAX_UFG_GLOBALS);
++  }
++  snprintf(ufgGlobals[ufgGlobalCount].sourceName,
++           sizeof(ufgGlobals[ufgGlobalCount].sourceName), "%s", sourceName);
++  snprintf(ufgGlobals[ufgGlobalCount].generatedName,
++           sizeof(ufgGlobals[ufgGlobalCount].generatedName), "%s",
++           generatedName);
++  ++ufgGlobalCount;
++}
++
++static void mangleUfgGlobalDeclarations(ASTNode *nodes,
++                                        const char *manifestPath) {
++  unsigned long hash = hashUfgPath(manifestPath);
++  for (ASTNode *node = nodes; node != NULL; node = node->next) {
++    char original[MAX_NAME];
++    char generated[MAX_NAME];
++    if (!isDeclarationNode(node) || node->name[0] == '\0') continue;
++    snprintf(original, sizeof(original), "%s", node->name);
++    /* `_u` + eight hex digits + `_` leaves 52 characters for the name. */
++    if (strlen(original) + 11 >= MAX_NAME) {
++      importError("UFG global `%s` is too long to qualify safely", original);
++    }
++    snprintf(generated, sizeof(generated), "_u%08lx_%s", hash, original);
++    registerUfgGlobal(original, generated);
++    snprintf(node->name, sizeof(node->name), "%s", generated);
++    node->storageFlags |= DECL_FLAG_GLOBAL;
++  }
++}
++
++static const char *resolveUfgGlobal(const char *sourceName) {
++  const char *resolved = NULL;
++  for (int i = 0; i < ufgGlobalCount; ++i) {
++    if (strcmp(ufgGlobals[i].sourceName, sourceName) != 0) continue;
++    if (resolved != NULL &&
++        strcmp(resolved, ufgGlobals[i].generatedName) != 0) {
++      importError("UFG global `&%s` is ambiguous; more than one included "
++                  "manifest declares it", sourceName);
++    }
++    resolved = ufgGlobals[i].generatedName;
++  }
++  return resolved;
++}
++
++static void rewriteUfgReferences(ASTNode *node) {
++  for (ASTNode *currentNode = node; currentNode != NULL;
++       currentNode = currentNode->next) {
++    if (currentNode->type == AST_VAR && currentNode->name[0] == '&') {
++      const char *replacement = resolveUfgGlobal(currentNode->name + 1);
++      if (replacement == NULL) {
++        importError("UFG global `%s` has no declaration under `@&` in an "
++                    "included manifest", currentNode->name);
++      }
++      snprintf(currentNode->name, sizeof(currentNode->name), "%s", replacement);
++    }
++    rewriteUfgReferences(currentNode->child);
++    rewriteUfgReferences(currentNode->right);
++    rewriteUfgReferences(currentNode->third);
++    rewriteUfgReferences(currentNode->body);
++    /* Method bodies live on Method, not necessarily on ASTNode->child. */
++    if (currentNode->type == AST_METHOD && currentNode->method != NULL) {
++      rewriteUfgReferences(currentNode->method->body);
++    }
++  }
++}
++
++static void parseManifestCode(const char *manifestPath, char *code,
++                              int containsVariables, const char *manifestName,
++                              const char *projectDirectory,
++                              const char *executableDirectory, ASTNode **first,
++                              ASTNode **last, int depth) {
++  char *source;
++  ASTNode *fragment;
++  ASTNode *expanded;
++  if (code == NULL || code[0] == '\0') return;
++  source = (char *)malloc(strlen(code) + 1);
++  if (source == NULL) importError("out of memory while reading UFG code");
++  strcpy(source, code);
++  diagnosticSetSource(manifestPath, source);
++  lex(source);
++  fragment = parseProgram();
++  if (containsVariables) mangleUfgGlobalDeclarations(fragment->child, manifestPath);
++  expanded = expandProgram(fragment, projectDirectory, executableDirectory,
++                           manifestName, 0, depth + 1);
++  appendNodeChain(first, last, expanded);
++  free(source);
++}
++
++static const char *lastPathPart(const char *path) {
++  const char *slash = strrchr(path, '/');
++  const char *backslash = strrchr(path, '\\');
++  if (backslash != NULL && (slash == NULL || backslash > slash)) slash = backslash;
++  return slash == NULL ? path : slash + 1;
++}
++
++static void loadManifestEntry(const char *entry, const char *folder,
++                              int legacyLayout, const char *projectDirectory,
++                              const char *executableDirectory, ASTNode **first,
++                              ASTNode **last, int depth) {
++  char relativePath[IMPORT_PATH_SIZE];
++  char root[IMPORT_PATH_SIZE];
++  char rootWithPackage[IMPORT_PATH_SIZE];
++  char module[MAX_NAME];
++  char namespaceName[MAX_NAME];
++  char *leaf;
++  char *separator;
++  size_t length;
++
++  copyPath(relativePath, entry);
++  for (char *cursor = relativePath; *cursor != '\0'; ++cursor) {
++    if (*cursor == '\\') *cursor = '/';
++  }
++  if (relativePath[0] == '/' ||
++      (isalpha((unsigned char)relativePath[0]) && relativePath[1] == ':')) {
++    importError("manifest paths must be relative to the UFG file: `%s`", entry);
++  }
++  leaf = (char *)lastPathPart(relativePath);
++  length = strlen(leaf);
++  if (length < 3 || strcmp(leaf + length - 2, "._") != 0) {
++    importError("manifest file entry must end in `._`: `%s`", entry);
++  }
++  if (length - 2 >= sizeof(module)) {
++    importError("module name in manifest is too long: `%s`", entry);
++  }
++  memcpy(module, leaf, length - 2);
++  module[length - 2] = '\0';
++
++  separator = strrchr(relativePath, '/');
++  if (separator == NULL) {
++    copyPath(root, ".");
++    snprintf(namespaceName, sizeof(namespaceName), "%s",
++             legacyLayout ? folder : module);
++  } else {
++    size_t rootLength = (size_t)(separator - relativePath);
++    if (rootLength == 0 || rootLength >= sizeof(root)) {
++      importError("invalid relative path in manifest: `%s`", entry);
++    }
++    memcpy(root, relativePath, rootLength);
++    root[rootLength] = '\0';
++    const char *parent = lastPathPart(root);
++    if (strlen(parent) >= sizeof(namespaceName)) {
++      importError("namespace in manifest path is too long: `%s`", entry);
++    }
++    snprintf(namespaceName, sizeof(namespaceName), "%s", parent);
++  }
++
++  if (legacyLayout) {
++    if (strcmp(root, ".") == 0) {
++      copyPath(rootWithPackage, folder);
++    } else {
++      joinPath(rootWithPackage, folder, root);
++    }
++    copyPath(root, rootWithPackage);
++  }
++
++  loadModule(root, module, namespaceName, projectDirectory,
++             executableDirectory, first, last, depth + 1);
++}
+ 
+ static void loadManifestFolder(const char *folder, const char *projectDirectory,
+                                const char *executableDirectory, ASTNode **first,
+                                ASTNode **last, int depth) {
+   char folderPath[IMPORT_PATH_SIZE];
+   char manifestPath[IMPORT_PATH_SIZE];
++  char legacyPath[IMPORT_PATH_SIZE];
+   char manifestName[MAX_NAME + 8];
+   FILE *manifest;
+   char line[2048];
+-  int inFiles = 0;
++  int section = 0; /* 1=files, 2=variables, 3=structs, 4=functions */
++  int inAtGlobal = 0;
++  int codeBraceDepth = 0;
++  int legacyLayout = 0;
++  char *code[3] = {NULL, NULL, NULL};
++  size_t codeUsed[3] = {0, 0, 0};
++  int codeDepth[3] = {0, 0, 0};
+ 
+-  joinPath(folderPath, projectDirectory, folder);
+-
+   if (snprintf(manifestName, sizeof(manifestName), "%s.ufg", folder) >=
+       (int)sizeof(manifestName)) {
+-    importError("manifest folder name `%s` is too long", folder);
++    importError("manifest name `%s` is too long", folder);
+   }
+ 
+-  joinPath(manifestPath, folderPath, manifestName);
+-
++  /* Prefer <source-root>/<name>.ufg. Keep <name>/<name>.ufg as a fallback. */
++  joinPath(manifestPath, projectDirectory, manifestName);
++  joinPath(folderPath, projectDirectory, folder);
++  if (!fileExists(manifestPath)) {
++    joinPath(legacyPath, folderPath, manifestName);
++    if (fileExists(legacyPath)) {
++      copyPath(manifestPath, legacyPath);
++      legacyLayout = 1;
++    }
++  }
++  if (!fileExists(manifestPath)) {
++    importError("could not open manifest `%s` (also checked legacy path `%s`)",
++                manifestPath, legacyPath);
++  }
++  for (int i = 0; i < loadedManifestCount; ++i) {
++    if (strcmp(loadedManifests[i], manifestPath) == 0) return;
++  }
++  if (loadedManifestCount >= MAX_LOADED_MANIFESTS) {
++    importError("too many UFG manifests (limit %d)", MAX_LOADED_MANIFESTS);
++  }
++  copyPath(loadedManifests[loadedManifestCount++], manifestPath);
+   manifest = fopen(manifestPath, "r");
+-
+   if (manifest == NULL) {
+     importError("could not open manifest `%s`", manifestPath);
+   }
++  code[0] = (char *)calloc(MAX_UFG_CODE_SIZE, 1);
++  code[1] = (char *)calloc(MAX_UFG_CODE_SIZE, 1);
++  code[2] = (char *)calloc(MAX_UFG_CODE_SIZE, 1);
++  if (code[0] == NULL || code[1] == NULL || code[2] == NULL) {
++    fclose(manifest);
++    free(code[0]); free(code[1]); free(code[2]);
++    importError("out of memory while reading manifest `%s`", manifestPath);
++  }
++
+ 
+   while (fgets(line, sizeof(line), manifest) != NULL) {
+     char *cursor = line;
+-    if (*cursor == '?') {
+-      inFiles = strncmp(cursor, "?files", 6) == 0 &&
+-                (cursor[6] == '\0' || cursor[6] == '\r' || cursor[6] == '\n' ||
+-                 cursor[6] == ' ' || cursor[6] == '\t');
++    if (*cursor == '?') {
++      section = sectionMatches(cursor, "?files") ? 1
++                : sectionMatches(cursor, "?variables") ? 2
++                : sectionMatches(cursor, "?structs") ? 3
++                : sectionMatches(cursor, "?functions") ? 4 : 0;
++      inAtGlobal = 0;
++      codeBraceDepth = 0;
+       continue;
+     }
+ 
+-    if (!inFiles) {
++    if (isAtMarker(cursor) && codeBraceDepth == 0) {
++      inAtGlobal = strncmp(cursor, "@&", 2) == 0 &&
++                   (cursor[2] == '\0' || cursor[2] == '\r' ||
++                    cursor[2] == '\n' || cursor[2] == ' ' ||
++                    cursor[2] == '\t' || cursor[2] == ';');
+       continue;
+     }
+ 
+-    char *quote = strchr(cursor, '"');
+-
+-    if (quote == NULL) {
+-      continue; /* Allow `null` and blank lines. */
+-    }
+-
+-    char *endQuote = strchr(quote + 1, '"');
+-
+-    if (endQuote == NULL) {
+-      fclose(manifest);
+-      importError("unterminated filename in `%s`", manifestPath);
+-    }
+-
+-    *endQuote = '\0';
+-
+-    const char *filename = quote + 1;
+-    const char *slash = strrchr(filename, '/');
+-    const char *backslash = strrchr(filename, '\\');
+-
+-    if (slash != NULL || backslash != NULL) {
+-      fclose(manifest);
+-      importError(
+-          "manifest entries must be filenames in the package folder: `%s`",
+-          filename);
+-    }
+-
+-    size_t length = strlen(filename);
+-
+-    if (length < 3 || strcmp(filename + length - 2, "._") != 0) {
+-      fclose(manifest);
+-      importError("manifest file entry must end in `._`: `%s`", filename);
+-    }
+-
+-    char module[MAX_NAME + 1];
+-
+-    if (length - 2 >= sizeof(module)) {
+-      fclose(manifest);
+-      importError("module name in manifest is too long: `%s`", filename);
+-    }
+-
+-    memcpy(module, filename, length - 2);
+-    module[length - 2] = '\0';
+-
+-    /*
+-     * The physical module is loaded from the manifest's package folder.
+-     * Its public namespace remains the package name, not the filename.
+-     */
+-    loadModule(folder, module, folder, projectDirectory, executableDirectory,
+-               first, last, depth + 1);
++    if (section == 1) {
++      char *quote = strchr(cursor, '"');
++      if (quote == NULL) continue; /* `null`, comments, and blank lines. */
++      char *endQuote = strchr(quote + 1, '"');
++      if (endQuote == NULL) {
++        fclose(manifest);
++        free(code[0]); free(code[1]); free(code[2]);
++        importError("unterminated path in `%s`", manifestPath);
++      }
++      *endQuote = '\0';
++      loadManifestEntry(quote + 1, folder, legacyLayout, projectDirectory,
++                        executableDirectory, first, last, depth + 1);
++    } else if (inAtGlobal && section >= 2 && section <= 4) {
++      int slot = section - 2;
++      appendUfgSourceLine(code[slot], &codeUsed[slot], line, &codeDepth[slot],
++                          manifestPath);
++      codeBraceDepth = codeDepth[slot];
++    }
+   }
+ 
+   fclose(manifest);
++  parseManifestCode(manifestPath, code[0], 1, folder, projectDirectory,
++                    executableDirectory, first, last, depth + 1);
++  parseManifestCode(manifestPath, code[1], 0, folder, projectDirectory,
++                    executableDirectory, first, last, depth + 1);
++  parseManifestCode(manifestPath, code[2], 0, folder, projectDirectory,
++                    executableDirectory, first, last, depth + 1);
++  free(code[0]); free(code[1]); free(code[2]);
+ }
+@@ -377,11 +643,29 @@ ASTNode *expandImports(ASTNode *program, const char *sourceFile,
+   importedFileCount = 0;
+   memset(importedFiles, 0, sizeof(importedFiles));
++  ufgGlobalCount = 0;
++  loadedManifestCount = 0;
++  memset(ufgGlobals, 0, sizeof(ufgGlobals));
++  memset(loadedManifests, 0, sizeof(loadedManifests));
+ 
+   directoryOf(sourceFile, projectDirectory);
+   directoryOf(executablePath, executableDirectory);
++
++  /* Register the entry file as already loaded. A UFG may list its own entry
++     file (for example `main._`) without importing a second copy of `main`. */
++  if (importedFileCount < MAX_IMPORTED_FILES) {
++    char entryDirectory[IMPORT_PATH_SIZE];
++    char entryPath[IMPORT_PATH_SIZE];
++    joinPath(entryDirectory, projectDirectory, ".");
++    joinPath(entryPath, entryDirectory, lastPathPart(sourceFile));
++    copyPath(importedFiles[importedFileCount].path, entryPath);
++    importedFiles[importedFileCount].state = 2;
++    ++importedFileCount;
++  }
+ 
+   (void)expandProgram(program, projectDirectory, executableDirectory, NULL, 0,
+                       0);
++
++  rewriteUfgReferences(program);
+ 
+   return program;
+ }
