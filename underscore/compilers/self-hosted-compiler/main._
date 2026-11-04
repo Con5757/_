@@ -1,6 +1,4 @@
-&shc
-
 void main() <void> {
-    io.out("Hello, Underscore!")
+    
     kill -silent
 }

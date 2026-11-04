@@ -1,0 +1,8 @@
+alias data {
+  
+} UnsignedTokenType;
+
+alias enum {
+  UnsignedTokenType type;
+  str value[40];
+}

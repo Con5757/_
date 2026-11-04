@@ -17,8 +17,12 @@ typedef enum {
 
   TOKEN_WITH,
   TOKEN_INCLUDE,
+
+  // kill flags
   TOKEN_KILL_SILENT,
-  TOKEN_KILL_FLAG,
+  TOKEN_KILL_DEBUG,
+  TOKEN_KILL_CODE, // sends out typical 0,1,-1 codes
+  // ------- //
 
   TOKEN_VARIABLE,
   TOKEN_STRING,
@@ -102,8 +106,8 @@ typedef enum {
   TOKEN_PUBLIC,
   TOKEN_PRIVATE,
   TOKEN_HIDDEN,
-  TOKEN_DATA,
-  TOKEN_SET,
+  TOKEN_STRUCT,
+  TOKEN_ENUM,
   TOKEN_ALIAS,
   TOKEN_VEC,
 

@@ -73,14 +73,14 @@ static isTokenType keywordType(const char *word) {
   KEYWORD("during", TOKEN_DURING);
   KEYWORD("repeat", TOKEN_REPEAT);
   KEYWORD("const", TOKEN_CONST);
-  KEYWORD("static", TOKEN_STATIC);
+  KEYWORD("static", TOKEN_STATIC );
   KEYWORD("global", TOKEN_GLOBAL);
   KEYWORD("class", TOKEN_CLASS);
   KEYWORD("public", TOKEN_PUBLIC);
   KEYWORD("private", TOKEN_PRIVATE);
   KEYWORD("hidden", TOKEN_HIDDEN);
-  KEYWORD("data", TOKEN_DATA);
-  KEYWORD("set", TOKEN_SET);
+  KEYWORD("struct", TOKEN_STRUCT);
+  KEYWORD("enum", TOKEN_ENUM);
   KEYWORD("alias", TOKEN_ALIAS);
   KEYWORD("vec", TOKEN_VEC);
   KEYWORD("true", TOKEN_TRUE);
