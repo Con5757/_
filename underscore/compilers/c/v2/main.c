@@ -408,17 +408,29 @@ void printAST(ASTNode *node, int depth) {
 // ====== AST TREES ====== //
 
 ASTNode *intDeclaration(ASTNode *identifier, ASTNode *value) {
-  ASTNode *node = malloc(sizeof(ASTNode));
-  node->type = TOKEN_INTEGER;
-  strncpy(node->value, "int_declaration", MAX_TOKEN_VALUE_LENGTH - 1);
-  node->value[MAX_TOKEN_VALUE_LENGTH - 1] = '\0';
+  ASTNode *node = createASTNode(AST_INT_DECLARATION, "int_declaration");
+  if (!node) {
+    freeAST(identifier);
+    freeAST(value);
+    return NULL;
+  }
+
+  node->left = identifier;
+  node->right = value;
+
   return node;
 }
 ASTNode *fpDeclaration(ASTNode *identifier, ASTNode *value) {
-  ASTNode *node = malloc(sizeof(ASTNode));
-  node->type = TOKEN_FLOATING_POINT;
-  strncpy(node->value, "fp_declaration", MAX_TOKEN_VALUE_LENGTH - 1);
-  node->value[MAX_TOKEN_VALUE_LENGTH - 1] = '\0';
+  ASTNode *node = createASTNode(AST_FP_DECLARATION, "fp_declaration");
+  if (!node) {
+    freeAST(identifier);
+    freeAST(value);
+    return NULL;
+  }
+
+  node->left = identifier;
+  node->right = value;
+
   return node;
 }
 ASTNode *strDeclaration(ASTNode *identifier, ASTNode *value) {
@@ -481,7 +493,7 @@ int match(Parser *parser, isTokenType expected) {
 
 // DELCARATION PARSING
 ASTNode *parseIntDeclaration(Parser *parser) {
-  if (!consume(parser, TOKEN_INTEGER)) {
+  if (!consume(parser, TOKEN_INTEGER)) { // int
     return NULL;
   }
   Token *identifier = consume(parser, TOKEN_IDENTIFIER);
@@ -1207,7 +1219,7 @@ const CompilerFlag compilerFlags[] = {
 
 void printHelp(void);
 int parseFlags(int argc, char *argv[], int *printLex, int *printAST,
-                      int *printFile);
+               int *printFile);
 
 void printHelp(void) {
   printf("Underscore Compiler\n");

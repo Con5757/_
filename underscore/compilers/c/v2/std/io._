@@ -1,0 +1,3 @@
+void out(str message) <void> {
+    __io_OutCall(message)
+}
