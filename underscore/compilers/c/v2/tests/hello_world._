@@ -1,0 +1,7 @@
+?std
+    with io
+
+void main() <void> {
+    io.out("Hello, Underscore!")
+    kill -silent
+}
