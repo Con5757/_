@@ -40,12 +40,7 @@
           "light": "./icon-light.svg",
           "dark": "./icon-dark.svg"
         },
-        "configuration": "./language-configuration.json",
-        "underscore.clangPath": {
-          "type": "string",
-          "default": "",
-          "description": "Full path to clang.exe/clang, passed through UNDERSCORE_CLANG."
-        }
+        "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
