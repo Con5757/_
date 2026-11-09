@@ -1,0 +1,18 @@
+;- NOTES
+1. when writing std snippet, strdecl gets in the way, only an issue, fix if theres a clever way to clean it up
+2. compiled well with the runtime inside the same directory, so only runtime fix is from calc._
+-;
+
+; file deliberately uses no main() function
+?std
+    with io
+
+repeat (int count1 = 0, count1 < 100, count1++) {
+    io.out(count1)
+}
+
+int count2
+during (count2 <= 100) { ; good, caught unidentifier when tested, the error lens needs to be improved though
+    io.out(count2)
+    count2++
+}

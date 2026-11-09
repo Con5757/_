@@ -1,0 +1,83 @@
+; user test 1: basic calculator
+
+;- NOTES
+1. random file which i assume is for error lens keeps appearing and disappearing in the root directory.
+2. constant e4004 error when file is okay.
+3. line 26 double definition needs to be added; "str num1, num2" as it doesnt work right now
+4. line 31, want to be able to specify the datatype wanted in the params, such as io.out(int) only takes in an integer
+5. given error: "error[E4001]: runtime.c was not found. Keep runtime.c beside the compiler executable or in the working directory." stating it cant find the runtime. we need to fix this, it should search inside tools to find the std/io._ which has out() then go down that pipeline
+6. big stack error with doubles: (when runtime is forced into this directory) 
+.__underscore_1794209371.c:24:15: error: conflicting types for 'div'
+   24 | extern double div(double a, double b);
+      |               ^
+C:/msys64/ucrt64/include/stdlib.h:294:17: note: previous declaration is here
+  294 |   div_t __cdecl div(int _Numerator,int _Denominator);
+      |                 ^
+.__underscore_1794209371.c:40:8: error: conflicting types for 'div'
+   40 | double div(double a, double b) {
+      |        ^
+C:/msys64/ucrt64/include/stdlib.h:294:17: note: previous declaration is here
+  294 |   div_t __cdecl div(int _Numerator,int _Denominator);
+      |                 ^
+.__underscore_1794209371.c:47:10: error: assigning to 'double' from incompatible type 'char *'
+   47 |     num1 = __io_InCall();
+      |          ^ ~~~~~~~~~~~~~
+.__underscore_1794209371.c:49:14: error: assigning to 'int' from incompatible type 'void'
+   49 |     operator = __io_OutCall("1. ADD\n2. SUB\n3. MUL\n4. DIV");
+      |              ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.__underscore_1794209371.c:61:27: error: passing 'div_t' (aka 'struct _div_t') to parameter of incompatible type 'double'
+   61 |             __io_OutFloat(div(num1, num2));
+      |                           ^~~~~~~~~~~~~~~
+.__underscore_1794209371.c:11:33: note: passing argument to parameter here
+   11 | extern void __io_OutFloat(double);
+      |                                 ^
+5 errors generated.
+error[E4004]: Clang could not lower the generated program to LLVM IR
+-;
+
+?std
+    with io
+
+fp add(fp a, fp b) <void> {
+    retreat a + b
+}
+fp sub(fp a, fp b) <void> {
+    retreat a - b
+}
+fp mul(fp a, fp b) <void> {
+    retreat a * b
+}
+fp div(fp a, fp b) <void> {
+    retreat a / b
+}
+
+void main() <void> {
+    fp num1 ; didnt want to do: fp num1, num2
+    fp num2
+    
+    num1 = io.in()
+    num2 = io.in()
+
+    io.out("1. ADD\n2. SUB\n3. MUL\n4. DIV")
+    int operator = io.in() 
+
+    switch (operator) {
+        arg 1:
+            io.out(add(num1, num2))
+            break   
+        arg 2:
+            io.out(sub(num1, num2))
+            break
+        arg 3:
+            io.out(mul(num1, num2))
+            break
+        arg 4: 
+            io.out(div(num1, num2))
+            break
+
+        incase:
+            io.out("other")
+            break
+    }
+    kill -silent
+}

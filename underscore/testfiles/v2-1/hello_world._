@@ -1,0 +1,11 @@
+;- NOTES
+1. comment autoclosing isnt working/implemented, as i should only have to write ;- for the other side to appear
+-;
+
+?std
+    with io
+
+void main() <void> {
+    io.out("Hello, Underscore!")
+    kill -silent
+}

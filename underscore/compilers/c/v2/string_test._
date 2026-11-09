@@ -1,2 +1,0 @@
-str message[5] = "hello"
-str otherMessage[3] = "hello" 
