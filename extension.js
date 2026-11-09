@@ -313,7 +313,22 @@ function parseCompilerOutput(output, sourcePath, tempPath) {
       diagnostic: makeDiagnostic(location ? location.line : 1, location ? location.column : 1, message, severity, code)
     });
   }
-  return parsed;
+  const hasCodedCompilerError = parsed.some(item => {
+    const raw = item.diagnostic.code;
+    const value = raw && typeof raw === 'object' ? raw.value : raw;
+
+    return item.diagnostic.severity === vscode.DiagnosticSeverity.Error &&
+        /^E\d{4}$/.test(String(value || '')) &&
+        value !== 'E9000';
+});
+
+return hasCodedCompilerError
+    ? parsed.filter(item => {
+        const raw = item.diagnostic.code;
+        const value = raw && typeof raw === 'object' ? raw.value : raw;
+        return value !== 'E9000';
+    })
+    : parsed;
 }
 
 function setDocumentDiagnostics(document, diagnostics) {
@@ -349,6 +364,11 @@ function reportCompilerUnavailable(document, message) {
 function runCompilerCheck(document, runId, showOutput = false) {
   return new Promise(async resolve => {
     if (document.isClosed || document.uri.scheme !== 'file') return resolve(false);
+    const sourceText = document.getText();
+    if (!sourceText.trim()) {
+      setDocumentDiagnostics(document, []);
+      return resolve(true);
+    }
     const compilerPath = resolveCompilerPath();
     if (!compilerPath) {
       reportCompilerUnavailable(document, 'Compiler not found. Set underscore.compilerPath to the Underscore compiler executable.');
@@ -358,7 +378,7 @@ function runCompilerCheck(document, runId, showOutput = false) {
     const sourcePath = document.uri.fsPath;
     const tempPath = path.join(path.dirname(sourcePath), `.__underscore_diag_${process.pid}_${nextRunId++}.u`);
     try {
-      await fs.promises.writeFile(tempPath, document.getText(), 'utf8');
+      await fs.promises.writeFile(tempPath, sourceText, 'utf8');
     } catch (error) {
       reportCompilerUnavailable(document, `Could not create a temporary diagnostics source file: ${error.message}`);
       return resolve(false);
@@ -367,6 +387,8 @@ function runCompilerCheck(document, runId, showOutput = false) {
     const env = { ...process.env };
     const stdlib = resolveStdlibPath();
     if (stdlib) env.UNDERSCORE_STDLIB = stdlib;
+    const clangPath = config().get('clangPath', '').trim();
+    if (clangPath) env.UNDERSCORE_CLANG = clangPath;
     const cwd = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0]
       ? vscode.workspace.workspaceFolders[0].uri.fsPath : path.dirname(sourcePath);
     const timeoutMs = Math.max(1000, config().get('diagnosticTimeoutMs', 10000));
