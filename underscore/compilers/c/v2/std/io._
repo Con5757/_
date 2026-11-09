@@ -1,3 +1,9 @@
-void out(str message) <void> {
-    __io_OutCall(message)
-}
+; Underscore standard I/O module.
+; These are native runtime intrinsics implemented by runtime.c.
+; io.out(value) writes a printable value followed by a newline.
+; io.in() reads one line and returns a runtime-owned string buffer.
+; The io.in() buffer is overwritten by the next io.in() call.
+
+str in()
+void out(str message)
+void nl()
