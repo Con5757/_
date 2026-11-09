@@ -3,58 +3,187 @@
   "name": "Underscore",
   "scopeName": "source._",
   "patterns": [
-    { "include": "#comments" },
-    { "include": "#strings" },
-    { "include": "#numbers" },
-    { "include": "#fixed-width-types" },
-    { "include": "#keywords" },
-    { "include": "#constants" },
-    { "include": "#function-calls" }
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#fixed-width-types"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#operators"
+    },
+    {
+      "include": "#punctuation"
+    },
+    {
+      "include": "#function-calls"
+    }
   ],
   "repository": {
     "comments": {
       "patterns": [
-        { "name": "comment.block.underscore", "begin": ";-", "end": "-;" },
-        { "name": "comment.line.underscore", "begin": ";", "end": "$" }
+        {
+          "name": "comment.block.underscore",
+          "begin": ";-",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.begin.underscore"
+            }
+          },
+          "end": "-;",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.end.underscore"
+            }
+          }
+        },
+        {
+          "name": "comment.line.semicolon.underscore",
+          "begin": ";",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.underscore"
+            }
+          },
+          "end": "$"
+        }
       ]
     },
     "strings": {
-      "name": "string.quoted.double.underscore",
-      "begin": "\"",
-      "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.underscore" } },
-      "end": "\"",
-      "endCaptures": { "0": { "name": "punctuation.definition.string.end.underscore" } },
       "patterns": [
-        { "name": "constant.character.escape.underscore", "match": "\\\\." }
+        {
+          "name": "string.quoted.double.underscore",
+          "begin": "\"",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.underscore"
+            }
+          },
+          "end": "\"",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.underscore"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.underscore",
+              "match": "\\\\(?:[nrt0\\\\\"\\']|.)"
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.underscore",
+          "begin": "'",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.begin.underscore"
+            }
+          },
+          "end": "'",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.string.end.underscore"
+            }
+          },
+          "patterns": [
+            {
+              "name": "constant.character.escape.underscore",
+              "match": "\\\\(?:[nrt0\\\\\\\"']|.)"
+            }
+          ]
+        }
       ]
     },
     "numbers": {
       "patterns": [
-        { "name": "constant.numeric.float.underscore", "match": "\\b[0-9]+\\.[0-9]+\\b" },
-        { "name": "constant.numeric.integer.underscore", "match": "\\b[0-9]+\\b" }
+        {
+          "name": "constant.numeric.float.underscore",
+          "match": "\\b[0-9]+(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)\\b|\\b[0-9]+\\.[0-9]+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.underscore",
+          "match": "\\b[0-9]+\\b"
+        }
       ]
     },
     "fixed-width-types": {
       "name": "storage.type.fixed-width.underscore",
       "match": "\\b(?:int|fp|str)(?:8|16|32|64)\\b"
     },
+    "types": {
+      "name": "storage.type.underscore",
+      "match": "\\b(?:int|fp|str|void|bool)\\b"
+    },
     "keywords": {
       "patterns": [
-        { "name": "keyword.control.underscore", "match": "\\b(if|elif|else|switch|arg|incase|during|repeat|attempt|break|cont|retreat|kill|main)\\b" },
-        { "name": "keyword.declaration.underscore", "match": "(?:\\b(int|fp|str|void|func|const|static|global|data|set|alias|class|public|private|hidden|vec)\\b|@)" },
-        { "name": "keyword.import.underscore", "match": "\\b(with)\\b|\\?" },
-        { "name": "keyword.operator.underscore", "match": "(==|!=|<=|>=|&&|\\|\\||\\+\\+|--|\\+=|-=|\\*=|/=|%=|->|<-|-->|<--|::|[+*/%=&|^~!<>])" }
+        {
+          "name": "keyword.control.underscore",
+          "match": "\\b(?:if|elif|else|during|repeat|switch|arg|incase|break|cont|retreat|kill)\\b"
+        },
+        {
+          "name": "keyword.declaration.underscore",
+          "match": "\\b(?:const|static|global|data|set|alias)\\b"
+        },
+        {
+          "name": "keyword.import.underscore",
+          "match": "\\bwith\\b|\\?"
+        },
+        {
+          "name": "keyword.operator.address.underscore",
+          "match": "@"
+        }
       ]
     },
     "constants": {
       "patterns": [
-        { "name": "constant.language.boolean.underscore", "match": "\\b(true|false)\\b" },
-        { "name": "constant.language.null.underscore", "match": "\\b(null)\\b" }
+        {
+          "name": "constant.language.boolean.underscore",
+          "match": "\\b(?:true|false)\\b"
+        },
+        {
+          "name": "constant.language.null.underscore",
+          "match": "\\bnull\\b"
+        }
       ]
+    },
+    "operators": {
+      "name": "keyword.operator.underscore",
+      "match": "(?:-->|<--|~>|->|<-|::|\\+\\+|--|\\+=|-=|\\*=|/=|%=|&=|\\|=|\\^=|==|!=|<=|>=|&&|\\|\\||<<|>>|[+*/%=&|^~!<>])"
     },
     "function-calls": {
       "patterns": [
-        { "name": "entity.name.function.underscore", "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?:(?:\\.|::)[A-Za-z_][A-Za-z0-9_]*)*(?=\\s*\\()" }
+        {
+          "name": "entity.name.function.underscore",
+          "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?:(?:\\.|::|~>)[A-Za-z_][A-Za-z0-9_]*)*(?=\\s*\\()"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.accessor.underscore",
+          "match": "\\."
+        },
+        {
+          "name": "punctuation.separator.underscore",
+          "match": "[:,]"
+        }
       ]
     }
   }

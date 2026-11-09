@@ -1,8 +1,8 @@
 {
   "name": "underscore-extensionpack",
   "displayName": "Underscore Language Extension",
-  "description": "Syntax highlighting, hover documentation, snippets, and compiler-backed live diagnostics for Underscore and UFG files.",
-  "version": "1.2.0",
+  "description": "Language support for Underscore: syntax highlighting, practical snippets, native API hovers, and compiler-backed diagnostics with explanatory Error Lens messages.",
+  "version": "1.3.0",
   "publisher": "con5757",
   "engines": {
     "vscode": "^1.70.0"
@@ -14,6 +14,13 @@
   "categories": [
     "Programming Languages",
     "Snippets"
+  ],
+  "keywords": [
+    "underscore",
+    "ulang",
+    "compiler",
+    "language support",
+    "syntax highlighting"
   ],
   "contributes": {
     "languages": [
@@ -59,35 +66,69 @@
         "path": "./snippets/snippets.json"
       }
     ],
+    "commands": [
+      {
+        "command": "underscore.checkCurrentFile",
+        "title": "Underscore: Check Current File"
+      }
+    ],
     "configuration": {
       "title": "Underscore",
       "properties": {
         "underscore.compilerPath": {
           "type": "string",
           "default": "",
-          "description": "Path to the built Underscore compiler executable. Required for compiler-backed live diagnostics when the compiler cannot be discovered inside the workspace."
+          "description": "Absolute path to the Underscore compiler executable. Leave empty to search common compiler, build, bin, and workspace locations."
         },
         "underscore.standardLibraryPath": {
           "type": "string",
           "default": "",
-          "description": "Directory containing standard-library modules such as io._ and math._. Passed to the compiler through UNDERSCORE_STDLIB."
+          "description": "Optional directory containing standard-library modules. Passed to the compiler in the UNDERSCORE_STDLIB environment variable."
         },
         "underscore.enableLiveDiagnostics": {
           "type": "boolean",
           "default": true,
-          "description": "Run the Underscore compiler in check-only mode while editing and report diagnostics in the Problems panel."
+          "description": "Run the compiler in -check mode after edits and publish errors in the Problems panel."
         },
         "underscore.enableInlineErrorLens": {
           "type": "boolean",
           "default": true,
-          "description": "Show a compact inline message after lines with compiler errors or warnings."
+          "description": "Show a concise inline diagnostic after the affected source line. Hover the message for detailed explanations and corrected examples."
         },
         "underscore.diagnosticDelayMs": {
           "type": "number",
-          "default": 500,
-          "minimum": 150,
-          "maximum": 2500,
-          "description": "Debounce delay before checking a document after an edit, in milliseconds."
+          "default": 450,
+          "minimum": 100,
+          "maximum": 3000,
+          "description": "Debounce delay after editing before the compiler check starts, in milliseconds."
+        },
+        "underscore.diagnosticTimeoutMs": {
+          "type": "number",
+          "default": 10000,
+          "minimum": 1000,
+          "maximum": 120000,
+          "description": "Maximum time allowed for one compiler diagnostics process, in milliseconds."
+        },
+        "underscore.inlineErrorLensMaxMessages": {
+          "type": "number",
+          "default": 2,
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Maximum number of diagnostic summaries displayed inline on one line."
+        },
+        "underscore.inlineErrorLensMaxLength": {
+          "type": "number",
+          "default": 150,
+          "minimum": 60,
+          "maximum": 400,
+          "description": "Maximum approximate character length of one inline Error Lens message."
+        },
+        "underscore.maxDiagnosticOutputChars": {
+          "type": "number",
+          "default": 250000,
+          "minimum": 16384,
+          "maximum": 2000000,
+          "description": "Maximum combined compiler output retained during a diagnostics run."
         }
       }
     }

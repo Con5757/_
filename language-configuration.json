@@ -34,16 +34,24 @@
       "close": ")"
     },
     {
-      "open": ";-",
-      "close": "-;",
+      "open": "\"",
+      "close": "\"",
       "notIn": [
         "string",
         "comment"
       ]
     },
     {
-      "open": "\"",
-      "close": "\"",
+      "open": "'",
+      "close": "'",
+      "notIn": [
+        "string",
+        "comment"
+      ]
+    },
+    {
+      "open": ";-",
+      "close": "-;",
       "notIn": [
         "string",
         "comment"
@@ -68,8 +76,39 @@
       "\""
     ],
     [
+      "'",
+      "'"
+    ],
+    [
       ";-",
       "-;"
     ]
-  ]
+  ],
+  "indentationRules": {
+    "increaseIndentPattern": "^.*\\{\\s*(?:;.*)?$",
+    "decreaseIndentPattern": "^\\s*\\}\\s*(?:else\\b|elif\\b)?\\s*(?:;.*)?$"
+  },
+  "onEnterRules": [
+    {
+      "beforeText": "^\\s*;-$",
+      "afterText": "^\\s*-;$",
+      "action": {
+        "indent": "indentOutdent"
+      }
+    },
+    {
+      "beforeText": "^\\s*\\{\\s*$",
+      "afterText": "^\\s*\\}\\s*$",
+      "action": {
+        "indent": "indentOutdent"
+      }
+    }
+  ],
+  "wordPattern": "(-?\\d+\\.\\d+)|([A-Za-z_][A-Za-z0-9_]*)",
+  "folding": {
+    "markers": {
+      "start": "^\\s*;-",
+      "end": "^\\s*-;"
+    }
+  }
 }
